@@ -1,0 +1,17 @@
+(module NX3225GD (layer F.Cu) (tedit 55488754)
+  (fp_text reference REF** (at 0 2.6) (layer F.SilkS)
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (fp_text value NX3225GD (at 0 -2.5) (layer F.Fab) hide
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (fp_line (start -0.1 1.3) (end 0.1 1.3) (layer F.SilkS) (width 0.15))
+  (fp_line (start -0.1 -1.3) (end 0.1 -1.3) (layer F.SilkS) (width 0.15))
+  (pad 2 smd rect (at 1 0) (size 1.5 2.7) (layers F.Cu F.Paste F.Mask))
+  (pad 1 smd rect (at -1 0) (size 1.5 2.7) (layers F.Cu F.Paste F.Mask))
+  (model Crystals_Oscillators_SMD.3dshapes/crystal_FA238-TSX3225.wrl
+    (at (xyz 0 0 0))
+    (scale (xyz 0.235 0.235 0.235))
+    (rotate (xyz 0 0 0))
+  )
+)

@@ -1,0 +1,32 @@
+BQ2417X
+
+Pin,    Unit,   Type,           Name,               Side
+
+5,      1,      input,          ACN,                top
+2,      1,      power_in,       PVCC,               top
+3,      1,      power_in,       PVCC,               top
+
+6,      1,      power_in,       ACP,                left
+7,      1,      output,         CMSRC,              left
+8,      1,      output,         ACDRV,              left
+12,     1,      power_out,      VREF,               left
+13,     1,      input,          ISET,               left
+17,     1,      input,          ACSET,              left
+4,      1,      power_in,       AVCC,               left
+18,     1,      input,          OVPSET,             left
+11,     1,      input,          TTC,                left
+10,     1,      input,          TS,                 left
+9,      1,      open_collector, STAT,               left
+
+19,     1,      output,         ~BATDRV,            right
+1,      1,      power_out,      SW,                 right
+24,     1,      power_out,      SW,                 right
+21,     1,      power_out,      BTST,               right
+20,     1,      power_in,       REGN,               right
+22,     1,      power_in,       PGND,               right
+23,     1,      power_in,       PGND,               right
+16,     1,      power_in,       SRP,                right
+15,     1,      input,          SRN,                right
+14,     1,      input,          CELL/FB,            right
+
+EP,     1,      power_in,       AGND,               bottom

@@ -1,0 +1,146 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP AOZ3015
+D 3A Sync Buck Regulator, 4.5-18V
+K regulator vreg buck
+$ENDCMP
+#
+$CMP AOZ301x
+D 3A Sync Buck Regulator, 4.5-18V
+K regulator vreg buck
+$ENDCMP
+#
+$CMP AP3211
+D 1.4MHz, 1.5A ASYNCHRONOUS DC-DC BUCK CONVERTER
+K buck converter regulator
+F http://www.diodes.com/_files/datasheets/AP3211.pdf
+$ENDCMP
+#
+$CMP BQ2417X
+D 1.6-MHz Synchronous Switched-Mode Li-Ion and Li-Polymer Stand-Alone Battery Charger With Integrated MOSFETs and Power Path Selector
+K charger
+F http://www.ti.com/lit/ds/symlink/bq24170.pdf
+$ENDCMP
+#
+$CMP CAN
+D CAN Transceiver
+$ENDCMP
+#
+$CMP INA199
+D Current Sense Monitor: Voltage Output, High or Low Side Measurement, Bi-Directional Zerø-Drift Series
+K current sense shunt
+F http://www.ti.com/lit/ds/symlink/ina199.pdf
+$ENDCMP
+#
+$CMP JACK_2.5MM-4P
+F sj1-425x-smt-series.pdf
+$ENDCMP
+#
+$CMP JACK_TRS_3PINS
+D audio jack TRS 3 pins
+K audio jack connector TRS
+$ENDCMP
+#
+$CMP LED-EP
+K LED
+$ENDCMP
+#
+$CMP LIS3DH
+D ACCELEROMETER 3AXIS MEMS 16-LGA
+F http://www.st.com/web/en/resource/technical/document/datasheet/CD00274221.pdf
+$ENDCMP
+#
+$CMP LTC4412
+D P-Channel MOSFET Ideal Diode Controller
+$ENDCMP
+#
+$CMP MCP73831
+D Single-Cell, Fully Integrated Li-Ion, Li-Polymer Charge Management Controllers
+K Li-Ion Li-Po Battery Charger
+F http://ww1.microchip.com/downloads/en/DeviceDoc/20001984g.pdf
+$ENDCMP
+#
+$CMP MIC5205
+D 150 mA LDO Regulator 1%
+K LDO
+F http://www.micrel.com/_PDF/mic5205.pdf
+$ENDCMP
+#
+$CMP MK22FN1M0AVLH12
+D Kinetis K22F 120MHz Cortex-M4F 512KB-1MB Flash
+K Kinetis K22F
+F http://cache.nxp.com/files/32bit/doc/data_sheet/K22P64M120SF5V2.pdf
+$ENDCMP
+#
+$CMP MK22FN1M0AVLK12
+D Kinetis K22F 120MHz Cortex-M4F 512KB-1MB Flash 80-pin LQFP
+K Kinetis K22F
+F http://cache.nxp.com/files/32bit/doc/data_sheet/K22P80M120SF5V2.pdf
+$ENDCMP
+#
+$CMP MMBF170
+D 60V Vds 0.5A Id, N-Channel MOSFET, SOT-23
+K N-Channel MOSFET
+F http://www.fairchildsemi.com/ds/BS/BS170.pdf
+$ENDCMP
+#
+$CMP MOSFET_2N_CH
+D MOSFET Array
+K mosfet array
+F http://www.diodes.com/datasheets/DMN6040SSD.pdf
+$ENDCMP
+#
+$CMP MP8715
+D 4A, 21V, 500kHz, Step Down Converter with 100% duty cycle
+K vreg
+$ENDCMP
+#
+$CMP NCP551
+D 150 mA Low Iq LDO Regulator
+K LDO
+F http://www.onsemi.com/pub_link/Collateral/NCP551-D.PDF
+$ENDCMP
+#
+$CMP NMOS
+D 60V Vds 0.5A Id, N-Channel MOSFET, SOT-23
+K N-Channel MOSFET
+F http://www.fairchildsemi.com/ds/BS/BS170.pdf
+$ENDCMP
+#
+$CMP PAM242x
+D 3A, 4.5A, 5.5A PWM Step-up DC-DC Converter
+K vreg
+$ENDCMP
+#
+$CMP PMOS
+D 60V Vds 0.5A Id, P-Channel MOSFET, SOT-23
+K P-Channel MOSFET
+$ENDCMP
+#
+$CMP PT4115
+D 30V, 1.2A Step-down High Brightness LED Driver with 5000:1 Dimming
+K led driver constant current
+F https://people.xiph.org/~xiphmont/thinkpad/PT4115E.pdf
+$ENDCMP
+#
+$CMP TEST_POINT
+D Test Point
+$ENDCMP
+#
+$CMP TPS782
+D 150 mA Ultra Low Iq LDO Regulator
+K LDO Iq
+F http://www.ti.com/lit/ds/symlink/tps782.pdf
+$ENDCMP
+#
+$CMP TVS
+D Transient voltage suppressor diode (bi-directional)
+K DEV TVS TRANSIENT SUPPROESSOR ESD
+$ENDCMP
+#
+$CMP ZXGD3001E6
+D 9A(peak) Gate driver in SOT23-6
+K gate driver
+$ENDCMP
+#
+#End Doc Library

@@ -1,0 +1,54 @@
+MKV11Z128VLF7
+
+Pin,    Unit,   Type,           Name,           Side
+1,      1,      power_in,       VDD,                left
+2,      1,      power_in,       VSS,                left
+3,      1,      bidirectional,  PTE16,              left
+4,      1,      bidirectional,  PTE17/LLWU_P19,     left
+5,      1,      bidirectional,  PTE18/LLWU_P20,     left
+6,      1,      bidirectional,  PTE19,              left
+7,      1,      bidirectional,  PTE20,              left
+8,      1,      bidirectional,  PTE21,              left
+9,      1,      power_in,       VDDA,               left
+10,     1,      input,          VREFH,              left
+11,     1,      input,          VREFL,              left
+12,     1,      power_in,       VSSA,               left
+
+13,     1,      bidirectional,  PTE29,              bottom
+14,     1,      bidirectional,  PTE30/DAC_OUT,      bottom
+15,     1,      bidirectional,  PTE24,              bottom
+16,     1,      bidirectional,  PTE25/LLWU_P21,     bottom
+17,     1,      bidirectional,  PTA0/SWD_CLK,       bottom
+18,     1,      bidirectional,  PTA1,               bottom
+19,     1,      bidirectional,  PTA2,               bottom
+20,     1,      bidirectional,  PTA3/SWD_DIO,       bottom
+21,     1,      bidirectional,  PTA4/LLWU_P3/NMI_b, bottom
+22,     1,      power_in,       VDD,                bottom
+23,     1,      power_in,       VSS,                bottom
+24,     1,      bidirectional,  PTA18/EXTAL0,       bottom
+
+25,     1,      bidirectional,  PTA19/XTAL0,        right
+26,     1,      bidirectional,  PTA20/RESET_b,      right
+27,     1,      bidirectional,  PTB0/LLWU_P5,       right
+28,     1,      bidirectional,  PTB1,               right
+29,     1,      bidirectional,  PTB2,               right
+30,     1,      bidirectional,  PTB3,               right
+31,     1,      bidirectional,  PTB16,              right
+32,     1,      bidirectional,  PTB17,              right
+33,     1,      bidirectional,  PTC0,               right
+34,     1,      bidirectional,  PTC1/LLWU_P6,       right
+35,     1,      bidirectional,  PTC2,               right
+36,     1,      bidirectional,  PTC3/LLWU_P7/CLKOUT,right
+
+37,     1,      bidirectional,  PTC4/LLWU_P8,       top
+38,     1,      bidirectional,  PTC5/LLWU_P9,       top
+39,     1,      bidirectional,  PTC6/LLWU_P10,      top
+40,     1,      bidirectional,  PTC7,               top
+41,     1,      bidirectional,  PTD0/LLWU_P12,      top
+42,     1,      bidirectional,  PTD1,               top
+43,     1,      bidirectional,  PTD2/LLWU_P13,      top
+44,     1,      bidirectional,  PTD3,               top
+45,     1,      bidirectional,  PTD4/LLWU_P14,      top
+46,     1,      bidirectional,  PTD5,               top
+47,     1,      bidirectional,  PTD6/LLWU_P15,      top
+48,     1,      bidirectional,  PTD7,               top
