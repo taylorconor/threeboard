@@ -40,27 +40,27 @@ void KeyController::PollKeyState() {
     key_mask_ |= (1 << X_IDX);
   } else if (was_pressed(key_mask_, X_IDX)) {
     key_mask_ &= ~(1 << X_IDX);
-    key_mask_ |= key::X;
+    key_mask_ |= (uint8_t)Keypress::X;
   }
   // Key Y.
   if (is_pressed(pinb, native::PB2)) {
     key_mask_ |= (1 << Y_IDX);
   } else if (was_pressed(key_mask_, Y_IDX)) {
     key_mask_ &= ~(1 << Y_IDX);
-    key_mask_ |= key::Y;
+    key_mask_ |= (uint8_t)Keypress::Y;
   }
   // Key Z.
   if (is_pressed(pinb, native::PB3)) {
     key_mask_ |= (1 << Z_IDX);
   } else if (was_pressed(key_mask_, Z_IDX)) {
     key_mask_ &= ~(1 << Z_IDX);
-    key_mask_ |= key::Z;
+    key_mask_ |= (uint8_t)Keypress::Z;
   }
 
   // If there are no active keypresses but there were previous keypresses, a
   // keypress event should be registered.
   if ((key_mask_ >> 3) == 0 && key_mask_ > 0) {
-    keypress_handler_->HandleKeypress(key_mask_);
+    keypress_handler_->HandleKeypress((Keypress)(key_mask_ & 7));
     key_mask_ = 0;
   }
 }

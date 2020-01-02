@@ -49,12 +49,12 @@ void LedController::ScanNextLine() {
 
 void LedController::SetBank0(uint8_t val) { SetBankValue(BANK_0, val); }
 void LedController::SetBank1(uint8_t val) { SetBankValue(BANK_1, val); }
-void LedController::SetR(State state) { SetLedState(LED_R, state); }
-void LedController::SetG(State state) { SetLedState(LED_G, state); }
-void LedController::SetB(State state) { SetLedState(LED_B, state); }
-void LedController::SetProg(State state) { SetLedState(LED_PROG, state); }
-void LedController::SetErr(State state) { SetLedState(LED_ERR, state); }
-void LedController::SetStatus(State state) {
+void LedController::SetR(LedState state) { SetLedState(LED_R, state); }
+void LedController::SetG(LedState state) { SetLedState(LED_G, state); }
+void LedController::SetB(LedState state) { SetLedState(LED_B, state); }
+void LedController::SetProg(LedState state) { SetLedState(LED_PROG, state); }
+void LedController::SetErr(LedState state) { SetLedState(LED_ERR, state); }
+void LedController::SetStatus(LedState state) {
   SetLedState(LED_STATUS, state);
 }
 
@@ -63,12 +63,12 @@ void LedController::WriteStateToPins(uint8_t row) {
   // They could be set on each scan, but to maintain consistent brightness they
   // have each been assigned their own scan line.
   if (row == 0) {
-    if (GetLedState(LED_ERR) == State::ON) {
+    if (GetLedState(LED_ERR) == LedState::ON) {
       native_->EnablePORTF(1 << native::PF6);
     }
   } else if (row == 1) {
     native_->DisablePORTF(1 << native::PF6);
-    if (GetLedState(LED_STATUS) == State::ON) {
+    if (GetLedState(LED_STATUS) == LedState::ON) {
       native_->EnablePORTF(1 << native::PF7);
     }
   } else {
@@ -107,33 +107,33 @@ void LedController::WriteStateToPins(uint8_t row) {
 
 void LedController::SetBankValue(uint8_t bank, uint8_t val) {
   for (int8_t i = 7; i >= 0; i--) {
-    SetLedState(bank + (i * 2), (State)(val & 1));
+    SetLedState(bank + (i * 2), (LedState)(val & 1));
     val >>= 1;
   }
 }
 
-void LedController::SetLedState(int led_index, State state) {
+void LedController::SetLedState(int led_index, LedState state) {
   state_.SetBits(led_index, 2, (uint8_t)state);
 }
 
-LedController::State LedController::GetLedState(int led_index) {
-  // Calculate the index of the LSB of the State in the containing byte.
+LedController::LedState LedController::GetLedState(int led_index) {
+  // Calculate the index of the LSB of the LedState in the containing byte.
   uint8_t bit_index = 6 - (led_index % 8);
-  return (State)((state_.GetContainerByte(led_index) & (3 << bit_index)) >>
-                 bit_index);
+  return (LedState)((state_.GetContainerByte(led_index) & (3 << bit_index)) >>
+                    bit_index);
 }
 
 void LedController::WriteColumns(uint8_t col0) {
-  if (GetLedState(col0) == State::ON) {
+  if (GetLedState(col0) == LedState::ON) {
     native_->DisablePORTD(1 << native::PD4);
   }
-  if (GetLedState(col0 + 2) == State::ON) {
+  if (GetLedState(col0 + 2) == LedState::ON) {
     native_->DisablePORTD(1 << native::PD6);
   }
-  if (GetLedState(col0 + 4) == State::ON) {
+  if (GetLedState(col0 + 4) == LedState::ON) {
     native_->DisablePORTD(1 << native::PD7);
   }
-  if (GetLedState(col0 + 6) == State::ON) {
+  if (GetLedState(col0 + 6) == LedState::ON) {
     native_->DisablePORTB(1 << native::PB4);
   }
 }

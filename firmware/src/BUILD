@@ -37,13 +37,25 @@ avr_library(
 )
 
 avr_library(
+  name = "event_handler",
+  srcs = ["event_handler.cpp"],
+  hdrs = ["event_handler.h"],
+  deps = [
+    "//src/native:native",
+    ":key_controller",
+  ],
+)
+
+avr_library(
   name = "threeboard_lib",
   srcs = ["threeboard.cpp"],
   hdrs = ["threeboard.h"],
   deps = [
     ":led_controller",
     ":key_controller",
+    ":event_handler",
     "//src/native:native",
+    "//src/util:enums",
   ]
 )
 

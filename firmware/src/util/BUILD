@@ -10,6 +10,11 @@ avr_library(
   hdrs = ["bitset.h"],
 )
 
+avr_library(
+  name = "enums",
+  hdrs = ["enums.h"],
+)
+
 cc_test(
   name = "bitset_test",
   srcs = ["bitset_test.cpp"],
