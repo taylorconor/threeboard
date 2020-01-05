@@ -37,12 +37,32 @@ avr_library(
 )
 
 avr_library(
+  name = "usb_controller",
+  srcs = ["usb_controller.cpp"],
+  hdrs = ["usb_controller.h"],
+  deps = [
+    "//src/native:native",
+   ],
+)
+
+avr_library(
   name = "event_handler",
   srcs = ["event_handler.cpp"],
   hdrs = ["event_handler.h"],
   deps = [
     "//src/native:native",
     ":key_controller",
+  ],
+)
+
+cc_test(
+  name = "event_handler_test",
+  srcs = ["event_handler_test.cpp"],
+  deps = [
+    "@gtest//:gtest",
+    "@gtest//:gtest_main",
+    "//src/native:native_mock",
+    ":event_handler"
   ],
 )
 
@@ -54,8 +74,9 @@ avr_library(
     ":led_controller",
     ":key_controller",
     ":event_handler",
+    ":usb_controller",
     "//src/native:native",
-    "//src/util:enums",
+    "//src/util:enum",
   ]
 )
 

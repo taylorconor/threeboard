@@ -6,7 +6,7 @@ namespace threeboard {
 namespace util {
 namespace {
 
-using State = LedController::State;
+using LedState = LedController::LedState;
 
 class LedControllerTest : public ::testing::Test {
 public:
@@ -40,15 +40,15 @@ TEST_F(LedControllerTest, TestStatusAndErr) {
   // PF5 is the row enabled for row 0.
   EXPECT_CALL(native_mock_, EnablePORTF(1 << native::PF5)).Times(1);
   EXPECT_CALL(native_mock_, EnablePORTF(1 << native::PF6)).Times(1);
-  controller_->SetErr(State::ON);
+  controller_->SetErr(LedState::ON);
   controller_->ScanNextLine();
 
   // PF4 is the row enabled for row 1.
   EXPECT_CALL(native_mock_, EnablePORTF(1 << native::PF4)).Times(1);
   EXPECT_CALL(native_mock_, DisablePORTF(1 << native::PF6)).Times(1);
   EXPECT_CALL(native_mock_, EnablePORTF(1 << native::PF7)).Times(1);
-  controller_->SetErr(State::OFF);
-  controller_->SetStatus(State::ON);
+  controller_->SetErr(LedState::OFF);
+  controller_->SetStatus(LedState::ON);
   controller_->ScanNextLine();
 }
 
@@ -80,7 +80,7 @@ TEST_F(LedControllerTest, TestCorrectColumnPinsDisabled) {
   MockDefaultStatusLEDs(1);
   controller_->SetBank0(0b00100001);
   controller_->SetBank1(0b10000100);
-  controller_->SetR(State::ON);
+  controller_->SetR(LedState::ON);
   // Row 1.
   EXPECT_CALL(native_mock_, EnablePORTF(1 << native::PF5)).Times(1);
   EXPECT_CALL(native_mock_, DisablePORTD(1 << native::PD7)).Times(1);

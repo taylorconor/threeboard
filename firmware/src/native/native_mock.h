@@ -7,10 +7,14 @@ namespace native {
 namespace {
 class NativeMock : public Native {
 public:
-  MOCK_METHOD(void, SetTimer1InterruptHandler, (InterruptHandler),
+  MOCK_METHOD(void, SetTimer1InterruptHandler, (InterruptHandlerDelegate *),
               (override));
-  MOCK_METHOD(InterruptHandler, GetTimer1InterruptHandler, (),
+  MOCK_METHOD(void, SetTimer3InterruptHandler, (InterruptHandlerDelegate *),
+              (override));
+  MOCK_METHOD(InterruptHandlerDelegate *, GetInterruptHandlerDelegate, (),
               (const, override));
+
+  MOCK_METHOD(void, Delay, (uint8_t), (const, override));
 
   MOCK_METHOD(void, EnableDDRB, (const uint8_t), (override));
   MOCK_METHOD(void, DisableDDRB, (const uint8_t), (override));

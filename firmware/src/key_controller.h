@@ -25,6 +25,7 @@ enum class Keypress : uint8_t {
 // by the KeyController.
 class KeypressHandlerDelegate {
 public:
+  virtual ~KeypressHandlerDelegate(){};
   virtual void HandleKeypress(const Keypress) = 0;
 };
 

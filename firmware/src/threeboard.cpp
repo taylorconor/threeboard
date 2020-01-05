@@ -1,6 +1,6 @@
 #include "threeboard.h"
 
-#include "util/enums.h"
+#include "util/enum.h"
 
 #if !(defined(__clang__) || defined(__GNUC__) && __GNUC__ >= 9)
 static_assert(false, "Unsupported compiler. Threeboard requires clang (>=5) or "
@@ -24,9 +24,11 @@ const Threeboard::handler_function Threeboard::state_machine[4][2][1] = {
 
 Threeboard::Threeboard(native::Native *native, EventHandler *event_handler,
                        LedController *led_controller,
-                       KeyController *key_controller)
+                       KeyController *key_controller,
+                       UsbController *usb_controller)
     : native_(native), event_handler_(event_handler),
-      led_controller_(led_controller), key_controller_(key_controller) {
+      led_controller_(led_controller), key_controller_(key_controller),
+      usb_controller_(usb_controller) {
   native_->SetTimer1InterruptHandler(this);
   native_->SetTimer3InterruptHandler(this);
 

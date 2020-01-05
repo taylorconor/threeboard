@@ -18,9 +18,10 @@ int main() {
   EventHandler event_handler(native_impl);
   LedController led_controller(native_impl);
   KeyController key_controller(native_impl, &event_handler);
+  UsbController usb_controller(native_impl);
 
   Threeboard threeboard(native_impl, &event_handler, &led_controller,
-                        &key_controller);
+                        &key_controller, &usb_controller);
 
   // Run the firmware event loop. This will run forever.
   threeboard.Run();

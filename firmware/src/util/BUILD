@@ -11,8 +11,8 @@ avr_library(
 )
 
 avr_library(
-  name = "enums",
-  hdrs = ["enums.h"],
+  name = "enum",
+  hdrs = ["enum.h"],
 )
 
 cc_test(
@@ -22,5 +22,15 @@ cc_test(
     "@gtest//:gtest",
     "@gtest//:gtest_main",
     ":bitset"
+  ],
+)
+
+cc_test(
+  name = "enum_test",
+  srcs = ["enum_test.cpp"],
+  deps = [
+    "@gtest//:gtest",
+    "@gtest//:gtest_main",
+    ":enum"
   ],
 )

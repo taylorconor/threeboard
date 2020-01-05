@@ -14,7 +14,6 @@ Keypress EventHandler::WaitForKeyboardEvent() {
 }
 
 void EventHandler::HandleKeypress(const Keypress keypress) {
-
   pending_keypress_ = keypress;
 }
 

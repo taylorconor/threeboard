@@ -54,10 +54,8 @@ constexpr uint8_t CountValidEntries() noexcept {
   auto valid = IsValid<E, A>();
   return CountValidEntries<E, B...>() + valid;
 }
-} // namespace detail
 
-// Find the total amount of elements in a given enum E.
-template <typename E> constexpr uint8_t element_count() noexcept {
+template <typename E> struct InternalElementCount {
   static_assert(__is_enum(E), "provided type E must be an enum.");
   // We figure out the enum size by enumerating all possible enum values (for
   // enums with a uint8_t underlying type), and then relying on a compiler quirk
@@ -67,7 +65,7 @@ template <typename E> constexpr uint8_t element_count() noexcept {
   // std::integer_sequence. There might be an easier way to do this. Otherwise
   // it might be useful to implement an integer sequence container in future for
   // reusablility if needed.
-  return detail::CountValidEntries<
+  static const uint8_t value = detail::CountValidEntries<
       E, (E)0, (E)1, (E)2, (E)3, (E)4, (E)5, (E)6, (E)7, (E)8, (E)9, (E)10,
       (E)11, (E)12, (E)13, (E)14, (E)15, (E)16, (E)17, (E)18, (E)19, (E)20,
       (E)21, (E)22, (E)23, (E)24, (E)25, (E)26, (E)27, (E)28, (E)29, (E)30,
@@ -96,6 +94,13 @@ template <typename E> constexpr uint8_t element_count() noexcept {
       (E)236, (E)237, (E)238, (E)239, (E)240, (E)241, (E)242, (E)243, (E)244,
       (E)245, (E)246, (E)247, (E)248, (E)249, (E)250, (E)251, (E)252, (E)253,
       (E)254, (E)255>();
+};
+} // namespace detail
+
+// Find the total amount of elements in a given enum E.
+template <typename E> constexpr uint8_t element_count() noexcept {
+  return detail::InternalElementCount<E>::value;
 }
+
 } // namespace util
 } // namespace threeboard
