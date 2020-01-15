@@ -55,7 +55,6 @@ void Timer3Init() {
 
   sei();
 }
-} // namespace
 
 // Define the interrupt service registers (ISRs) for timers 1 and 3 (the
 // atmega32u4 has no timer2, and timer0 is used for the system clock). The
@@ -68,6 +67,7 @@ ISR(TIMER1_COMPA_vect) {
 ISR(TIMER3_COMPA_vect) {
   NativeImpl::Get()->GetInterruptHandlerDelegate()->HandleTimer3Interrupt();
 }
+} // namespace
 
 Native *NativeImpl::Get() {
   static NativeImpl instance = NativeImpl();

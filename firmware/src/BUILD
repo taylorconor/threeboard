@@ -13,6 +13,7 @@ avr_library(
     "//src/util:bitset",
     "//src/native:native",
   ],
+  visibility = ["//visibility:public"]
 )
 
 cc_test(
@@ -33,16 +34,8 @@ avr_library(
   deps = [
     "//src/native:native",
     "//src/util:bitset",
+    "//src/util:common",
   ],
-)
-
-avr_library(
-  name = "usb_controller",
-  srcs = ["usb_controller.cpp"],
-  hdrs = ["usb_controller.h"],
-  deps = [
-    "//src/native:native",
-   ],
 )
 
 avr_library(
@@ -74,8 +67,8 @@ avr_library(
     ":led_controller",
     ":key_controller",
     ":event_handler",
-    ":usb_controller",
     "//src/native:native",
+    "//src/native:usb",
     "//src/util:enum",
   ]
 )
@@ -86,6 +79,7 @@ avr_binary(
   deps = [
     ":threeboard_lib",
     "//src/native:native_impl",
+    "//src/native:usb_impl",
   ],
 )
 

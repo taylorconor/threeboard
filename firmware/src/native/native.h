@@ -33,8 +33,6 @@ constexpr uint8_t PF5 = 5;
 constexpr uint8_t PF6 = 6;
 constexpr uint8_t PF7 = 7;
 
-#define __always_inline inline __attribute__((__always_inline__))
-
 class InterruptHandlerDelegate {
 public:
   virtual void HandleTimer1Interrupt() = 0;

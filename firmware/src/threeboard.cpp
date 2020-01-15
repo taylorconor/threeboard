@@ -22,13 +22,13 @@ const Threeboard::handler_function Threeboard::state_machine[4][2][1] = {
     [Layer::B] = {[State::INPUT] = {&Threeboard::HandleDefaultInput},
                   [State::FLUSH] = {&Threeboard::HandleDefaultFlush}}};
 
-Threeboard::Threeboard(native::Native *native, EventHandler *event_handler,
+Threeboard::Threeboard(native::Native *native, native::Usb *usb,
+                       EventHandler *event_handler,
                        LedController *led_controller,
-                       KeyController *key_controller,
-                       UsbController *usb_controller)
-    : native_(native), event_handler_(event_handler),
-      led_controller_(led_controller), key_controller_(key_controller),
-      usb_controller_(usb_controller) {
+                       KeyController *key_controller)
+    : native_(native), usb_(usb), event_handler_(event_handler),
+      led_controller_(led_controller), key_controller_(key_controller) {
+  usb->Setup();
   native_->SetTimer1InterruptHandler(this);
   native_->SetTimer3InterruptHandler(this);
 
@@ -83,7 +83,10 @@ void Threeboard::HandleDefaultInput(const Keypress keypress) {
   } else if (keypress == Keypress::Y) {
     properties_[layer_].bank1++;
   } else if (keypress == Keypress::Z) {
+    usb_->SendKeypress(properties_[layer_].bank0, properties_[layer_].bank1);
+  } else if (keypress == Keypress::XZ) {
     properties_[layer_].bank0 = 0;
+  } else if (keypress == Keypress::YZ) {
     properties_[layer_].bank1 = 0;
   } else if (keypress == Keypress::XYZ) {
     SwitchToNextLayer();

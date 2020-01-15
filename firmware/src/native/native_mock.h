@@ -1,3 +1,5 @@
+#pragma once
+
 #include "native.h"
 
 #include "gmock/gmock.h"

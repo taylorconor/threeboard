@@ -10,11 +10,6 @@ avr_library(
   hdrs = ["bitset.h"],
 )
 
-avr_library(
-  name = "enum",
-  hdrs = ["enum.h"],
-)
-
 cc_test(
   name = "bitset_test",
   srcs = ["bitset_test.cpp"],
@@ -25,6 +20,11 @@ cc_test(
   ],
 )
 
+avr_library(
+  name = "enum",
+  hdrs = ["enum.h"],
+)
+
 cc_test(
   name = "enum_test",
   srcs = ["enum_test.cpp"],
@@ -33,4 +33,9 @@ cc_test(
     "@gtest//:gtest_main",
     ":enum"
   ],
+)
+
+avr_library(
+  name = "common",
+  hdrs = ["common.h"],
 )

@@ -26,3 +26,43 @@ cc_library(
     ":native",
   ],
 )
+
+avr_library(
+  name = "usb",
+  hdrs = ["usb.h"],
+)
+
+avr_pure_library(
+  name = "usb_protocol",
+  hdrs = ["usb_protocol.h"],
+  srcs = ["usb_protocol.cpp"],
+)
+
+avr_pure_library(
+  name = "usb_descriptors",
+  hdrs = ["usb_descriptors.h"],
+  deps = [":usb_protocol"],
+)
+
+avr_pure_library(
+  name = "usb_handlers",
+  srcs = ["usb_handlers.cpp"],
+  hdrs = ["usb_handlers.h"],
+  deps = [
+    ":usb_protocol",
+    ":usb_descriptors",
+    "//src:led_controller",
+    "//src/util:common",
+  ],
+)
+
+avr_pure_library(
+  name = "usb_impl",
+  srcs = ["usb_impl.cpp"],
+  hdrs = ["usb_impl.h"],
+  deps = [
+    ":usb",
+    ":usb_handlers",
+    ":usb_descriptors",
+  ],
+)
