@@ -4,11 +4,14 @@
 
 namespace threeboard {
 namespace native {
+
 class Usb {
 public:
   virtual ~Usb() {}
 
-  // Setup the USB connection to the host. This method blocks until setup.
+  // Setup the USB hardware is setup to begin connection to the host. This
+  // method blocks until the device hardware is correctly setup. Returning from
+  // Setup does not guarantee that the device has enumerated.
   // TODO: return error handling status if necessary.
   virtual void Setup() = 0;
 

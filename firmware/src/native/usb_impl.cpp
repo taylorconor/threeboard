@@ -14,8 +14,11 @@ namespace threeboard {
 namespace native {
 namespace {
 
-#define EP_SINGLE_BUFFER 0x02
+#define EP_SIZE_32_BYTE 0b00100000
+#define EP_DOUBLE_BANK 0b00000110
+#define EP_SINGLE_BANK 0x00000010
 
+// TODO: move to header
 static UsbHidState hid_state;
 
 // Misc functions to wait for ready and send/receive packets
@@ -30,45 +33,54 @@ static inline void AwaitReceiverReady() {
 static inline void HandshakeTransmitterInterrupt() { UEINTX = ~(1 << TXINI); }
 static inline void HandshakeReceiverInterrupt() { UEINTX = ~(1 << RXOUTI); }
 
+// Send the state of the HID device to the bus.
+void SendHidState(UsbHidState *hid_state) {
+  hid_state->idle_count = 0;
+  UEDATX = hid_state->modifier_keys;
+  UEDATX = 0;
+  for (uint8_t i = 0; i < 6; i++) {
+    UEDATX = hid_state->keyboard_keys[i];
+  }
+  UEINTX = 0x3A;
+}
+
+// USB General Interrupt request routine.
 ISR(USB_GEN_vect) {
-  static uint8_t div4 = 0;
   uint8_t device_interrupt = UDINT;
   UDINT = 0;
-  // Detect end of reset interrupt.
+  // Detect end of reset interrupt, and configure Endpoint 0.
   if (device_interrupt & (1 << EORSTI)) {
-    // Switch to endpoint 0.
+    // Switch to Endpoint 0.
     UENUM = 0;
-    // Enable the endpoint.
-    // TODO: I don't think this is necessary (datasheet p286).
+    // Re-enable the endpoint after this USB reset.
     UECONX = 1 << EPEN;
-    // Set endpoint 0's type as a control endpoint.
+    // Set Endpoint 0's type as a control endpoint.
     UECFG0X = 0;
-    UECFG1X = 0x20 | EP_SINGLE_BUFFER;
+    // Set Endpoint 0's size as 32 bytes, single bank allocated.
+    UECFG1X = EP_SIZE_32_BYTE | EP_SINGLE_BANK;
+    // Configure an endpoint interrupt when RXSTPI is sent (i.e. when the
+    // current bank contains a new valid SETUP packet).
     UEIENX = (1 << RXSTPE);
   }
-  
-  // https://www.keil.com/pack/doc/mw/USB/html/_h_i_d.html
-  // idle rate!
-  
-  if ((device_interrupt & (1 << SOFI)) && hid_state.configuration) {
-    if (hid_state.keyboard_idle_config && (++div4 & 3) == 0) {
-      UENUM = KEYBOARD_ENDPOINT;
-      if (UEINTX & (1 << RWAL)) {
-        hid_state.keyboard_idle_count++;
-        if (hid_state.keyboard_idle_count == hid_state.keyboard_idle_config) {
-          hid_state.keyboard_idle_count = 0;
-          UEDATX = hid_state.modifier_keys;
-          UEDATX = 0;
-          for (uint8_t i = 0; i < 6; i++) {
-            UEDATX = hid_state.keyboard_keys[i];
-          }
-          UEINTX = 0x3A;
-        }
+
+  // SOFI (start of frame interrupt) will fire every 1ms on our full speed bus.
+  // We use it to time the HID reporting frequency based on the idle rate once
+  // the device has been configured.
+  // TODO: FNCERR added, may not work.
+  if ((device_interrupt & (1 << SOFI)) && !(UDMFN & (1 << FNCERR)) &&
+      hid_state.configuration && hid_state.idle_config) {
+    UENUM = KEYBOARD_ENDPOINT;
+    // Check we're allowed to write out to USB FIFO.
+    if (UEINTX & (1 << RWAL)) {
+      hid_state.idle_count++;
+      if (hid_state.idle_count == hid_state.idle_config) {
+        SendHidState(&hid_state);
       }
     }
   }
 }
 
+// USB Endpoint Interrupt request routine.
 ISR(USB_COM_vect) {
   // Immediately parse incoming data into a SETUP packet. If there's an issue
   // with the interrupt type it'll be handled afterwards.
@@ -148,9 +160,10 @@ int8_t usb_keyboard_send() {
       break;
     }
     SREG = intr_state;
-    // has the USB gone offline?
-    if (!hid_state.configuration)
+    // Ensure the device is still configured.
+    if (!hid_state.configuration) {
       return -1;
+    }
     // Only continue polling RWAL for 50 frames (50ms on our full-speed bus)
     if (UDFNUML >= timeout) {
       return -1;
@@ -161,15 +174,7 @@ int8_t usb_keyboard_send() {
     UENUM = KEYBOARD_ENDPOINT;
   }
 
-  // Transmit keycode state (modifier keys byte + 6x keyboard key bytes).
-  UEDATX = hid_state.modifier_keys;
-  UEDATX = 0;
-  for (uint8_t i = 0; i < 6; i++) {
-    UEDATX = hid_state.keyboard_keys[i];
-  }
-
-  UEINTX = 0x3A;
-  hid_state.keyboard_idle_count = 0;
+  SendHidState(&hid_state);
   SREG = intr_state;
   return 0;
 }
@@ -190,8 +195,9 @@ void UsbImpl::Setup() {
   USBCON = (1 << USBE) | (1 << OTGPADE);
   // Connect internal pull-up attach resistor.
   UDCON &= ~(1 << DETACH);
-  // Configure USB interrupts. We want to interrupt on start of frame (SOFE),
-  // and also on end of reset (EORSTE).
+  // Configure USB general interrupts (handled by the USB_GEN_vect routine). We
+  // want to interrupt on start of frame (SOFE), and also on end of reset
+  // (EORSTE).
   UDIEN = (1 << EORSTE) | (1 << SOFE);
   // Enable global interrupts.
   sei();

@@ -145,25 +145,25 @@ void HandleGetReport(const UsbHidState &hid_state) {
 
 void HandleGetIdle(const UsbHidState &hid_state) {
   AwaitTransmitterReady();
-  UEDATX = hid_state.keyboard_idle_config;
+  UEDATX = hid_state.idle_config;
   HandshakeTransmitterInterrupt();
 }
 
 void HandleSetIdle(const SetupPacket &packet, UsbHidState *hid_state) {
   HandshakeTransmitterInterrupt();
-  hid_state->keyboard_idle_config = (packet.wValue >> 8);
-  hid_state->keyboard_idle_count = 0;
+  hid_state->idle_config = (packet.wValue >> 8);
+  hid_state->idle_count = 0;
 }
 
 void HandleGetProtocol(const UsbHidState &hid_state) {
   AwaitTransmitterReady();
-  UEDATX = hid_state.keyboard_protocol;
+  UEDATX = hid_state.protocol;
   HandshakeTransmitterInterrupt();
 }
 
 void HandleSetProtocol(const SetupPacket &packet, UsbHidState *hid_state) {
   HandshakeTransmitterInterrupt();
-  hid_state->keyboard_protocol = packet.wValue;
+  hid_state->protocol = packet.wValue;
 }
 } // namespace hid_handler
 } // namespace native

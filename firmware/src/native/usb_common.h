@@ -4,6 +4,8 @@
 
 namespace threeboard {
 namespace native {
+
+// State of the HID device which can be read and mutated by the USB handlers.
 struct UsbHidState {
   // The configuration of the USB device, set by the host. Zero when not
   // configured, non-zero after enumeration.
@@ -16,17 +18,16 @@ struct UsbHidState {
   // keypresses, plus modifier key byte. Zero when not pressed.
   uint8_t keyboard_keys[6] = {0, 0, 0, 0, 0, 0};
 
-  // protocol setting from the host.  We use exactly the same report
-  // either way, so this variable only stores the setting since we
-  // are required to be able to report which setting is in use.
-  uint8_t keyboard_protocol = 1;
+  // Protocol setting from the host. This is unused, but we need to store it so
+  // we can report it back to the host in GetProtocol.
+  uint8_t protocol = 1;
 
-  // the idle configuration, how often we send the report to the
-  // host (ms * 4) even when it hasn't changed
-  uint8_t keyboard_idle_config = 125;
+  // Host-configurable reporting timeout when idle, in ms. We send a new HID
+  // report to the host every `idle_config` ms, even if nothing has changed.
+  uint8_t idle_config = 125;
 
-  // count until idle timeout
-  uint8_t keyboard_idle_count = 0;
+  // Used to count up to `idle_config` for HID reporting.
+  uint8_t idle_count = 0;
 };
 } // namespace native
 } // namespace threeboard
