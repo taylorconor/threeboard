@@ -32,6 +32,11 @@ avr_library(
   hdrs = ["usb.h"],
 )
 
+avr_library(
+  name = "usb_common",
+  hdrs = ["usb_common.h"],
+)
+
 avr_pure_library(
   name = "usb_protocol",
   hdrs = ["usb_protocol.h"],
@@ -51,6 +56,7 @@ avr_pure_library(
   deps = [
     ":usb_protocol",
     ":usb_descriptors",
+    ":usb_common",
     "//src:led_controller",
     "//src/util:common",
   ],
@@ -62,6 +68,7 @@ avr_pure_library(
   hdrs = ["usb_impl.h"],
   deps = [
     ":usb",
+    ":usb_common",
     ":usb_handlers",
     ":usb_descriptors",
   ],

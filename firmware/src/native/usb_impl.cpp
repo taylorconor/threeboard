@@ -4,6 +4,7 @@
 
 #include "usb_impl.h"
 
+#include "usb_common.h"
 #include "usb_descriptors.h"
 #include "usb_handlers.h"
 #include <avr/interrupt.h>
@@ -14,31 +15,8 @@ namespace native {
 namespace {
 
 #define EP_SINGLE_BUFFER 0x02
-// zero when we are not configured, non-zero when enumerated
-static volatile uint8_t usb_configuration = 0;
 
-// which modifier keys are currently pressed
-// 1=left ctrl,    2=left shift,   4=left alt,    8=left gui
-// 16=right ctrl, 32=right shift, 64=right alt, 128=right gui
-uint8_t keyboard_modifier_keys = 0;
-
-// which keys are currently pressed, up to 6 keys may be down at once
-uint8_t keyboard_keys[6] = {0, 0, 0, 0, 0, 0};
-
-// protocol setting from the host.  We use exactly the same report
-// either way, so this variable only stores the setting since we
-// are required to be able to report which setting is in use.
-static uint8_t keyboard_protocol = 1;
-
-// the idle configuration, how often we send the report to the
-// host (ms * 4) even when it hasn't changed
-static uint8_t keyboard_idle_config = 125;
-
-// count until idle timeout
-static uint8_t keyboard_idle_count = 0;
-
-// 1=num lock, 2=caps lock, 4=scroll lock, 8=compose, 16=kana
-volatile uint8_t keyboard_leds = 0;
+static UsbHidState hid_state;
 
 // Misc functions to wait for ready and send/receive packets
 static inline void AwaitTransmitterReady() {
@@ -68,17 +46,21 @@ ISR(USB_GEN_vect) {
     UECFG1X = 0x20 | EP_SINGLE_BUFFER;
     UEIENX = (1 << RXSTPE);
   }
-  if ((device_interrupt & (1 << SOFI)) && usb_configuration) {
-    if (keyboard_idle_config && (++div4 & 3) == 0) {
+  
+  // https://www.keil.com/pack/doc/mw/USB/html/_h_i_d.html
+  // idle rate!
+  
+  if ((device_interrupt & (1 << SOFI)) && hid_state.configuration) {
+    if (hid_state.keyboard_idle_config && (++div4 & 3) == 0) {
       UENUM = KEYBOARD_ENDPOINT;
       if (UEINTX & (1 << RWAL)) {
-        keyboard_idle_count++;
-        if (keyboard_idle_count == keyboard_idle_config) {
-          keyboard_idle_count = 0;
-          UEDATX = keyboard_modifier_keys;
+        hid_state.keyboard_idle_count++;
+        if (hid_state.keyboard_idle_count == hid_state.keyboard_idle_config) {
+          hid_state.keyboard_idle_count = 0;
+          UEDATX = hid_state.modifier_keys;
           UEDATX = 0;
           for (uint8_t i = 0; i < 6; i++) {
-            UEDATX = keyboard_keys[i];
+            UEDATX = hid_state.keyboard_keys[i];
           }
           UEINTX = 0x3A;
         }
@@ -103,105 +85,91 @@ ISR(USB_COM_vect) {
     return;
   }
 
-  uint8_t i;
-
+  // Call the appropriate device handlers for device requests.
   if (packet.bRequest == Request::GET_STATUS) {
     device_handler::HandleGetStatus();
-  } else if (packet.bRequest == Request::SET_ADDRESS) {
+  }
+  if (packet.bRequest == Request::SET_ADDRESS) {
     device_handler::HandleSetAddress(packet);
-  } else if (packet.bRequest == Request::GET_DESCRIPTOR) {
+  }
+  if (packet.bRequest == Request::GET_DESCRIPTOR) {
     device_handler::HandleGetDescriptor(packet);
-  } else if (packet.bRequest == Request::GET_CONFIGURATION &&
-             packet.bmRequestType.GetDirection() ==
-                 RequestType::Direction::DEVICE_TO_HOST) {
-    device_handler::HandleGetConfiguration(usb_configuration);
-  } else if (packet.bRequest == Request::SET_CONFIGURATION &&
-             packet.bmRequestType.GetDirection() ==
-                 RequestType::Direction::HOST_TO_DEVICE) {
-    device_handler::HandleSetConfiguration(packet, &usb_configuration);
-  } else if (packet.wIndex == KEYBOARD_INTERFACE &&
-             packet.bmRequestType.GetType() == RequestType::Type::CLASS &&
-             packet.bmRequestType.GetRecipient() ==
-                 RequestType::Recipient::INTERFACE) {
+  }
+  if (packet.bRequest == Request::GET_CONFIGURATION &&
+      packet.bmRequestType.GetDirection() ==
+          RequestType::Direction::DEVICE_TO_HOST) {
+    device_handler::HandleGetConfiguration(hid_state);
+  }
+  if (packet.bRequest == Request::SET_CONFIGURATION &&
+      packet.bmRequestType.GetDirection() ==
+          RequestType::Direction::HOST_TO_DEVICE) {
+    device_handler::HandleSetConfiguration(packet, &hid_state);
+  }
+
+  // Call the appropriate HID handlers for HID requests.
+  if (packet.wIndex == KEYBOARD_INTERFACE &&
+      packet.bmRequestType.GetType() == RequestType::Type::CLASS &&
+      packet.bmRequestType.GetRecipient() ==
+          RequestType::Recipient::INTERFACE) {
     if (packet.bmRequestType.GetDirection() ==
         RequestType::Direction::DEVICE_TO_HOST) {
       if (packet.bRequest == Request::HID_GET_REPORT) {
-        AwaitTransmitterReady();
-        UEDATX = keyboard_modifier_keys;
-        UEDATX = 0;
-        for (i = 0; i < 6; i++) {
-          UEDATX = keyboard_keys[i];
-        }
-        UEDATX = 0;
-        return;
+        hid_handler::HandleGetReport(hid_state);
       }
       if (packet.bRequest == Request::HID_GET_IDLE) {
-        AwaitTransmitterReady();
-        UEDATX = keyboard_idle_config;
-        HandshakeTransmitterInterrupt();
-        return;
+        hid_handler::HandleGetIdle(hid_state);
       }
       if (packet.bRequest == Request::HID_GET_PROTOCOL) {
-        AwaitTransmitterReady();
-        UEDATX = keyboard_protocol;
-        HandshakeTransmitterInterrupt();
-        return;
+        hid_handler::HandleGetProtocol(hid_state);
       }
     }
     if (packet.bmRequestType.GetDirection() ==
         RequestType::Direction::HOST_TO_DEVICE) {
-      if (packet.bRequest == Request::HID_SET_REPORT) {
-        AwaitReceiverReady();
-        keyboard_leds = UEDATX;
-        HandshakeReceiverInterrupt();
-        HandshakeTransmitterInterrupt();
-        return;
-      }
       if (packet.bRequest == Request::HID_SET_IDLE) {
-        keyboard_idle_config = (packet.wValue >> 8);
-        keyboard_idle_count = 0;
-        HandshakeTransmitterInterrupt();
-        return;
+        hid_handler::HandleSetIdle(packet, &hid_state);
       }
       if (packet.bRequest == Request::HID_SET_PROTOCOL) {
-        keyboard_protocol = packet.wValue;
-        HandshakeTransmitterInterrupt();
-        return;
+        hid_handler::HandleSetProtocol(packet, &hid_state);
       }
     }
   }
 }
 
 // send the contents of keyboard_keys and keyboard_modifier_keys
-int8_t usb_keyboard_send(void) {
-  uint8_t i, intr_state, timeout;
-  intr_state = SREG;
+int8_t usb_keyboard_send() {
+  uint8_t intr_state = SREG;
   cli();
   UENUM = KEYBOARD_ENDPOINT;
-  timeout = UDFNUML + 50;
+  uint8_t timeout = UDFNUML + 50;
   while (1) {
-    // are we ready to transmit?
-    if (UEINTX & (1 << RWAL))
+    // Check if we're allowed to push data into the FIFO. If we are, we can
+    // immediately break and begin transmitting.
+    if (UEINTX & (1 << RWAL)) {
       break;
+    }
     SREG = intr_state;
     // has the USB gone offline?
-    if (!usb_configuration)
+    if (!hid_state.configuration)
       return -1;
-    // have we waited too long?
-    if (UDFNUML == timeout)
+    // Only continue polling RWAL for 50 frames (50ms on our full-speed bus)
+    if (UDFNUML >= timeout) {
       return -1;
+    }
     // get ready to try checking again
     intr_state = SREG;
     cli();
     UENUM = KEYBOARD_ENDPOINT;
   }
-  UEDATX = keyboard_modifier_keys;
+
+  // Transmit keycode state (modifier keys byte + 6x keyboard key bytes).
+  UEDATX = hid_state.modifier_keys;
   UEDATX = 0;
-  for (i = 0; i < 6; i++) {
-    UEDATX = keyboard_keys[i];
+  for (uint8_t i = 0; i < 6; i++) {
+    UEDATX = hid_state.keyboard_keys[i];
   }
+
   UEINTX = 0x3A;
-  keyboard_idle_count = 0;
+  hid_state.keyboard_idle_count = 0;
   SREG = intr_state;
   return 0;
 }
@@ -230,12 +198,15 @@ void UsbImpl::Setup() {
 }
 
 void UsbImpl::SendKeypress(const uint8_t key, const uint8_t mod) {
-  keyboard_modifier_keys = mod;
-  keyboard_keys[0] = key;
+  hid_state.modifier_keys = mod;
+  // Currently we only support sending a single key at a time, even though this
+  // USB implementation supports the full 6 keys. Functionality of the
+  // threeboard may change in future to send multiple keys.
+  hid_state.keyboard_keys[0] = key;
   // TODO: capture errors
   usb_keyboard_send();
-  keyboard_modifier_keys = 0;
-  keyboard_keys[0] = 0;
+  hid_state.modifier_keys = 0;
+  hid_state.keyboard_keys[0] = 0;
   // TODO: capture errors
   usb_keyboard_send();
 }

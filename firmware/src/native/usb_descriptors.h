@@ -22,6 +22,7 @@ static const int16_t STR_PRODUCT[] = {L'K', L'a', L'n', L'a', L'n'};
 #define ENDPOINT0_SIZE 32
 #define KEYBOARD_INTERFACE 0
 #define KEYBOARD_ENDPOINT 3
+#define ENDPOINT_TYPE_IN 0x80
 #define KEYBOARD_SIZE 8
 #define EP_DOUBLE_BUFFER 0x06
 #define EP_TYPE_INTERRUPT_IN 0xC1
@@ -120,12 +121,12 @@ static const uint8_t PROGMEM config1_descriptor[CONFIG1_DESC_SIZE] = {
     sizeof(keyboard_hid_report_desc), // wDescriptorLength
     0,
     // endpoint descriptor, USB spec 9.6.6, page 269-271, Table 9-13
-    7,                        // bLength
-    5,                        // bDescriptorType
-    KEYBOARD_ENDPOINT | 0x80, // bEndpointAddress
-    0x03,                     // bmAttributes (0x03=intr)
-    KEYBOARD_SIZE, 0,         // wMaxPacketSize
-    1                         // bInterval
+    7,                                    // bLength
+    5,                                    // bDescriptorType
+    KEYBOARD_ENDPOINT | ENDPOINT_TYPE_IN, // bEndpointAddress
+    0x03,                                 // bmAttributes (0x03=intr)
+    KEYBOARD_SIZE, 0,                     // wMaxPacketSize
+    1                                     // bInterval
 };
 
 struct UsbStringDescriptor {

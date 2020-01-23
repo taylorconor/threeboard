@@ -16,7 +16,9 @@ static __always_inline void AwaitTransmitterReady() {
   while (!(UEINTX & (1 << TXINI)))
     ;
 }
-static __always_inline void HandshakeTransmitterInterrupt() { UEINTX = ~(1 << TXINI); }
+static __always_inline void HandshakeTransmitterInterrupt() {
+  UEINTX = ~(1 << TXINI);
+}
 } // namespace
 
 namespace device_handler {
@@ -63,10 +65,11 @@ void HandleSetAddress(const SetupPacket &packet) {
   // TODO: USB spec section 9.4.6 specifies different behaviours here for
   // default and address state. Might need to implement this.
   HandshakeTransmitterInterrupt();
-  AwaitTransmitterReady();
-  // wValue contains the 7-bit address. The highest-order bit is the request
+  // wValue contains the 7-bit address. The highest-order bit of the request is
   // unspecified.
   UDADDR = packet.wValue;
+  // TODO: write a good comment why we need to do this.
+  AwaitTransmitterReady();
   // Enable the address by setting the highest-order bit (a feature of the
   // microcontroller, not the USB protocol).
   UDADDR |= 1 << ADDEN;
@@ -83,43 +86,33 @@ void HandleGetDescriptor(const SetupPacket &packet) {
     return;
   }
 
-  uint8_t i, n;
-  uint8_t len = (packet.wLength < 256) ? packet.wLength : 255;
-  if (len > container.length) {
-    len = container.length;
-  }
-  do {
-    // wait for host ready for IN packet
-    do {
-      i = UEINTX;
-    } while (!(i & ((1 << TXINI) | (1 << RXOUTI))));
-    if (i & (1 << RXOUTI)) {
-      return; // abort
-    }
-    // send IN packet
-    n = len < ENDPOINT0_SIZE ? len : ENDPOINT0_SIZE;
-    for (i = n; i; i--) {
+  // Send the descriptor to the host.
+  uint8_t remaining_packet_length =
+      util::min(util::min(packet.wLength, 255), container.length);
+  while (remaining_packet_length > 0) {
+    AwaitTransmitterReady();
+    uint8_t frame_length = util::min(remaining_packet_length, ENDPOINT0_SIZE);
+    for (uint8_t i = frame_length; i > 0; i--) {
       UEDATX = pgm_read_byte(container.addr++);
     }
-    len -= n;
+    remaining_packet_length -= frame_length;
     HandshakeTransmitterInterrupt();
-  } while (len || n == ENDPOINT0_SIZE);
+  }
 }
 
 // Replies with the current Configuration of the device.
-void HandleGetConfiguration(const volatile uint8_t &usb_configuration) {
+void HandleGetConfiguration(const UsbHidState &hid_state) {
   // TODO: Section 9.4.2 specifies different configs for different states.
   // Should also implement that here.
   AwaitTransmitterReady();
-  UEDATX = usb_configuration;
+  UEDATX = hid_state.configuration;
   HandshakeTransmitterInterrupt();
 }
 
 // Allows the host to specify the current Configuration of the device.
-void HandleSetConfiguration(const SetupPacket &packet,
-                            volatile uint8_t *usb_configuration) {
-  *usb_configuration = packet.wValue;
+void HandleSetConfiguration(const SetupPacket &packet, UsbHidState *hid_state) {
   HandshakeTransmitterInterrupt();
+  hid_state->configuration = packet.wValue;
   // TODO: remainder may not be necessary.
   const uint8_t *cfg = endpoint_config_table;
   for (uint8_t i = 1; i < 5; i++) {
@@ -134,7 +127,44 @@ void HandleSetConfiguration(const SetupPacket &packet,
   UERST = 0x1E;
   UERST = 0;
 }
-
 } // namespace device_handler
+
+namespace hid_handler {
+
+void HandleGetReport(const UsbHidState &hid_state) {
+  AwaitTransmitterReady();
+  UEDATX = hid_state.modifier_keys;
+  UEDATX = 0;
+  for (uint8_t i = 0; i < 6; i++) {
+    UEDATX = hid_state.keyboard_keys[i];
+  }
+  UEDATX = 0;
+  // TODO: should this be here? (it wasn't before)
+  HandshakeTransmitterInterrupt();
+}
+
+void HandleGetIdle(const UsbHidState &hid_state) {
+  AwaitTransmitterReady();
+  UEDATX = hid_state.keyboard_idle_config;
+  HandshakeTransmitterInterrupt();
+}
+
+void HandleSetIdle(const SetupPacket &packet, UsbHidState *hid_state) {
+  HandshakeTransmitterInterrupt();
+  hid_state->keyboard_idle_config = (packet.wValue >> 8);
+  hid_state->keyboard_idle_count = 0;
+}
+
+void HandleGetProtocol(const UsbHidState &hid_state) {
+  AwaitTransmitterReady();
+  UEDATX = hid_state.keyboard_protocol;
+  HandshakeTransmitterInterrupt();
+}
+
+void HandleSetProtocol(const SetupPacket &packet, UsbHidState *hid_state) {
+  HandshakeTransmitterInterrupt();
+  hid_state->keyboard_protocol = packet.wValue;
+}
+} // namespace hid_handler
 } // namespace native
 } // namespace threeboard
