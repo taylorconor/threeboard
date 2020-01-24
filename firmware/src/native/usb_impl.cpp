@@ -14,10 +14,6 @@ namespace threeboard {
 namespace native {
 namespace {
 
-#define EP_SIZE_32_BYTE 0b00100000
-#define EP_DOUBLE_BANK 0b00000110
-#define EP_SINGLE_BANK 0x00000010
-
 // TODO: move to header
 static UsbHidState hid_state;
 
@@ -57,7 +53,7 @@ ISR(USB_GEN_vect) {
     // Set Endpoint 0's type as a control endpoint.
     UECFG0X = 0;
     // Set Endpoint 0's size as 32 bytes, single bank allocated.
-    UECFG1X = EP_SIZE_32_BYTE | EP_SINGLE_BANK;
+    UECFG1X = kEndpoint32ByteBank | kEndpointSingleBank;
     // Configure an endpoint interrupt when RXSTPI is sent (i.e. when the
     // current bank contains a new valid SETUP packet).
     UEIENX = (1 << RXSTPE);
@@ -65,11 +61,11 @@ ISR(USB_GEN_vect) {
 
   // SOFI (start of frame interrupt) will fire every 1ms on our full speed bus.
   // We use it to time the HID reporting frequency based on the idle rate once
-  // the device has been configured.
-  // TODO: FNCERR added, may not work.
+  // the device has been configured. Some hosts may disable this by setting
+  // idle_config to 0.
   if ((device_interrupt & (1 << SOFI)) && !(UDMFN & (1 << FNCERR)) &&
       hid_state.configuration && hid_state.idle_config) {
-    UENUM = KEYBOARD_ENDPOINT;
+    UENUM = kKeyboardEndpoint;
     // Check we're allowed to write out to USB FIFO.
     if (UEINTX & (1 << RWAL)) {
       hid_state.idle_count++;
@@ -119,7 +115,7 @@ ISR(USB_COM_vect) {
   }
 
   // Call the appropriate HID handlers for HID requests.
-  if (packet.wIndex == KEYBOARD_INTERFACE &&
+  if (packet.wIndex == kKeyboardInterface &&
       packet.bmRequestType.GetType() == RequestType::Type::CLASS &&
       packet.bmRequestType.GetRecipient() ==
           RequestType::Recipient::INTERFACE) {
@@ -151,7 +147,7 @@ ISR(USB_COM_vect) {
 int8_t usb_keyboard_send() {
   uint8_t intr_state = SREG;
   cli();
-  UENUM = KEYBOARD_ENDPOINT;
+  UENUM = kKeyboardEndpoint;
   uint8_t timeout = UDFNUML + 50;
   while (1) {
     // Check if we're allowed to push data into the FIFO. If we are, we can
@@ -171,7 +167,7 @@ int8_t usb_keyboard_send() {
     // get ready to try checking again
     intr_state = SREG;
     cli();
-    UENUM = KEYBOARD_ENDPOINT;
+    UENUM = kKeyboardEndpoint;
   }
 
   SendHidState(&hid_state);

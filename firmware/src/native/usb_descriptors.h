@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../util/common.h"
 #include "usb_protocol.h"
 #include <avr/pgmspace.h>
 
@@ -12,18 +13,6 @@ static const int16_t STR_PRODUCT[] = {L'K', L'a', L'n', L'a', L'n'};
 #define LSB(n) (n & 255)
 #define MSB(n) ((n >> 8) & 255)
 
-// Microchip vendor id. Terms of the license of this product id include only
-// ever using it on a microcontroller designed by Microchip, e.g. the atmega32u4
-// used for this project. microchip.com.
-#define VENDOR_ID 0x04D8
-// threeboard v1 product id.
-#define PRODUCT_ID 0xEC51
-
-#define ENDPOINT0_SIZE 32
-#define KEYBOARD_INTERFACE 0
-#define KEYBOARD_ENDPOINT 3
-#define ENDPOINT_TYPE_IN 0x80
-#define KEYBOARD_SIZE 8
 #define EP_DOUBLE_BUFFER 0x06
 #define EP_TYPE_INTERRUPT_IN 0xC1
 
@@ -35,15 +24,15 @@ static const uint8_t PROGMEM device_descriptor[] = {
     18, // bLength
     1,  // bDescriptorType
     0x00,
-    0x02,           // bcdUSB
-    0,              // bDeviceClass
-    0,              // bDeviceSubClass
-    0,              // bDeviceProtocol
-    ENDPOINT0_SIZE, // bMaxPacketSize0
-    LSB(VENDOR_ID),
-    MSB(VENDOR_ID), // idVendor
-    LSB(PRODUCT_ID),
-    MSB(PRODUCT_ID), // idProduct
+    0x02,                // bcdUSB
+    0,                   // bDeviceClass
+    0,                   // bDeviceSubClass
+    0,                   // bDeviceProtocol
+    kEndpoint32ByteBank, // bMaxPacketSize0
+    LSB(kVendorId),
+    MSB(kVendorId), // idVendor
+    LSB(kProductId),
+    MSB(kProductId), // idProduct
     0x00,
     0x01, // bcdDevice
     1,    // iManufacturer
@@ -104,7 +93,7 @@ static const uint8_t PROGMEM config1_descriptor[CONFIG1_DESC_SIZE] = {
     // interface descriptor, USB spec 9.6.5, page 267-269, Table 9-12
     9,                  // bLength
     4,                  // bDescriptorType
-    KEYBOARD_INTERFACE, // bInterfaceNumber
+    kKeyboardInterface, // bInterfaceNumber
     0,                  // bAlternateSetting
     1,                  // bNumEndpoints
     0x03,               // bInterfaceClass (0x03 = HID)
@@ -121,29 +110,26 @@ static const uint8_t PROGMEM config1_descriptor[CONFIG1_DESC_SIZE] = {
     sizeof(keyboard_hid_report_desc), // wDescriptorLength
     0,
     // endpoint descriptor, USB spec 9.6.6, page 269-271, Table 9-13
-    7,                                    // bLength
-    5,                                    // bDescriptorType
-    KEYBOARD_ENDPOINT | ENDPOINT_TYPE_IN, // bEndpointAddress
-    0x03,                                 // bmAttributes (0x03=intr)
-    KEYBOARD_SIZE, 0,                     // wMaxPacketSize
-    1                                     // bInterval
+    7,                                   // bLength
+    5,                                   // bDescriptorType
+    kKeyboardEndpoint | kEndpointTypeIn, // bEndpointAddress
+    0x03,                                // bmAttributes (0x03=intr)
+    kKeyboardMaxPacketSize, 0,           // wMaxPacketSize
+    1                                    // bInterval
 };
 
 struct UsbStringDescriptor {
-  uint8_t bLength;
-  uint8_t bDescriptorType;
-  const int16_t *wString;
+  uint8_t length;
+  DescriptorType descriptor_type = DescriptorType::STRING;
+  const wchar_t string[];
 };
 
-// If you're desperate for a little extra code memory, these strings
-// can be completely removed if iManufacturer, iProduct, iSerialNumber
-// in the device desciptor are changed to zeros.
-static const int16_t TEST[] = {0, 4, 0, 9};
-static const UsbStringDescriptor PROGMEM string0 = {4, 3, TEST};
-static const UsbStringDescriptor PROGMEM string1 = {sizeof(STR_MANUFACTURER), 3,
-                                                    STR_MANUFACTURER};
-static const UsbStringDescriptor PROGMEM string2 = {sizeof(STR_PRODUCT), 3,
-                                                    STR_PRODUCT};
+static const UsbStringDescriptor PROGMEM supported_languages = {
+    4, DescriptorType::STRING, {kLanguageIdEnglish}};
+static const UsbStringDescriptor PROGMEM manufacturer = {
+    30, DescriptorType::STRING, L"threeboard.dev"};
+static const UsbStringDescriptor PROGMEM product = {32, DescriptorType::STRING,
+                                                    L"threeboard v0.1"};
 
 // This table defines which descriptor data is sent for each specific
 // request from the host (in wValue and wIndex).
@@ -152,16 +138,17 @@ static const DescriptorContainer PROGMEM descriptor_list[] = {
      sizeof(device_descriptor)},
     {DescriptorValue(DescriptorType::CONFIGURATION, 0), 0x0000,
      config1_descriptor, sizeof(config1_descriptor)},
-    {DescriptorValue(DescriptorType::HID_REPORT, 0), KEYBOARD_INTERFACE,
+    {DescriptorValue(DescriptorType::HID_REPORT, 0), kKeyboardInterface,
      keyboard_hid_report_desc, sizeof(keyboard_hid_report_desc)},
-    {DescriptorValue(DescriptorType::HID, 0), KEYBOARD_INTERFACE,
+    {DescriptorValue(DescriptorType::HID, 0), kKeyboardInterface,
      config1_descriptor + KEYBOARD_HID_DESC_OFFSET, 9},
+
     {DescriptorValue(DescriptorType::STRING, 0), 0x0000,
-     (const uint8_t *)&string0, 4},
-    {DescriptorValue(DescriptorType::STRING, 1), 0x0409,
-     (const uint8_t *)&string1, sizeof(STR_MANUFACTURER)},
-    {DescriptorValue(DescriptorType::STRING, 2), 0x0409,
-     (const uint8_t *)&string2, sizeof(STR_PRODUCT)}};
+     (const uint8_t *)&supported_languages, supported_languages.length},
+    {DescriptorValue(DescriptorType::STRING, 1), kLanguageIdEnglish,
+     (const uint8_t *)&manufacturer, manufacturer.length},
+    {DescriptorValue(DescriptorType::STRING, 2), kLanguageIdEnglish,
+     (const uint8_t *)&product, product.length}};
 
 } // namespace native
 } // namespace threeboard

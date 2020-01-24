@@ -5,6 +5,29 @@
 namespace threeboard {
 namespace native {
 
+// Microchip vendor id. Terms of the license of this product id include only
+// ever using it on a microcontroller designed by Microchip, e.g. the atmega32u4
+// used for this project. microchip.com.
+constexpr uint16_t kVendorId = 0x04D8;
+// threeboard v1 product id.
+constexpr uint16_t kProductId = 0xEC51;
+
+constexpr uint16_t kLanguageIdEnglish = 0x0409;
+constexpr uint8_t kManufacturer[] = {'t', 'h', 'r', 'e', 'e',
+                                      'b', 'o', 'a', 'r', 'd'};
+constexpr uint8_t kManufacturerLength = 20;
+constexpr uint8_t kProduct[] = {'t', 'h', 'r', 'e', 'e', 'b', 'o', 'a',
+                                 'r', 'd', ' ', 'v', '0', '.', '1'};
+constexpr uint8_t kProductLength = 30;
+
+constexpr uint8_t kKeyboardEndpoint = 3;
+constexpr uint8_t kKeyboardInterface = 0;
+constexpr uint8_t kKeyboardMaxPacketSize = 8;
+constexpr uint8_t kEndpointTypeIn = 0b10000000;
+constexpr uint8_t kEndpoint32ByteBank = 0b00100000;
+constexpr uint8_t kEndpointSingleBank = 0b00000010;
+constexpr uint8_t kEndpointDoubleBank = 0b00000110;
+
 // State of the HID device which can be read and mutated by the USB handlers.
 struct UsbHidState {
   // The configuration of the USB device, set by the host. Zero when not

@@ -46,7 +46,10 @@ avr_pure_library(
 avr_pure_library(
   name = "usb_descriptors",
   hdrs = ["usb_descriptors.h"],
-  deps = [":usb_protocol"],
+  deps = [
+    ":usb_protocol",
+    "//src/util:common"
+  ],
 )
 
 avr_pure_library(

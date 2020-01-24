@@ -9,9 +9,11 @@
 namespace threeboard {
 namespace native {
 namespace {
-#define NUM_DESC_LIST (sizeof(descriptor_list) / sizeof(DescriptorContainer))
 
-// Misc functions to wait for ready and send/receive packets
+constexpr uint8_t GetDescriptorListSize() {
+  return sizeof(descriptor_list) / sizeof(DescriptorContainer);
+}
+
 static __always_inline void AwaitTransmitterReady() {
   while (!(UEINTX & (1 << TXINI)))
     ;
@@ -31,15 +33,14 @@ bool FindMatchingContainer(const SetupPacket &packet,
   const DescriptorContainer *ptr = descriptor_list;
   // Find the first descriptor with a matching descriptor value.
   uint8_t i = 0;
-  for (; i < NUM_DESC_LIST; i++, ptr++) {
+  for (; i < GetDescriptorListSize(); i++, ptr++) {
     DescriptorValue descriptor_value = pgm_read_word(ptr);
     if (descriptor_value == packet.wValue) {
       break;
     }
   }
-  // Now find the descriptor in the descriptor in the list with a matching
-  // wIndex.
-  for (; i < NUM_DESC_LIST; i++, ptr++) {
+  // Now find the descriptor in the list with a matching wIndex.
+  for (; i < GetDescriptorListSize(); i++, ptr++) {
     *descriptor = DescriptorContainer::ParseFromProgmem((uint8_t *)ptr);
     if (descriptor->wIndex == packet.wIndex) {
       return true;
@@ -89,13 +90,16 @@ void HandleGetDescriptor(const SetupPacket &packet) {
   // Send the descriptor to the host.
   uint8_t remaining_packet_length =
       util::min(util::min(packet.wLength, 255), container.length);
-  while (remaining_packet_length > 0) {
+  uint8_t current_frame_length = 0;
+  while (remaining_packet_length > 0 ||
+         current_frame_length == kEndpoint32ByteBank) {
     AwaitTransmitterReady();
-    uint8_t frame_length = util::min(remaining_packet_length, ENDPOINT0_SIZE);
-    for (uint8_t i = frame_length; i > 0; i--) {
+    current_frame_length =
+        util::min(remaining_packet_length, kEndpoint32ByteBank);
+    for (uint8_t i = current_frame_length; i > 0; i--) {
       UEDATX = pgm_read_byte(container.addr++);
     }
-    remaining_packet_length -= frame_length;
+    remaining_packet_length -= current_frame_length;
     HandshakeTransmitterInterrupt();
   }
 }
