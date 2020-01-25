@@ -7,18 +7,12 @@
 namespace threeboard {
 namespace native {
 
-static const int16_t STR_MANUFACTURER[] = {L'B', L'a', L'n', L'a', L'n', L'a'};
-static const int16_t STR_PRODUCT[] = {L'K', L'a', L'n', L'a', L'n'};
-
-#define LSB(n) (n & 255)
-#define MSB(n) ((n >> 8) & 255)
-
-#define EP_DOUBLE_BUFFER 0x06
-#define EP_TYPE_INTERRUPT_IN 0xC1
+//#define EP_DOUBLE_BUFFER 0x06
+//#define EP_TYPE_INTERRUPT_IN 0xC1
 
 // TODO: may not be necessary.
-static const uint8_t PROGMEM endpoint_config_table[] = {
-    0, 0, 1, EP_TYPE_INTERRUPT_IN, EP_DOUBLE_BUFFER, 0};
+// static const uint8_t PROGMEM endpoint_config_table[] = {
+//    0, 0, 1, EP_TYPE_INTERRUPT_IN, EP_DOUBLE_BUFFER, 0};
 
 static const uint8_t PROGMEM device_descriptor[] = {
     18, // bLength
@@ -29,10 +23,10 @@ static const uint8_t PROGMEM device_descriptor[] = {
     0,                   // bDeviceSubClass
     0,                   // bDeviceProtocol
     kEndpoint32ByteBank, // bMaxPacketSize0
-    LSB(kVendorId),
-    MSB(kVendorId), // idVendor
-    LSB(kProductId),
-    MSB(kProductId), // idProduct
+    util::lsb(kVendorId),
+    util::msb(kVendorId), // idVendor
+    util::lsb(kProductId),
+    util::msb(kProductId), // idProduct
     0x00,
     0x01, // bcdDevice
     1,    // iManufacturer
@@ -81,15 +75,15 @@ static const uint8_t PROGMEM keyboard_hid_report_desc[] = {
 #define KEYBOARD_HID_DESC_OFFSET (9 + 9)
 static const uint8_t PROGMEM config1_descriptor[CONFIG1_DESC_SIZE] = {
     // configuration descriptor, USB spec 9.6.3, page 264-266, Table 9-10
-    9,                      // bLength;
-    2,                      // bDescriptorType;
-    LSB(CONFIG1_DESC_SIZE), // wTotalLength
-    MSB(CONFIG1_DESC_SIZE),
-    1,    // bNumInterfaces
-    1,    // bConfigurationValue
-    0,    // iConfiguration
-    0xC0, // bmAttributes
-    50,   // bMaxPower
+    9,                                      // bLength;
+    (uint8_t)DescriptorType::CONFIGURATION, // bDescriptorType;
+    util::lsb(CONFIG1_DESC_SIZE),           // wTotalLength
+    util::msb(CONFIG1_DESC_SIZE),
+    hid::kNumInterfaces, // bNumInterfaces
+    1,                   // bConfigurationValue
+    0,                   // iConfiguration
+    0xC0,                // bmAttributes
+    50,                  // bMaxPower
     // interface descriptor, USB spec 9.6.5, page 267-269, Table 9-12
     9,                  // bLength
     4,                  // bDescriptorType
@@ -120,7 +114,7 @@ static const uint8_t PROGMEM config1_descriptor[CONFIG1_DESC_SIZE] = {
 
 struct UsbStringDescriptor {
   uint8_t length;
-  DescriptorType descriptor_type = DescriptorType::STRING;
+  DescriptorType descriptor_type;
   const wchar_t string[];
 };
 
@@ -132,23 +126,36 @@ static const UsbStringDescriptor PROGMEM product = {32, DescriptorType::STRING,
                                                     L"threeboard v0.1"};
 
 // This table defines which descriptor data is sent for each specific
-// request from the host (in wValue and wIndex).
+// GetDescriptor request from the host, for a given DescriptorValue.
 static const DescriptorContainer PROGMEM descriptor_list[] = {
-    {DescriptorValue(DescriptorType::DEVICE, 0), 0x0000, device_descriptor,
+    {{DescriptorType::DEVICE, 0},
+     0,
+     device_descriptor,
      sizeof(device_descriptor)},
-    {DescriptorValue(DescriptorType::CONFIGURATION, 0), 0x0000,
-     config1_descriptor, sizeof(config1_descriptor)},
-    {DescriptorValue(DescriptorType::HID_REPORT, 0), kKeyboardInterface,
-     keyboard_hid_report_desc, sizeof(keyboard_hid_report_desc)},
-    {DescriptorValue(DescriptorType::HID, 0), kKeyboardInterface,
-     config1_descriptor + KEYBOARD_HID_DESC_OFFSET, 9},
-
-    {DescriptorValue(DescriptorType::STRING, 0), 0x0000,
-     (const uint8_t *)&supported_languages, supported_languages.length},
-    {DescriptorValue(DescriptorType::STRING, 1), kLanguageIdEnglish,
-     (const uint8_t *)&manufacturer, manufacturer.length},
-    {DescriptorValue(DescriptorType::STRING, 2), kLanguageIdEnglish,
-     (const uint8_t *)&product, product.length}};
+    {{DescriptorType::CONFIGURATION, 0},
+     0,
+     config1_descriptor,
+     sizeof(config1_descriptor)},
+    {{DescriptorType::HID_REPORT, 0},
+     kKeyboardInterface,
+     keyboard_hid_report_desc,
+     sizeof(keyboard_hid_report_desc)},
+    {{DescriptorType::HID, 0},
+     kKeyboardInterface,
+     config1_descriptor + KEYBOARD_HID_DESC_OFFSET,
+     9},
+    {{DescriptorType::STRING, 0},
+     0,
+     (const uint8_t *)&supported_languages,
+     supported_languages.length},
+    {{DescriptorType::STRING, 1},
+     kLanguageIdEnglish,
+     (const uint8_t *)&manufacturer,
+     manufacturer.length},
+    {{DescriptorType::STRING, 2},
+     kLanguageIdEnglish,
+     (const uint8_t *)&product,
+     product.length}};
 
 } // namespace native
 } // namespace threeboard

@@ -5,12 +5,12 @@
 namespace threeboard {
 namespace native {
 
-DescriptorContainer DescriptorContainer::ParseFromProgmem(const uint8_t *byte_ptr) {
+DescriptorContainer DescriptorContainer::ParseFromProgmem(const uint8_t *ptr) {
   DescriptorContainer descriptor;
-  descriptor.wValue = pgm_read_word(byte_ptr);
-  descriptor.wIndex = pgm_read_word(byte_ptr + 2);
-  descriptor.addr = (const uint8_t *)pgm_read_word(byte_ptr + 4);
-  descriptor.length = pgm_read_byte(byte_ptr + 6);
+  descriptor.id = pgm_read_word(ptr);
+  descriptor.index = pgm_read_word(ptr + 2);
+  descriptor.data = (const uint8_t *)pgm_read_word(ptr + 4);
+  descriptor.length = pgm_read_byte(ptr + 6);
   return descriptor;
 }
 

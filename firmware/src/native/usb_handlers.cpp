@@ -34,15 +34,15 @@ bool FindMatchingContainer(const SetupPacket &packet,
   // Find the first descriptor with a matching descriptor value.
   uint8_t i = 0;
   for (; i < GetDescriptorListSize(); i++, ptr++) {
-    DescriptorValue descriptor_value = pgm_read_word(ptr);
-    if (descriptor_value == packet.wValue) {
+    DescriptorId id = pgm_read_word(ptr);
+    if (id == packet.wValue) {
       break;
     }
   }
   // Now find the descriptor in the list with a matching wIndex.
   for (; i < GetDescriptorListSize(); i++, ptr++) {
     *descriptor = DescriptorContainer::ParseFromProgmem((uint8_t *)ptr);
-    if (descriptor->wIndex == packet.wIndex) {
+    if (descriptor->index == packet.wIndex) {
       return true;
     }
   }
@@ -97,7 +97,7 @@ void HandleGetDescriptor(const SetupPacket &packet) {
     current_frame_length =
         util::min(remaining_packet_length, kEndpoint32ByteBank);
     for (uint8_t i = current_frame_length; i > 0; i--) {
-      UEDATX = pgm_read_byte(container.addr++);
+      UEDATX = pgm_read_byte(container.data++);
     }
     remaining_packet_length -= current_frame_length;
     HandshakeTransmitterInterrupt();
@@ -118,7 +118,7 @@ void HandleSetConfiguration(const SetupPacket &packet, UsbHidState *hid_state) {
   HandshakeTransmitterInterrupt();
   hid_state->configuration = packet.wValue;
   // TODO: remainder may not be necessary.
-  const uint8_t *cfg = endpoint_config_table;
+  /*  const uint8_t *cfg = endpoint_config_table;
   for (uint8_t i = 1; i < 5; i++) {
     UENUM = i;
     uint8_t en = pgm_read_byte(cfg++);
@@ -129,7 +129,7 @@ void HandleSetConfiguration(const SetupPacket &packet, UsbHidState *hid_state) {
     }
   }
   UERST = 0x1E;
-  UERST = 0;
+  UERST = 0;*/
 }
 } // namespace device_handler
 

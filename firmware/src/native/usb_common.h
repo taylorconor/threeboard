@@ -13,12 +13,10 @@ constexpr uint16_t kVendorId = 0x04D8;
 constexpr uint16_t kProductId = 0xEC51;
 
 constexpr uint16_t kLanguageIdEnglish = 0x0409;
-constexpr uint8_t kManufacturer[] = {'t', 'h', 'r', 'e', 'e',
-                                      'b', 'o', 'a', 'r', 'd'};
-constexpr uint8_t kManufacturerLength = 20;
-constexpr uint8_t kProduct[] = {'t', 'h', 'r', 'e', 'e', 'b', 'o', 'a',
-                                 'r', 'd', ' ', 'v', '0', '.', '1'};
-constexpr uint8_t kProductLength = 30;
+
+namespace hid {
+constexpr uint8_t kNumInterfaces = 0;
+}
 
 constexpr uint8_t kKeyboardEndpoint = 3;
 constexpr uint8_t kKeyboardInterface = 0;
