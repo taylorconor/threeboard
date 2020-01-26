@@ -70,6 +70,8 @@ ISR(USB_GEN_vect) {
     if (UEINTX & (1 << RWAL)) {
       hid_state.idle_count++;
       if (hid_state.idle_count == hid_state.idle_config) {
+        // TODO: we should check if there's something in the IN buffer already
+        // before sending zeroes, otherwise we may miss keystrokes.
         SendHidState(&hid_state);
       }
     }

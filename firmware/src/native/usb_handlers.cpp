@@ -10,7 +10,7 @@ namespace threeboard {
 namespace native {
 namespace {
 
-constexpr uint8_t GetDescriptorListSize() {
+static constexpr uint8_t GetDescriptorListSize() {
   return sizeof(descriptor_list) / sizeof(DescriptorContainer);
 }
 
@@ -79,7 +79,7 @@ void HandleSetAddress(const SetupPacket &packet) {
 // Returns a descriptor as requested by the host, if such a descriptor exists.
 void HandleGetDescriptor(const SetupPacket &packet) {
   DescriptorContainer container;
-  auto found = FindMatchingContainer(packet, &container);
+  bool found = FindMatchingContainer(packet, &container);
   if (!found) {
     // Stall if we can't find a matching DescriptorContainer. This is an
     // unrecoverable error.
@@ -117,24 +117,33 @@ void HandleGetConfiguration(const UsbHidState &hid_state) {
 void HandleSetConfiguration(const SetupPacket &packet, UsbHidState *hid_state) {
   HandshakeTransmitterInterrupt();
   hid_state->configuration = packet.wValue;
-  // TODO: remainder may not be necessary.
-  /*  const uint8_t *cfg = endpoint_config_table;
-  for (uint8_t i = 1; i < 5; i++) {
-    UENUM = i;
-    uint8_t en = pgm_read_byte(cfg++);
-    UECONX = en;
-    if (en) {
-      UECFG0X = pgm_read_byte(cfg++);
-      UECFG1X = pgm_read_byte(cfg++);
-    }
+
+  // Make sure the host isn't trying to set us in a configuration we don't
+  // support.
+  if (hid_state->configuration != kKeyboardConfigurationValue) {
+    return;
   }
-  UERST = 0x1E;
-  UERST = 0;*/
+
+  // Configure the only endpoint needed for the threeboard, the interrupt-based
+  // keyboard endpoint.
+  UENUM = kKeyboardEndpoint;
+  UECONX = 1 << EPEN;
+  UECFG0X = kEndpointTypeInterrupt | kEndpointDirectionIn;
+  UECFG1X = kEndpointDoubleBank;
+
+  // Reset the keyboard endpoint to enable it.
+  UERST = 1 << kKeyboardEndpoint;
+  UERST = 0;
 }
 } // namespace device_handler
 
 namespace hid_handler {
 
+// Replies with the state of the keyboard keys and modifier keys. Response
+// protocol defined by HID spec v1.11, section B.1.
+// TODO: this will always return zeroes, since the state is send to the host in
+// UsbImpl. Perhaps this will cause a rare race condition where keypresses are
+// missed?
 void HandleGetReport(const UsbHidState &hid_state) {
   AwaitTransmitterReady();
   UEDATX = hid_state.modifier_keys;
@@ -142,29 +151,32 @@ void HandleGetReport(const UsbHidState &hid_state) {
   for (uint8_t i = 0; i < 6; i++) {
     UEDATX = hid_state.keyboard_keys[i];
   }
-  UEDATX = 0;
-  // TODO: should this be here? (it wasn't before)
   HandshakeTransmitterInterrupt();
 }
 
+// Get the idle config of the device.
 void HandleGetIdle(const UsbHidState &hid_state) {
   AwaitTransmitterReady();
   UEDATX = hid_state.idle_config;
   HandshakeTransmitterInterrupt();
 }
 
+// Set the idle config of the device. We don't take any action from this, but we
+// need to be able to get and set it.
 void HandleSetIdle(const SetupPacket &packet, UsbHidState *hid_state) {
   HandshakeTransmitterInterrupt();
   hid_state->idle_config = (packet.wValue >> 8);
   hid_state->idle_count = 0;
 }
 
+// Get the current HID protocol. We only use one.
 void HandleGetProtocol(const UsbHidState &hid_state) {
   AwaitTransmitterReady();
   UEDATX = hid_state.protocol;
   HandshakeTransmitterInterrupt();
 }
 
+// Set the current HID protocol.
 void HandleSetProtocol(const SetupPacket &packet, UsbHidState *hid_state) {
   HandshakeTransmitterInterrupt();
   hid_state->protocol = packet.wValue;

@@ -9,8 +9,8 @@ namespace native {
 // table 9-2.
 class RequestType {
 public:
-  RequestType() {}
-  RequestType(volatile uint8_t &value) : value_(value) {}
+  constexpr RequestType() {}
+  constexpr RequestType(volatile uint8_t &value) { value_ = value; }
   enum class Direction : uint8_t {
     HOST_TO_DEVICE = 0,
     DEVICE_TO_HOST = 1,
@@ -28,12 +28,12 @@ public:
     OTHER = 3,
   };
 
-  Direction GetDirection() { return (Direction)(value_ >> 7); }
-  Type GetType() { return (Type)((value_ >> 5) & 3); }
-  Recipient GetRecipient() { return (Recipient)(value_ & 31); }
+  constexpr Direction GetDirection() { return (Direction)(value_ >> 7); }
+  constexpr Type GetType() { return (Type)((value_ >> 5) & 3); }
+  constexpr Recipient GetRecipient() { return (Recipient)(value_ & 31); }
 
 private:
-  uint8_t value_;
+  uint8_t value_ = 0;
 };
 
 // USB request codes as defined by the USB spec rev. 2.0, section 9.3, table
@@ -79,45 +79,55 @@ enum class DescriptorType : uint8_t {
   HID_PHYSICAL_DESCRIPTOR = 0x23,
 };
 
-// Global descriptor identifier, derived from the  value field of the
+// Global descriptor identifier, derived from the value field of the
 // descriptor, stored in wValue. Defined by the USB spec rev. 2.0,
 // section 9.4.3.
 class DescriptorId {
 public:
   // We need explicit default constructor here to allow Descriptor to remain an
   // aggregate, but it serves no other purpose.
-  DescriptorId() = default;
+  constexpr DescriptorId(){};
 
   // Descriptor type in the high byte, descriptor index in the low byte.
   constexpr DescriptorId(const DescriptorType &type, uint8_t index)
       : value_(((uint8_t)type << 8) | index) {}
 
+  constexpr DescriptorId(const DescriptorType &type)
+      : value_((uint8_t)type << 8) {}
+
   // Also allow implicit initialization from a regular uint16_t.
   constexpr DescriptorId(const uint16_t &value) : value_(value) {}
 
-  bool operator==(const DescriptorId &other) const {
+  constexpr bool operator==(const DescriptorId &other) const {
     return this->value_ == other.value_;
   }
 
 private:
-  uint16_t value_;
+  uint16_t value_ = 0;
 };
 
-// The GET_DESCRIPTOR response payload, as defined by the USB spec rev. 2.0,
-// section 9.4.3.
-struct DescriptorContainer {
-  DescriptorId id;
-  uint16_t index;
-  const uint8_t *data;
-  uint8_t length;
-
-  static DescriptorContainer ParseFromProgmem(const uint8_t *ptr);
+// USB spec rev. 2.0, section 9.6.1, table 9-8.
+struct DeviceDescriptor {
+  uint8_t bLength = 18;
+  DescriptorType bDescriptorType = DescriptorType::DEVICE;
+  uint16_t bcdUSB;
+  uint8_t bDeviceClass;
+  uint8_t bDeviceSubClass;
+  uint8_t bDeviceProtocol;
+  uint8_t bMaxPacketSize0;
+  uint16_t idVendor;
+  uint16_t idProduct;
+  uint16_t bcdDevice;
+  uint8_t iManufacturer;
+  uint8_t iProduct;
+  uint8_t iSerialNumber;
+  uint8_t bNumConfigurations;
 };
 
 // USB spec rev. 2.0, section 9.6.3, table 9-10.
 struct ConfigurationDescriptor {
-  uint8_t bLength;
-  DescriptorType bDescriptorType;
+  uint8_t bLength = 9;
+  DescriptorType bDescriptorType = DescriptorType::CONFIGURATION;
   uint16_t wTotalLength;
   uint8_t bNumInterfaces;
   uint8_t bConfigurationValue;
@@ -128,8 +138,8 @@ struct ConfigurationDescriptor {
 
 // USB spec rev. 2.0, section 9.6.5, table 9-12.
 struct InterfaceDescriptor {
-  uint8_t bLength;
-  DescriptorType bDescriptorType;
+  uint8_t bLength = 9;
+  DescriptorType bDescriptorType = DescriptorType::INTERFACE;
   uint8_t bInterfaceNumber;
   uint8_t bAlternateSetting;
   uint8_t bNumEndpoints;
@@ -141,23 +151,30 @@ struct InterfaceDescriptor {
 
 // HID spec v1.11, section 6.2.1.
 struct HidDescriptor {
-  uint8_t bLength;
-  DescriptorType bDescriptorType;
+  uint8_t bLength = 9;
+  DescriptorType bDescriptorType = DescriptorType::HID;
   uint16_t bcdHID;
   uint8_t bCountryCode;
   uint8_t bNumDescriptors;
-  uint8_t bReportDescriptorType;
+  DescriptorType bReportDescriptorType;
   uint16_t wReportDescriptorLength;
 };
 
 // USB spec rev. 2.0, section 9.6.6, table 9-13.
 struct EndpointDescriptor {
-  uint8_t bLength;
-  DescriptorType bDescriptorType;
+  uint8_t bLength = 7;
+  DescriptorType bDescriptorType = DescriptorType::ENDPOINT;
   uint8_t bEndpointAddress;
   uint8_t bmAttributes;
   uint16_t wMaxPacketSize;
   uint8_t bInterval;
+};
+
+// USB spec rev. 2.0, section 9.6.7, table 9-16.
+struct UnicodeStringDescriptor {
+  uint8_t bLength;
+  DescriptorType bDescriptorType = DescriptorType::STRING;
+  const wchar_t bString[];
 };
 
 // Setup packet format as defined by the USB spec rev. 2.0, section 9.3, table
