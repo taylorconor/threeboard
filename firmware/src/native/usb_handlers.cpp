@@ -36,16 +36,22 @@ bool FindMatchingContainer(const SetupPacket &packet,
   for (; i < GetDescriptorListSize(); i++, ptr++) {
     DescriptorId id = pgm_read_word(ptr);
     if (id == packet.wValue) {
-      break;
-    }
-  }
-  // Now find the descriptor in the list with a matching wIndex.
-  for (; i < GetDescriptorListSize(); i++, ptr++) {
-    *descriptor = DescriptorContainer::ParseFromProgmem((uint8_t *)ptr);
-    if (descriptor->index == packet.wIndex) {
+      *descriptor = DescriptorContainer::ParseFromProgmem((uint8_t *)ptr);
       return true;
     }
   }
+  /*
+  // Now find the descriptor in the list with a matching wIndex.
+  for (; i < GetDescriptorListSize(); i++, ptr++) {
+    *descriptor = DescriptorContainer::ParseFromProgmem((uint8_t *)ptr);
+    // Currently we have no use for the descriptor index, since we only support
+    // one language, so it's safe to return if we see a descriptor index 0 (e.g.
+    // the first string descriptor). This may become necessary to implement
+    // properly in the future though.
+    if (descriptor->index == 0 || descriptor->index == packet.wIndex) {
+      return true;
+    }
+    }*/
   return false;
 }
 } // namespace
@@ -88,15 +94,15 @@ void HandleGetDescriptor(const SetupPacket &packet) {
   }
 
   // Send the descriptor to the host.
-  uint8_t remaining_packet_length =
+  uint16_t remaining_packet_length =
       util::min(util::min(packet.wLength, 255), container.length);
-  uint8_t current_frame_length = 0;
+  uint16_t current_frame_length = 0;
   while (remaining_packet_length > 0 ||
          current_frame_length == kEndpoint32ByteBank) {
     AwaitTransmitterReady();
     current_frame_length =
         util::min(remaining_packet_length, kEndpoint32ByteBank);
-    for (uint8_t i = current_frame_length; i > 0; i--) {
+    for (uint16_t i = current_frame_length; i > 0; i--) {
       UEDATX = pgm_read_byte(container.data++);
     }
     remaining_packet_length -= current_frame_length;

@@ -14,7 +14,7 @@ constexpr uint16_t kProductId = 0xEC51;
 
 namespace hid {
 constexpr uint16_t kSpecificationComplianceVersion = 0x1011; // HID spec v1.11.
-constexpr uint8_t kNumInterfaces = 0;
+constexpr uint8_t kNumInterfaces = 1;
 constexpr uint8_t kNotLocalized = 0;
 constexpr uint8_t kHidClassCode = 3;
 constexpr uint8_t kBootInterfaceSubclassCode = 1;
