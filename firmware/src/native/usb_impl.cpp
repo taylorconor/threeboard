@@ -1,6 +1,8 @@
-// This USB implementation is heavily influenced by the LUFA project
+// This USB implementation is influenced by the LUFA project
 // (https://github.com/abcminiuser/lufa), and by the Atreus firmware
 // (https://github.com/technomancy/atreus-firmware).
+// It explicitly does not support the ENDPOINT_HALT feature, since it's rarely
+// used and shouldn't affect functionality at all.
 
 #include "usb_impl.h"
 
@@ -30,12 +32,12 @@ static inline void HandshakeTransmitterInterrupt() { UEINTX = ~(1 << TXINI); }
 static inline void HandshakeReceiverInterrupt() { UEINTX = ~(1 << RXOUTI); }
 
 // Send the state of the HID device to the bus.
-void SendHidState(UsbHidState *hid_state) {
-  hid_state->idle_count = 0;
-  UEDATX = hid_state->modifier_keys;
+void SendHidState() {
+  hid_state.idle_count = 0;
+  UEDATX = hid_state.modifier_keys;
   UEDATX = 0;
   for (uint8_t i = 0; i < 6; i++) {
-    UEDATX = hid_state->keyboard_keys[i];
+    UEDATX = hid_state.keyboard_keys[i];
   }
   UEINTX = 0x3A;
 }
@@ -72,7 +74,7 @@ ISR(USB_GEN_vect) {
       if (hid_state.idle_count == hid_state.idle_config) {
         // TODO: we should check if there's something in the IN buffer already
         // before sending zeroes, otherwise we may miss keystrokes.
-        SendHidState(&hid_state);
+        SendHidState();
       }
     }
   }
@@ -146,12 +148,13 @@ ISR(USB_COM_vect) {
 }
 
 // send the contents of keyboard_keys and keyboard_modifier_keys
-int8_t usb_keyboard_send() {
+int8_t InternalSendKeypress() {
   uint8_t intr_state = SREG;
   cli();
-  UENUM = kKeyboardEndpoint;
   uint8_t timeout = UDFNUML + 50;
   while (1) {
+    UENUM = kKeyboardEndpoint;
+    sei();
     // Check if we're allowed to push data into the FIFO. If we are, we can
     // immediately break and begin transmitting.
     if (UEINTX & (1 << RWAL)) {
@@ -166,13 +169,11 @@ int8_t usb_keyboard_send() {
     if (UDFNUML >= timeout) {
       return -1;
     }
-    // get ready to try checking again
     intr_state = SREG;
     cli();
-    UENUM = kKeyboardEndpoint;
   }
 
-  SendHidState(&hid_state);
+  SendHidState();
   SREG = intr_state;
   return 0;
 }
@@ -208,11 +209,11 @@ void UsbImpl::SendKeypress(const uint8_t key, const uint8_t mod) {
   // threeboard may change in future to send multiple keys.
   hid_state.keyboard_keys[0] = key;
   // TODO: capture errors
-  usb_keyboard_send();
+  InternalSendKeypress();
   hid_state.modifier_keys = 0;
   hid_state.keyboard_keys[0] = 0;
   // TODO: capture errors
-  usb_keyboard_send();
+  InternalSendKeypress();
 }
 } // namespace native
 } // namespace threeboard

@@ -28,9 +28,9 @@ public:
     OTHER = 3,
   };
 
-  constexpr Direction GetDirection() { return (Direction)(value_ >> 7); }
-  constexpr Type GetType() { return (Type)((value_ >> 5) & 3); }
-  constexpr Recipient GetRecipient() { return (Recipient)(value_ & 31); }
+  constexpr Direction GetDirection() const { return (Direction)(value_ >> 7); }
+  constexpr Type GetType() const { return (Type)((value_ >> 5) & 3); }
+  constexpr Recipient GetRecipient() const { return (Recipient)(value_ & 31); }
 
 private:
   uint8_t value_ = 0;

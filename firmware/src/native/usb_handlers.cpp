@@ -72,8 +72,8 @@ void HandleSetAddress(const SetupPacket &packet) {
   // TODO: USB spec section 9.4.6 specifies different behaviours here for
   // default and address state. Might need to implement this.
   HandshakeTransmitterInterrupt();
-  // wValue contains the 7-bit address. The highest-order bit of the request is
-  // unspecified.
+  // wValue contains the 7-bit address. The highest-order bit of the request
+  // is unspecified.
   UDADDR = packet.wValue;
   // TODO: write a good comment why we need to do this.
   AwaitTransmitterReady();
@@ -130,8 +130,8 @@ void HandleSetConfiguration(const SetupPacket &packet, UsbHidState *hid_state) {
     return;
   }
 
-  // Configure the only endpoint needed for the threeboard, the interrupt-based
-  // keyboard endpoint.
+  // Configure the only endpoint needed for the threeboard, the
+  // interrupt-based keyboard endpoint.
   UENUM = kKeyboardEndpoint;
   UECONX = 1 << EPEN;
   UECFG0X = kEndpointTypeInterrupt | kEndpointDirectionIn;
