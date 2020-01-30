@@ -5,16 +5,17 @@
 namespace threeboard {
 namespace {
 
-#define STATE_OFFSET 13
-#define X_IDX 3
-#define Y_IDX 4
-#define Z_IDX 5
+constexpr uint8_t kXIndex = 3;
+constexpr uint8_t kYIndex = 4;
+constexpr uint8_t kZIndex = 5;
 
-__always_inline bool is_pressed(const uint8_t pin_register, const uint8_t idx) {
+__always_inline constexpr bool is_pressed(const uint8_t pin_register,
+                                          const uint8_t idx) {
   return !(pin_register & (1 << idx));
 }
 
-__always_inline bool was_pressed(const uint8_t state, const uint8_t offset) {
+__always_inline constexpr bool was_pressed(const uint8_t state,
+                                           const uint8_t offset) {
   return state & (1 << offset);
 }
 
@@ -39,23 +40,23 @@ void KeyController::PollKeyState() {
   uint8_t pinb = native_->GetPINB();
   // Key X.
   if (is_pressed(pinb, native::PB1)) {
-    key_mask_ |= (1 << X_IDX);
-  } else if (was_pressed(key_mask_, X_IDX)) {
-    key_mask_ &= ~(1 << X_IDX);
+    key_mask_ |= (1 << kXIndex);
+  } else if (was_pressed(key_mask_, kXIndex)) {
+    key_mask_ &= ~(1 << kXIndex);
     key_mask_ |= (uint8_t)Keypress::X;
   }
   // Key Y.
   if (is_pressed(pinb, native::PB2)) {
-    key_mask_ |= (1 << Y_IDX);
-  } else if (was_pressed(key_mask_, Y_IDX)) {
-    key_mask_ &= ~(1 << Y_IDX);
+    key_mask_ |= (1 << kYIndex);
+  } else if (was_pressed(key_mask_, kYIndex)) {
+    key_mask_ &= ~(1 << kYIndex);
     key_mask_ |= (uint8_t)Keypress::Y;
   }
   // Key Z.
   if (is_pressed(pinb, native::PB3)) {
-    key_mask_ |= (1 << Z_IDX);
-  } else if (was_pressed(key_mask_, Z_IDX)) {
-    key_mask_ &= ~(1 << Z_IDX);
+    key_mask_ |= (1 << kZIndex);
+  } else if (was_pressed(key_mask_, kZIndex)) {
+    key_mask_ &= ~(1 << kZIndex);
     key_mask_ |= (uint8_t)Keypress::Z;
   }
 

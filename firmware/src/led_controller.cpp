@@ -4,16 +4,16 @@ namespace threeboard {
 namespace {
 
 // defines indexes into the `state_` bitset.
-#define BANK_0 0
-#define BANK_1 16
-#define LED_R 32
-#define LED_G 34
-#define LED_B 36
-#define LED_PROG 38
-#define LED_ERR 40
-#define LED_STATUS 42
-#define BLINK_STATUS 44
-#define PREV_SCAN_LINE 45
+constexpr uint8_t kBank0 = 0;
+constexpr uint8_t kBank1 = 16;
+constexpr uint8_t kLedR = 32;
+constexpr uint8_t kLedG = 34;
+constexpr uint8_t kLedB = 36;
+constexpr uint8_t kLedProg = 38;
+constexpr uint8_t kLedErr = 40;
+constexpr uint8_t kLedStatus = 42;
+constexpr uint8_t kBlinkStatus = 44;
+constexpr uint8_t kPrevScanLine = 45;
 
 /**
    Pin mappings:
@@ -42,38 +42,38 @@ LedController::LedController(native::Native *native) : native_(native) {
 void LedController::ScanNextLine() {
   // The scan line occupies the last 3 bits in the bitset. It should be
   // overwritten on each scan.
-  uint8_t scan_line = state_.GetContainerByte(PREV_SCAN_LINE) & 7;
+  uint8_t scan_line = state_.GetContainerByte(kPrevScanLine) & 7;
   WriteStateToPins(scan_line);
-  state_.SetBits(PREV_SCAN_LINE, 3, (scan_line + 1) % 5);
+  state_.SetBits(kPrevScanLine, 3, (scan_line + 1) % 5);
 }
 
-void LedController::SetBank0(uint8_t val) { SetBankValue(BANK_0, val); }
-void LedController::SetBank1(uint8_t val) { SetBankValue(BANK_1, val); }
-void LedController::SetR(LedState state) { SetLedState(LED_R, state); }
-void LedController::SetG(LedState state) { SetLedState(LED_G, state); }
-void LedController::SetB(LedState state) { SetLedState(LED_B, state); }
-void LedController::SetProg(LedState state) { SetLedState(LED_PROG, state); }
-void LedController::SetErr(LedState state) { SetLedState(LED_ERR, state); }
+void LedController::SetBank0(uint8_t val) { SetBankValue(kBank0, val); }
+void LedController::SetBank1(uint8_t val) { SetBankValue(kBank1, val); }
+void LedController::SetR(LedState state) { SetLedState(kLedR, state); }
+void LedController::SetG(LedState state) { SetLedState(kLedG, state); }
+void LedController::SetB(LedState state) { SetLedState(kLedB, state); }
+void LedController::SetProg(LedState state) { SetLedState(kLedProg, state); }
+void LedController::SetErr(LedState state) { SetLedState(kLedErr, state); }
 void LedController::SetStatus(LedState state) {
-  SetLedState(LED_STATUS, state);
+  SetLedState(kLedStatus, state);
 }
 
 void LedController::WriteStateToPins(uint8_t row) {
   // ERR and STATUS are a special case since they're mutally exclusive LEDs.
   // They could be set on each scan, but to maintain consistent brightness they
   // have each been assigned their own scan line.
-  /*if (row == 0) {
-    if (GetLedState(LED_ERR) == LedState::ON) {
+  if (row == 0) {
+    if (GetLedState(kLedErr) == LedState::ON) {
       native_->EnablePORTF(1 << native::PF6);
     }
   } else if (row == 1) {
     native_->DisablePORTF(1 << native::PF6);
-    if (GetLedState(LED_STATUS) == LedState::ON) {
+    if (GetLedState(kLedStatus) == LedState::ON) {
       native_->EnablePORTF(1 << native::PF7);
     }
   } else {
     native_->DisablePORTF(1 << native::PF7);
-    }*/
+  }
 
   // Clear all row and column pins first.
   native_->DisablePORTB(0b00100000);
@@ -85,23 +85,23 @@ void LedController::WriteStateToPins(uint8_t row) {
   if (row == 0) {
     // row 0: 4 MSB of bank 0
     native_->EnablePORTF(1 << native::PF5);
-    WriteColumns(BANK_0);
+    WriteColumns(kBank0);
   } else if (row == 1) {
     // row 1: 4 LSB of bank 0
     native_->EnablePORTF(1 << native::PF4);
-    WriteColumns(BANK_0 + 8);
+    WriteColumns(kBank0 + 8);
   } else if (row == 2) {
     // row 2: 4 MSB of bank 1
     native_->EnablePORTF(1 << native::PF1);
-    WriteColumns(BANK_1);
+    WriteColumns(kBank1);
   } else if (row == 3) {
     // row 3: 4 LSB of bank 1
     native_->EnablePORTF(1 << native::PF0);
-    WriteColumns(BANK_1 + 8);
+    WriteColumns(kBank1 + 8);
   } else if (row == 4) {
     // row 4: R,G,B and PROG
     native_->EnablePORTB(1 << native::PB5);
-    WriteColumns(LED_R);
+    WriteColumns(kLedR);
   }
 }
 

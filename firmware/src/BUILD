@@ -33,7 +33,6 @@ avr_library(
   hdrs = ["key_controller.h"],
   deps = [
     "//src/native:native",
-    "//src/util:bitset",
     "//src/util:common",
   ],
 )

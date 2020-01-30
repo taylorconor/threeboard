@@ -47,7 +47,6 @@ def _get_standard_arguments():
     "-Wall",
     "-Wno-main",
     "-Wundef",
-#    "-pedantic",
     "-Werror",
     "-Wfatal-errors",
     "-Wl,--relax,--gc-sections",
