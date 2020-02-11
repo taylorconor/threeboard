@@ -3,9 +3,6 @@
 #include "../util/common.h"
 #include "usb_descriptors.h"
 
-#define ENABLE_ERR() ((PORTF |= 1 << PF6) && (PORTF &= ~(1 << PF7)))
-#define ENABLE_STATUS() ((PORTF |= 1 << PF7) && (PORTF &= ~(1 << PF6)))
-
 namespace threeboard {
 namespace native {
 namespace {

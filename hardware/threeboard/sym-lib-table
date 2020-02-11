@@ -1,3 +1,0 @@
-(sym_lib_table
-  (lib (name threeboard-rescue)(type Legacy)(uri ${KIPRJMOD}/threeboard-rescue.lib)(options "")(descr ""))
-)

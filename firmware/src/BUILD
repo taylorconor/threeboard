@@ -79,6 +79,7 @@ avr_binary(
     ":threeboard_lib",
     "//src/native:native_impl",
     "//src/native:usb_impl",
+    "//src/native:i2c",
   ],
 )
 

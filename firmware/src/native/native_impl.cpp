@@ -35,9 +35,6 @@ void Timer1Init() {
   // Enable output compare interrupts for timer 1, using compare value A
   // (OCIE1A).
   TIMSK1 |= (1 << OCIE1A);
-
-  // Enable global interrupts.
-  sei();
 }
 
 void Timer3Init() {
@@ -52,8 +49,6 @@ void Timer3Init() {
   OCR3A = 9999;
 
   TIMSK3 |= (1 << OCIE3A);
-
-  sei();
 }
 
 // Define the interrupt service registers (ISRs) for timers 1 and 3 (the
@@ -74,12 +69,12 @@ Native *NativeImpl::Get() {
   return &instance;
 }
 
-void NativeImpl::SetTimer1InterruptHandler(InterruptHandlerDelegate *delegate) {
+void NativeImpl::EnableTimer1(InterruptHandlerDelegate *delegate) {
   delegate_ = delegate;
   Timer1Init();
 }
 
-void NativeImpl::SetTimer3InterruptHandler(InterruptHandlerDelegate *delegate) {
+void NativeImpl::EnableTimer3(InterruptHandlerDelegate *delegate) {
   delegate_ = delegate;
   Timer3Init();
 }

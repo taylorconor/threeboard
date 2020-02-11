@@ -78,3 +78,10 @@ avr_pure_library(
     ":usb_descriptors",
   ],
 )
+
+avr_pure_library(
+  name = "i2c",
+  srcs = ["i2c.cpp"],
+  hdrs = ["i2c.h"],
+  deps = [":native"],
+)

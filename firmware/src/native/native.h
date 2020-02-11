@@ -43,8 +43,8 @@ class Native {
 public:
   virtual ~Native() {}
 
-  virtual void SetTimer1InterruptHandler(InterruptHandlerDelegate *) = 0;
-  virtual void SetTimer3InterruptHandler(InterruptHandlerDelegate *) = 0;
+  virtual void EnableTimer1(InterruptHandlerDelegate *) = 0;
+  virtual void EnableTimer3(InterruptHandlerDelegate *) = 0;
   virtual InterruptHandlerDelegate *GetInterruptHandlerDelegate() const = 0;
 
   virtual void Delay(uint8_t) const = 0;

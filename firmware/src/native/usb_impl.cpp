@@ -198,8 +198,6 @@ void UsbImpl::Setup() {
   // want to interrupt on start of frame (SOFE), and also on end of reset
   // (EORSTE).
   UDIEN = (1 << EORSTE) | (1 << SOFE);
-  // Enable global interrupts.
-  sei();
 }
 
 void UsbImpl::SendKeypress(const uint8_t key, const uint8_t mod) {

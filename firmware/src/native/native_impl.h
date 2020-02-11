@@ -23,8 +23,8 @@ public:
   static Native *Get();
   ~NativeImpl() {}
 
-  void SetTimer1InterruptHandler(InterruptHandlerDelegate *) override;
-  void SetTimer3InterruptHandler(InterruptHandlerDelegate *) override;
+  void EnableTimer1(InterruptHandlerDelegate *) override;
+  void EnableTimer3(InterruptHandlerDelegate *) override;
   InterruptHandlerDelegate *GetInterruptHandlerDelegate() const override;
 
   void Delay(uint8_t) const override;

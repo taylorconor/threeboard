@@ -28,9 +28,10 @@ Threeboard::Threeboard(native::Native *native, native::Usb *usb,
                        KeyController *key_controller)
     : native_(native), usb_(usb), event_handler_(event_handler),
       led_controller_(led_controller), key_controller_(key_controller) {
+  // TODO: provide `this` as delegate to receive callback for success/error?
   usb->Setup();
-  native_->SetTimer1InterruptHandler(this);
-  native_->SetTimer3InterruptHandler(this);
+  native_->EnableTimer1(this);
+  native_->EnableTimer3(this);
 
   // Set up initial layers and states. These can be restored from flash later if
   // we decide to preserve them.
