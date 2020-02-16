@@ -7,6 +7,11 @@ load(
 package(default_visibility = ["//visibility:public"])
 
 avr_library(
+  name = "constants",
+  hdrs = ["constants.h"],
+)
+
+avr_library(
   name = "timer_interrupt_handler_delegate",
   hdrs = ["timer_interrupt_handler_delegate.h"],
 )
@@ -15,6 +20,7 @@ avr_library(
   name = "native",
   hdrs = ["native.h"],
   deps = [
+    ":constants",
     ":timer_interrupt_handler_delegate",
     "//src/usb:usb_interrupt_handler_delegate",
   ],
