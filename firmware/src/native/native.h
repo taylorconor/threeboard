@@ -2,9 +2,9 @@
 
 #include <stdint.h>
 
+#include "src/native/constants.h"
 #include "src/native/timer_interrupt_handler_delegate.h"
 #include "src/usb/usb_interrupt_handler_delegate.h"
-#include "src/native/constants.h"
 
 #undef PROGMEM
 #ifdef __AVR__

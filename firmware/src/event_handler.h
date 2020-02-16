@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/key_controller.h"
+#include "src/keypress_handler_delegate.h"
 #include "src/native/native.h"
 
 namespace threeboard {

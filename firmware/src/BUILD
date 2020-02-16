@@ -28,10 +28,16 @@ cc_test(
 )
 
 avr_library(
+  name = "keypress_handler_delegate",
+  hdrs = ["keypress_handler_delegate.h"],
+)
+
+avr_library(
   name = "key_controller",
   srcs = ["key_controller.cpp"],
   hdrs = ["key_controller.h"],
   deps = [
+    ":keypress_handler_delegate",
     "//src/native:native",
     "//src/util:util",
   ],
@@ -43,7 +49,7 @@ avr_library(
   hdrs = ["event_handler.h"],
   deps = [
     "//src/native:native",
-    ":key_controller",
+    ":keypress_handler_delegate",
   ],
 )
 
