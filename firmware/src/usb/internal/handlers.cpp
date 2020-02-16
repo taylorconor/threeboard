@@ -1,6 +1,6 @@
 #include "handlers.h"
 
-#include "src/usb/descriptors.h"
+#include "src/usb/internal/descriptors.h"
 #include "src/util/util.h"
 
 namespace threeboard {

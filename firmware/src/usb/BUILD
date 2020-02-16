@@ -16,58 +16,15 @@ avr_library(
   hdrs = ["usb_interrupt_handler_delegate.h"],
 )
 
-avr_library(
-  name = "constants",
-  hdrs = ["constants.h"],
-)
-
-avr_library(
-  name = "hid_state",
-  hdrs = ["hid_state.h"],
-)
-
-avr_pure_library(
-  name = "protocol",
-  hdrs = ["protocol.h"],
-  srcs = ["protocol.cpp"],
-  deps = [
-    "//src/native:native",
-  ],
-)
-
-avr_pure_library(
-  name = "descriptors",
-  hdrs = ["descriptors.h"],
-  srcs = ["descriptors.cpp"],
-  deps = [
-    ":constants",
-    ":protocol",
-    "//src/util:util"
-  ],
-)
-
-avr_pure_library(
-  name = "handlers",
-  srcs = ["handlers.cpp"],
-  hdrs = ["handlers.h"],
-  deps = [
-    ":protocol",
-    ":descriptors",
-    ":constants",
-    ":hid_state",
-    "//src/util:util",
-  ],
-)
-
 avr_pure_library(
   name = "usb_impl",
   srcs = ["usb_impl.cpp"],
   hdrs = ["usb_impl.h"],
   deps = [
     ":usb",
-    ":constants",
-    ":handlers",
-    ":descriptors",
     "//src/native:native",
+    "//src/usb/internal:constants",
+    "//src/usb/internal:handlers",
+    "//src/usb/internal:descriptors",
   ],
 )

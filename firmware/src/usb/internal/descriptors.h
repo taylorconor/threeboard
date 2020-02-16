@@ -1,8 +1,8 @@
 #pragma once
 
 #include "src/native/native.h"
-#include "src/usb/constants.h"
-#include "src/usb/protocol.h"
+#include "src/usb/internal/constants.h"
+#include "src/usb/internal/protocol.h"
 #include "src/util/util.h"
 
 namespace threeboard {

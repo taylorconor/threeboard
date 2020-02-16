@@ -1,7 +1,7 @@
 #pragma once
 
 #include "src/native/native.h"
-#include "src/usb/hid_state.h"
+#include "src/usb/internal/hid_state.h"
 #include "src/usb/usb.h"
 #include "src/usb/usb_interrupt_handler_delegate.h"
 

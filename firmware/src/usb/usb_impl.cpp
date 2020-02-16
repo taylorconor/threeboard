@@ -6,7 +6,7 @@
 
 #include "usb_impl.h"
 
-#include "src/usb/handlers.h"
+#include "src/usb/internal/handlers.h"
 #include "src/util/util.h"
 
 namespace threeboard {
