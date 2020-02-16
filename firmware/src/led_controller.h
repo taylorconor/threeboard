@@ -1,8 +1,9 @@
 #pragma once
 
-#include "native/native.h"
-#include "util/bitset.h"
 #include <stdint.h>
+
+#include "src/native/native.h"
+#include "src/util/bitset.h"
 
 namespace threeboard {
 

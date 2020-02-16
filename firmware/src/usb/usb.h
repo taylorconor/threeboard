@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 namespace threeboard {
-namespace native {
+namespace usb {
 
 class Usb {
 public:
@@ -17,5 +17,5 @@ public:
 
   virtual void SendKeypress(const uint8_t key, const uint8_t mod) = 0;
 };
-} // namespace native
+} // namespace usb
 } // namespace threeboard

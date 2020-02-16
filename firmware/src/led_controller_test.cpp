@@ -1,6 +1,8 @@
 #include "led_controller.h"
-#include "native/native_mock.h"
+
 #include <memory>
+
+#include "src/native/native_mock.h"
 
 namespace threeboard {
 namespace util {

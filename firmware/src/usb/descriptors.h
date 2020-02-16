@@ -1,12 +1,12 @@
 #pragma once
 
-#include "../util/common.h"
-#include "usb_common.h"
-#include "usb_protocol.h"
-#include <avr/pgmspace.h>
+#include "src/native/native.h"
+#include "src/usb/constants.h"
+#include "src/usb/protocol.h"
+#include "src/util/util.h"
 
 namespace threeboard {
-namespace native {
+namespace usb {
 
 // A container for a generic descriptor. Used in a list as a descriptor lookup
 // table.
@@ -18,9 +18,11 @@ struct DescriptorContainer {
 
   // TODO: this can probably be made constexpr with some adjustments, if needed.
   // https://www.avrfreaks.net/forum/better-alternative-pgmreadword-etc.
-  static DescriptorContainer ParseFromProgmem(const uint8_t *ptr);
+  static DescriptorContainer ParseFromProgmem(native::Native *native,
+                                              const uint8_t *ptr);
 };
 
+// static_assert(0, PROGMEM);
 // The top-level USB device descriptor.
 static constexpr DeviceDescriptor PROGMEM device_descriptor = {
     .bcdUSB = kUsbSpecificationReleaseNumber,
@@ -170,5 +172,5 @@ static const DescriptorContainer PROGMEM descriptor_list[] = {
      .data = (uint8_t *)&product,
      .length = product.bLength}};
 
-} // namespace native
+} // namespace usb
 } // namespace threeboard

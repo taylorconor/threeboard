@@ -1,6 +1,6 @@
 #include "key_controller.h"
 
-#include "util/common.h"
+#include "src/util/util.h"
 
 namespace threeboard {
 namespace {

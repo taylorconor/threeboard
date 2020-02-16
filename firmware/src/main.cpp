@@ -1,25 +1,19 @@
-#include "native/i2c.h"
-#include "native/native_impl.h"
-#include "native/usb_impl.h"
-#include "threeboard.h"
-#include <avr/interrupt.h>
+#include "src/native/i2c.h"
+#include "src/native/native_impl.h"
+#include "src/threeboard.h"
+#include "src/usb/usb_impl.h"
 
 using namespace threeboard;
 
 int main() {
-  // Immediately enable global interrupts, since multiple different native
-  // classes require interrupts enabled to operate, and allowing each of them to
-  // enable interrupts independently is unnecessary.
-  sei();
-
   // The native interface is used to abstract away all "native" code (e.g.
   // interrupt setup code, setting various pin port values). This is the only
   // place that NativeImpl is injected. To keep all other components testable,
-  // they all use the Native interface. The only two untestable components are
-  // therefore this main file, and the NativeImpl itself, since they can only
-  // compile for AVR.
+  // they all use the Native interface.
   auto native_impl = native::NativeImpl::Get();
-  auto usb_impl = native::UsbImpl();
+  native_impl->EnableInterrupts();
+
+  auto usb_impl = usb::UsbImpl(native_impl);
   auto i2c = native::I2C();
 
   i2c.Init();
@@ -30,7 +24,7 @@ int main() {
   // could be constructed within the instance, but injecting them makes testing
   // easier since we can inject mocks for tets.
   EventHandler event_handler(native_impl);
-  static LedController led_controller(native_impl);
+  LedController led_controller(native_impl);
   KeyController key_controller(native_impl, &event_handler);
   led_controller.SetBank0(data);
 

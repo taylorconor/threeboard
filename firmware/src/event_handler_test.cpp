@@ -1,7 +1,9 @@
 #include "event_handler.h"
-#include "native/native_mock.h"
+
 #include <memory>
 #include <thread>
+
+#include "src/native/native_mock.h"
 
 namespace threeboard {
 namespace util {
@@ -38,7 +40,7 @@ TEST_F(EventHandlerTest, TestDelayCalledBeforeKeypressPresent) {
     has_returned = true;
   });
   usleep(50);
-  
+
   handler_->HandleKeypress(Keypress::X);
   t1.join();
   ASSERT_TRUE(has_returned);

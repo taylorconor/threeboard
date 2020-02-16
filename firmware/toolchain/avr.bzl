@@ -8,6 +8,11 @@ def _get_deps_attr(ctx, attr):
 def _get_transitive_libs(ctx):
   return _get_deps_attr(ctx, "libs")
 
+def _get_transitive_hdrs(ctx):
+  hdr_files = _get_deps_attr(ctx, "hdrs")
+  hdr_files.extend(ctx.files.hdrs)
+  return hdr_files
+
 def _deepcopy_dict_internal(data):
   if type(data) == "list":
     result = []
@@ -34,11 +39,6 @@ def _get_avr_attrs(**attrs):
     avr_attrs["deps"] = [x + "_avr" if ((x.startswith("//") or x.startswith(":")) and not x.endswith("_avr")) else x for x in avr_attrs["deps"]]
   return avr_attrs
 
-def _get_hdr_files(ctx):
-  hdr_files = _get_deps_attr(ctx, "hdrs")
-  hdr_files.extend(ctx.files.hdrs)
-  return hdr_files
-
 def _get_standard_arguments():
   return [
     "-Os",
@@ -57,30 +57,30 @@ def _get_standard_arguments():
     "-fpack-struct",
     "-fshort-enums",
     "-ffunction-sections",
-    "-fdata-sections"]
+    "-fdata-sections",
+    "-iquote", "."]
 
 def _avr_library_impl(ctx):
   objs = []
-  hdr_files = _get_hdr_files(ctx)
+  srcs_list = depset(ctx.files.srcs).to_list()
+  hdrs_list = _get_transitive_hdrs(ctx)
   objs_outputs_path = "_objs/" + ctx.label.name + "/"
 
-  for src in ctx.files.srcs:
-    basename = src.basename.rpartition('.')[0]
-    obj = ctx.actions.declare_file(objs_outputs_path + basename + ".o")
-    action_inputs = [src]
-    action_inputs.extend(hdr_files)
+  for src_file in ctx.files.srcs:
+    basename = src_file.basename.rpartition('.')[0]
+    obj_file = ctx.actions.declare_file(objs_outputs_path + basename + ".o")
     ctx.actions.run(
-      inputs = action_inputs,
-      outputs = [obj],
+      inputs = [src_file] + hdrs_list,
+      outputs = [obj_file],
       mnemonic = "BuildAVRObject",
       executable = ctx.executable._compiler,
-      arguments = _get_standard_arguments() + [src.path, "-o", obj.path, "-c"],
+      arguments = _get_standard_arguments() + [src_file.path, "-o", obj_file.path, "-c"],
     )
-    objs.append(obj)
+    objs.append(obj_file)
 
   lib = ctx.actions.declare_file("lib" + ctx.label.name + ".a")
   ctx.actions.run(
-    inputs = objs,
+    inputs = objs + hdrs_list,
     outputs = [lib],
     mnemonic = "BuildAVRLibrary",
     executable = ctx.executable._archiver,
@@ -89,10 +89,11 @@ def _avr_library_impl(ctx):
 
   return struct(
     avr = struct(
-      hdrs = hdr_files,
+      hdrs = hdrs_list,
       libs = [lib] + _get_transitive_libs(ctx),
     ),
-    files = depset([lib]))
+    files = depset([lib]),
+  )
 
 def _avr_binary_impl(ctx):
   libs = _get_deps_attr(ctx, "libs")
@@ -104,7 +105,7 @@ def _avr_binary_impl(ctx):
     action_inputs = [src]
     action_inputs.extend(ctx.files.hdrs)
     action_inputs.extend(libs)
-    action_inputs.extend(_get_hdr_files(ctx))
+    action_inputs.extend(_get_transitive_hdrs(ctx))
     
     ctx.actions.run(
       inputs = action_inputs,

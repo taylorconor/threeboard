@@ -36,6 +36,6 @@ cc_test(
 )
 
 avr_library(
-  name = "common",
-  hdrs = ["common.h"],
+  name = "util",
+  hdrs = ["util.h"],
 )

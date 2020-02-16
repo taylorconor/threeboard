@@ -1,7 +1,7 @@
 #pragma once
 
-#include "key_controller.h"
-#include "native/native.h"
+#include "src/key_controller.h"
+#include "src/native/native.h"
 
 namespace threeboard {
 

@@ -1,22 +1,23 @@
-#include "usb_handlers.h"
+#include "handlers.h"
 
-#include "../util/common.h"
-#include "usb_descriptors.h"
+#include "src/usb/descriptors.h"
+#include "src/util/util.h"
 
 namespace threeboard {
-namespace native {
+namespace usb {
 namespace {
 
 static constexpr uint8_t GetDescriptorListSize() {
   return sizeof(descriptor_list) / sizeof(DescriptorContainer);
 }
 
-static __always_inline void AwaitTransmitterReady() {
-  while (!(UEINTX & (1 << TXINI)))
+static __always_inline void AwaitTransmitterReady(native::Native *native) {
+  while (!(native->GetUEINTX() & (1 << native::TXINI)))
     ;
 }
-static __always_inline void HandshakeTransmitterInterrupt() {
-  UEINTX = ~(1 << TXINI);
+static __always_inline void
+HandshakeTransmitterInterrupt(native::Native *native) {
+  native->SetUEINTX(~(1 << native::TXINI));
 }
 } // namespace
 
@@ -25,15 +26,16 @@ namespace {
 
 // Find the DescriptorContainer from the descriptor_list in PROGMEM that matches
 // the DescriptorType of this packet.
-bool FindMatchingContainer(const SetupPacket &packet,
+bool FindMatchingContainer(native::Native *native, const SetupPacket &packet,
                            DescriptorContainer *descriptor) {
   const DescriptorContainer *ptr = descriptor_list;
   // Find the first descriptor with a matching descriptor value.
   uint8_t i = 0;
   for (; i < GetDescriptorListSize(); i++, ptr++) {
-    DescriptorId id = pgm_read_word(ptr);
+    DescriptorId id = native->ReadPgmWord((uint8_t *)ptr);
     if (id == packet.wValue) {
-      *descriptor = DescriptorContainer::ParseFromProgmem((uint8_t *)ptr);
+      *descriptor =
+          DescriptorContainer::ParseFromProgmem(native, (uint8_t *)ptr);
       return true;
     }
   }
@@ -54,39 +56,39 @@ bool FindMatchingContainer(const SetupPacket &packet,
 } // namespace
 
 // Called when the host requests the status of the device.
-void HandleGetStatus() {
-  AwaitTransmitterReady();
+void HandleGetStatus(native::Native *native) {
+  AwaitTransmitterReady(native);
   // The response only contains two status bits. Bit 0 = 0 indicates that this
   // device is not self-powered (it relies on bus power), and bit 1 = 0
   // indicates that the device does not support remote wakeup. We send this
   // response directly into the data register.
-  UEDATX = 0;
-  HandshakeTransmitterInterrupt();
+  native->SetUEDATX(0);
+  HandshakeTransmitterInterrupt(native);
 }
 
 // Allows the host to set the USB address of this device.
-void HandleSetAddress(const SetupPacket &packet) {
+void HandleSetAddress(native::Native *native, const SetupPacket &packet) {
   // TODO: USB spec section 9.4.6 specifies different behaviours here for
   // default and address state. Might need to implement this.
-  HandshakeTransmitterInterrupt();
+  HandshakeTransmitterInterrupt(native);
   // wValue contains the 7-bit address. The highest-order bit of the request
   // is unspecified.
-  UDADDR = packet.wValue;
+  native->SetUDADDR(packet.wValue);
   // TODO: write a good comment why we need to do this.
-  AwaitTransmitterReady();
+  AwaitTransmitterReady(native);
   // Enable the address by setting the highest-order bit (a feature of the
   // microcontroller, not the USB protocol).
-  UDADDR |= 1 << ADDEN;
+  native->SetUDADDR(native->GetUDADDR() | (1 << native::ADDEN));
 }
 
 // Returns a descriptor as requested by the host, if such a descriptor exists.
-void HandleGetDescriptor(const SetupPacket &packet) {
+void HandleGetDescriptor(native::Native *native, const SetupPacket &packet) {
   DescriptorContainer container;
-  bool found = FindMatchingContainer(packet, &container);
+  bool found = FindMatchingContainer(native, packet, &container);
   if (!found) {
     // Stall if we can't find a matching DescriptorContainer. This is an
     // unrecoverable error.
-    UECONX = (1 << STALLRQ) | (1 << EPEN);
+    native->SetUECONX((1 << native::STALLRQ) | (1 << native::EPEN));
     return;
   }
 
@@ -96,29 +98,30 @@ void HandleGetDescriptor(const SetupPacket &packet) {
   uint16_t current_frame_length = 0;
   while (remaining_packet_length > 0 ||
          current_frame_length == kEndpoint32ByteBank) {
-    AwaitTransmitterReady();
+    AwaitTransmitterReady(native);
     current_frame_length =
         util::min(remaining_packet_length, kEndpoint32ByteBank);
     for (uint16_t i = current_frame_length; i > 0; i--) {
-      UEDATX = pgm_read_byte(container.data++);
+      native->SetUEDATX(native->ReadPgmByte(container.data++));
     }
     remaining_packet_length -= current_frame_length;
-    HandshakeTransmitterInterrupt();
+    HandshakeTransmitterInterrupt(native);
   }
 }
 
 // Replies with the current Configuration of the device.
-void HandleGetConfiguration(const UsbHidState &hid_state) {
+void HandleGetConfiguration(native::Native *native, const HidState &hid_state) {
   // TODO: Section 9.4.2 specifies different configs for different states.
   // Should also implement that here.
-  AwaitTransmitterReady();
-  UEDATX = hid_state.configuration;
-  HandshakeTransmitterInterrupt();
+  AwaitTransmitterReady(native);
+  native->SetUEDATX(hid_state.configuration);
+  HandshakeTransmitterInterrupt(native);
 }
 
 // Allows the host to specify the current Configuration of the device.
-void HandleSetConfiguration(const SetupPacket &packet, UsbHidState *hid_state) {
-  HandshakeTransmitterInterrupt();
+void HandleSetConfiguration(native::Native *native, const SetupPacket &packet,
+                            HidState *hid_state) {
+  HandshakeTransmitterInterrupt(native);
   hid_state->configuration = packet.wValue;
 
   // Make sure the host isn't trying to set us in a configuration we don't
@@ -129,14 +132,14 @@ void HandleSetConfiguration(const SetupPacket &packet, UsbHidState *hid_state) {
 
   // Configure the only endpoint needed for the threeboard, the
   // interrupt-based keyboard endpoint.
-  UENUM = kKeyboardEndpoint;
-  UECONX = 1 << EPEN;
-  UECFG0X = kEndpointTypeInterrupt | kEndpointDirectionIn;
-  UECFG1X = kEndpointDoubleBank;
+  native->SetUENUM(kKeyboardEndpoint);
+  native->SetUECONX(1 << native::EPEN);
+  native->SetUECFG0X(kEndpointTypeInterrupt | kEndpointDirectionIn);
+  native->SetUECFG1X(kEndpointDoubleBank);
 
   // Reset the keyboard endpoint to enable it.
-  UERST = 1 << kKeyboardEndpoint;
-  UERST = 0;
+  native->SetUERST(1 << kKeyboardEndpoint);
+  native->SetUERST(0);
 }
 } // namespace device_handler
 
@@ -147,43 +150,45 @@ namespace hid_handler {
 // TODO: this will always return zeroes, since the state is send to the host in
 // UsbImpl. Perhaps this will cause a rare race condition where keypresses are
 // missed?
-void HandleGetReport(const UsbHidState &hid_state) {
-  AwaitTransmitterReady();
-  UEDATX = hid_state.modifier_keys;
-  UEDATX = 0;
+void HandleGetReport(native::Native *native, const HidState &hid_state) {
+  AwaitTransmitterReady(native);
+  native->SetUEDATX(hid_state.modifier_keys);
+  native->SetUEDATX(0);
   for (uint8_t i = 0; i < 6; i++) {
-    UEDATX = hid_state.keyboard_keys[i];
+    native->SetUEDATX(hid_state.keyboard_keys[i]);
   }
-  HandshakeTransmitterInterrupt();
+  HandshakeTransmitterInterrupt(native);
 }
 
 // Get the idle config of the device.
-void HandleGetIdle(const UsbHidState &hid_state) {
-  AwaitTransmitterReady();
-  UEDATX = hid_state.idle_config;
-  HandshakeTransmitterInterrupt();
+void HandleGetIdle(native::Native *native, const HidState &hid_state) {
+  AwaitTransmitterReady(native);
+  native->SetUEDATX(hid_state.idle_config);
+  HandshakeTransmitterInterrupt(native);
 }
 
 // Set the idle config of the device. We don't take any action from this, but we
 // need to be able to get and set it.
-void HandleSetIdle(const SetupPacket &packet, UsbHidState *hid_state) {
-  HandshakeTransmitterInterrupt();
+void HandleSetIdle(native::Native *native, const SetupPacket &packet,
+                   HidState *hid_state) {
+  HandshakeTransmitterInterrupt(native);
   hid_state->idle_config = (packet.wValue >> 8);
   hid_state->idle_count = 0;
 }
 
 // Get the current HID protocol. We only use one.
-void HandleGetProtocol(const UsbHidState &hid_state) {
-  AwaitTransmitterReady();
-  UEDATX = hid_state.protocol;
-  HandshakeTransmitterInterrupt();
+void HandleGetProtocol(native::Native *native, const HidState &hid_state) {
+  AwaitTransmitterReady(native);
+  native->SetUEDATX(hid_state.protocol);
+  HandshakeTransmitterInterrupt(native);
 }
 
 // Set the current HID protocol.
-void HandleSetProtocol(const SetupPacket &packet, UsbHidState *hid_state) {
-  HandshakeTransmitterInterrupt();
+void HandleSetProtocol(native::Native *native, const SetupPacket &packet,
+                       HidState *hid_state) {
+  HandshakeTransmitterInterrupt(native);
   hid_state->protocol = packet.wValue;
 }
 } // namespace hid_handler
-} // namespace native
+} // namespace usb
 } // namespace threeboard

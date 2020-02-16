@@ -62,6 +62,7 @@ void LedController::WriteStateToPins(uint8_t row) {
   // ERR and STATUS are a special case since they're mutally exclusive LEDs.
   // They could be set on each scan, but to maintain consistent brightness they
   // have each been assigned their own scan line.
+  // TODO: uncomment after testing.
   /*  if (row == 0) {
     if (GetLedState(kLedErr) == LedState::ON) {
       native_->EnablePORTF(1 << native::PF6);

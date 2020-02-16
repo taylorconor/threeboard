@@ -33,7 +33,7 @@ avr_library(
   hdrs = ["key_controller.h"],
   deps = [
     "//src/native:native",
-    "//src/util:common",
+    "//src/util:util",
   ],
 )
 
@@ -67,7 +67,7 @@ avr_library(
     ":key_controller",
     ":event_handler",
     "//src/native:native",
-    "//src/native:usb",
+    "//src/usb:usb",
     "//src/util:enum",
   ]
 )
@@ -78,7 +78,7 @@ avr_binary(
   deps = [
     ":threeboard_lib",
     "//src/native:native_impl",
-    "//src/native:usb_impl",
+    "//src/usb:usb_impl",
     "//src/native:i2c",
   ],
 )

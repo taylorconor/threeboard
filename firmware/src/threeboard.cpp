@@ -1,6 +1,6 @@
 #include "threeboard.h"
 
-#include "util/enum.h"
+#include "src/util/enum.h"
 
 #if !(defined(__clang__) || defined(__GNUC__) && __GNUC__ >= 9)
 static_assert(false, "Unsupported compiler. Threeboard requires clang (>=5) or "
@@ -22,7 +22,7 @@ const Threeboard::handler_function Threeboard::state_machine[4][2][1] = {
     [Layer::B] = {[State::INPUT] = {&Threeboard::HandleDefaultInput},
                   [State::FLUSH] = {&Threeboard::HandleDefaultFlush}}};
 
-Threeboard::Threeboard(native::Native *native, native::Usb *usb,
+Threeboard::Threeboard(native::Native *native, usb::Usb *usb,
                        EventHandler *event_handler,
                        LedController *led_controller,
                        KeyController *key_controller)
@@ -30,8 +30,9 @@ Threeboard::Threeboard(native::Native *native, native::Usb *usb,
       led_controller_(led_controller), key_controller_(key_controller) {
   // TODO: provide `this` as delegate to receive callback for success/error?
   usb->Setup();
-  native_->EnableTimer1(this);
-  native_->EnableTimer3(this);
+  native_->SetTimerInterruptHandlerDelegate(this);
+  native_->EnableTimer1();
+  native_->EnableTimer3();
 
   // Set up initial layers and states. These can be restored from flash later if
   // we decide to preserve them.

@@ -1,0 +1,224 @@
+// This USB implementation is influenced by the LUFA project
+// (https://github.com/abcminiuser/lufa), and by the Atreus firmware
+// (https://github.com/technomancy/atreus-firmware).
+// It explicitly does not support the ENDPOINT_HALT feature, since it's rarely
+// used and shouldn't affect functionality at all.
+
+#include "usb_impl.h"
+
+#include "src/usb/handlers.h"
+#include "src/util/util.h"
+
+namespace threeboard {
+namespace usb {
+
+UsbImpl::UsbImpl(native::Native *native) : native_(native) {
+  native_->SetUsbInterruptHandlerDelegate(this);
+}
+
+void UsbImpl::Setup() {
+  // Enable the USB pad regulator (which uses the external 1uF UCap).
+  native_->SetUHWCON(1 << native::UVREGE);
+  // Enable USB and freeze the clock.
+  native_->SetUSBCON((1 << native::USBE) | (1 << native::FRZCLK));
+  // PLL Control and Status Register. Configure the prescaler for the 16MHz
+  // clock, and enable the PLL.
+  native_->SetPLLCSR((1 << native::PINDIV) | (1 << native::PLLE));
+  // Busy loop to wait for the PLL to lock to the 16MHz reference clock.
+  while (!(native_->GetPLLCSR() & (1 << native::PLOCK)))
+    ;
+  // Enable USB and the VBUS pad.
+  native_->SetUSBCON((1 << native::USBE) | (1 << native::OTGPADE));
+  // Connect internal pull-up attach resistor.
+  native_->SetUDCON(native_->GetUDCON() & ~(1 << native::DETACH));
+  // Configure USB general interrupts (handled by the USB_GEN_vect routine). We
+  // want to interrupt on start of frame (SOFE), and also on end of reset
+  // (EORSTE).
+  native_->SetUDIEN((1 << native::EORSTE) | (1 << native::SOFE));
+}
+
+void UsbImpl::SendKeypress(const uint8_t key, const uint8_t mod) {
+  hid_state_.modifier_keys = mod;
+  // Currently we only support sending a single key at a time, even though this
+  // USB implementation supports the full 6 keys. Functionality of the
+  // threeboard may change in future to send multiple keys.
+  hid_state_.keyboard_keys[0] = key;
+  // TODO: capture errors
+  SendKeypress();
+  hid_state_.modifier_keys = 0;
+  hid_state_.keyboard_keys[0] = 0;
+  // TODO: capture errors
+  SendKeypress();
+}
+
+void UsbImpl::HandleGeneralInterrupt() {
+  uint8_t device_interrupt = native_->GetUDINT();
+  native_->SetUDINT(0);
+  // Detect end of reset interrupt, and configure Endpoint 0.
+  if (device_interrupt & (1 << native::EORSTI)) {
+    // Switch to Endpoint 0.
+    native_->SetUENUM(0);
+    // Re-enable the endpoint after this USB reset.
+    native_->SetUECONX(1 << native::EPEN);
+    // Set Endpoint 0's type as a control endpoint.
+    native_->SetUECFG0X(0);
+    // Set Endpoint 0's size as 32 bytes, single bank allocated.
+    native_->SetUECFG1X(kEndpoint32ByteBank | kEndpointSingleBank);
+    // Configure an endpoint interrupt when RXSTPI is sent (i.e. when the
+    // current bank contains a new valid SETUP packet).
+    native_->SetUEIENX(1 << native::RXSTPE);
+  }
+
+  // SOFI (start of frame interrupt) will fire every 1ms on our full speed bus.
+  // We use it to time the HID reporting frequency based on the idle rate once
+  // the device has been configured. Some hosts may disable this by setting
+  // idle_config to 0.
+  if ((device_interrupt & (1 << native::SOFI)) &&
+      !(native_->GetUDMFN() & (1 << native::FNCERR)) &&
+      hid_state_.configuration && hid_state_.idle_config) {
+    native_->SetUENUM(kKeyboardEndpoint);
+    // Check we're allowed to write out to USB FIFO.
+    if (native_->GetUEINTX() & (1 << native::RWAL)) {
+      hid_state_.idle_count++;
+      if (hid_state_.idle_count == hid_state_.idle_config) {
+        // TODO: we should check if there's something in the IN buffer already
+        // before sending zeroes, otherwise we may miss keystrokes.
+        SendHidState();
+      }
+    }
+  }
+}
+
+void UsbImpl::HandleEndpointInterrupt() {
+  // Immediately parse incoming data into a SETUP packet. If there's an issue
+  // with the interrupt type it'll be handled afterwards.
+  SetupPacket packet = SetupPacket::ParseFromUsbEndpoint(native_);
+  // Backup and clear interrupt bits to handshake the interrupt.
+  uint8_t interrupt = native_->GetUEINTX();
+  native_->SetUEINTX(
+      native_->GetUEINTX() &
+      ~((1 << native::RXSTPI) | (1 << native::RXOUTI) | (1 << native::TXINI)));
+
+  // This interrupt handler is only used for responding to USB SETUP packets. If
+  // the interrupt has triggered for any other reason, we should reply with
+  // STALL.
+  if (!(interrupt & (1 << native::RXSTPI))) {
+    native_->SetUECONX((1 << native::STALLRQ) | (1 << native::EPEN));
+    return;
+  }
+
+  // TODO: refactor device_handler into a class so it can be injected here and
+  // tested.
+  // Call the appropriate device handlers for device requests.
+  if (packet.bRequest == Request::GET_STATUS) {
+    device_handler::HandleGetStatus(native_);
+  }
+  if (packet.bRequest == Request::SET_ADDRESS) {
+    device_handler::HandleSetAddress(native_, packet);
+  }
+  if (packet.bRequest == Request::GET_DESCRIPTOR) {
+    device_handler::HandleGetDescriptor(native_, packet);
+  }
+  if (packet.bRequest == Request::GET_CONFIGURATION &&
+      packet.bmRequestType.GetDirection() ==
+          RequestType::Direction::DEVICE_TO_HOST) {
+    device_handler::HandleGetConfiguration(native_, hid_state_);
+  }
+  if (packet.bRequest == Request::SET_CONFIGURATION &&
+      packet.bmRequestType.GetDirection() ==
+          RequestType::Direction::HOST_TO_DEVICE) {
+    device_handler::HandleSetConfiguration(native_, packet, &hid_state_);
+  }
+
+  // Call the appropriate HID handlers for HID requests.
+  if (packet.wIndex == kKeyboardInterface &&
+      packet.bmRequestType.GetType() == RequestType::Type::CLASS &&
+      packet.bmRequestType.GetRecipient() ==
+          RequestType::Recipient::INTERFACE) {
+    if (packet.bmRequestType.GetDirection() ==
+        RequestType::Direction::DEVICE_TO_HOST) {
+      if (packet.bRequest == Request::HID_GET_REPORT) {
+        hid_handler::HandleGetReport(native_, hid_state_);
+      }
+      if (packet.bRequest == Request::HID_GET_IDLE) {
+        hid_handler::HandleGetIdle(native_, hid_state_);
+      }
+      if (packet.bRequest == Request::HID_GET_PROTOCOL) {
+        hid_handler::HandleGetProtocol(native_, hid_state_);
+      }
+    }
+    if (packet.bmRequestType.GetDirection() ==
+        RequestType::Direction::HOST_TO_DEVICE) {
+      if (packet.bRequest == Request::HID_SET_IDLE) {
+        hid_handler::HandleSetIdle(native_, packet, &hid_state_);
+      }
+      if (packet.bRequest == Request::HID_SET_PROTOCOL) {
+        hid_handler::HandleSetProtocol(native_, packet, &hid_state_);
+      }
+    }
+  }
+}
+
+int8_t UsbImpl::SendKeypress() {
+  uint8_t intr_state = native_->GetSREG();
+  native_->DisableInterrupts();
+  uint8_t timeout = native_->GetUDFNUML() + 50;
+  while (1) {
+    native_->SetUENUM(kKeyboardEndpoint);
+    native_->EnableInterrupts();
+    // Check if we're allowed to push data into the FIFO. If we are, we can
+    // immediately break and begin transmitting.
+    if (native_->GetUEINTX() & (1 << native::RWAL)) {
+      break;
+    }
+    native_->SetSREG(intr_state);
+    // Ensure the device is still configured.
+    if (!hid_state_.configuration) {
+      return -1;
+    }
+    // Only continue polling RWAL for 50 frames (50ms on our full-speed bus)
+    if (native_->GetUDFNUML() >= timeout) {
+      return -1;
+    }
+    intr_state = native_->GetSREG();
+    native_->DisableInterrupts();
+  }
+
+  SendHidState();
+  native_->SetSREG(intr_state);
+  return 0;
+}
+
+// Misc functions to wait for ready and send/receive packets
+__always_inline void UsbImpl::AwaitTransmitterReady() {
+  while (!(native_->GetUEINTX() & (1 << native::TXINI)))
+    ;
+}
+
+__always_inline void UsbImpl::AwaitReceiverReady() {
+  while (!(native_->GetUEINTX() & (1 << native::RXOUTI)))
+    ;
+}
+
+__always_inline void UsbImpl::HandshakeTransmitterInterrupt() {
+  native_->SetUEINTX(~(1 << native::TXINI));
+}
+
+__always_inline void UsbImpl::HandshakeReceiverInterrupt() {
+  native_->SetUEINTX(~(1 << native::RXOUTI));
+}
+
+// Send the state of the HID device to the bus.
+void UsbImpl::SendHidState() {
+  hid_state_.idle_count = 0;
+  native_->SetUEDATX(hid_state_.modifier_keys);
+  native_->SetUEDATX(0);
+  for (uint8_t i = 0; i < 6; i++) {
+    native_->SetUEDATX(hid_state_.keyboard_keys[i]);
+  }
+  // TODO: remove magic number
+  native_->SetUEINTX(0x3A);
+}
+
+} // namespace usb
+} // namespace threeboard

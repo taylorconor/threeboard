@@ -1,6 +1,6 @@
 #pragma once
 
-#include "native/native.h"
+#include "src/native/native.h"
 
 namespace threeboard {
 enum class Keypress : uint8_t {

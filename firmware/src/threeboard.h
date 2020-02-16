@@ -1,19 +1,18 @@
 #pragma once
 
-#include "event_handler.h"
-#include "key_controller.h"
-#include "led_controller.h"
-#include "native/native.h"
-#include "native/usb.h"
+#include "src/event_handler.h"
+#include "src/key_controller.h"
+#include "src/led_controller.h"
+#include "src/native/native.h"
+#include "src/usb/usb.h"
 
 // Manages the state of the keyboard and acts as a delegate to coordinate all of
 // the various interrupt-driven handlers.
 namespace threeboard {
-class Threeboard : public native::InterruptHandlerDelegate {
+class Threeboard : public native::TimerInterruptHandlerDelegate {
 public:
-  Threeboard(native::Native *native, native::Usb *usb,
-             EventHandler *event_handler, LedController *led_controller,
-             KeyController *key_controller);
+  Threeboard(native::Native *native, usb::Usb *usb, EventHandler *event_handler,
+             LedController *led_controller, KeyController *key_controller);
 
   // Main application runloop.
   void Run();
@@ -59,7 +58,7 @@ private:
   static const handler_function state_machine[4][2][1];
 
   native::Native *native_;
-  native::Usb *usb_;
+  usb::Usb *usb_;
   EventHandler *event_handler_;
   LedController *led_controller_;
   KeyController *key_controller_;

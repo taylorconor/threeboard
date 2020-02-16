@@ -2,15 +2,17 @@
 
 #include <stdint.h>
 
+#include "src/native/native.h"
+
 namespace threeboard {
-namespace native {
+namespace usb {
 
 // RequestType bitmap format as defined by the USB spec rev. 2.0, section 9.3,
 // table 9-2.
 class RequestType {
 public:
   constexpr RequestType() {}
-  constexpr RequestType(volatile uint8_t &value) { value_ = value; }
+  constexpr RequestType(const uint8_t value) { value_ = value; }
   enum class Direction : uint8_t {
     HOST_TO_DEVICE = 0,
     DEVICE_TO_HOST = 1,
@@ -187,10 +189,10 @@ public:
   uint16_t wIndex;
   uint16_t wLength;
 
-  static SetupPacket ParseFromUsbEndpoint();
+  static SetupPacket ParseFromUsbEndpoint(native::Native *);
 
 private:
   SetupPacket() {}
 };
-} // namespace native
+} // namespace usb
 } // namespace threeboard
