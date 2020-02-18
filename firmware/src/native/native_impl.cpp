@@ -1,5 +1,9 @@
 #include "native_impl.h"
 
+// Defining this allows delay_ms to accept non-compiletime constants as
+// parameters.
+#define __DELAY_BACKWARD_COMPATIBLE__
+
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <avr/pgmspace.h>
@@ -115,11 +119,7 @@ void NativeImpl::EnableTimer1() { Timer1Init(); }
 
 void NativeImpl::EnableTimer3() { Timer3Init(); }
 
-void NativeImpl::Delay(uint8_t ms) const {
-  while (ms-- > 0) {
-    _delay_ms(1);
-  }
-}
+void NativeImpl::Delay(const uint8_t ms) const { _delay_ms(ms); }
 
 uint16_t NativeImpl::ReadPgmWord(const uint8_t *ptr) const {
   return pgm_read_word(ptr);

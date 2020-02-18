@@ -40,7 +40,7 @@ public:
   void EnableTimer1() final override;
   void EnableTimer3() final override;
 
-  void Delay(uint8_t) const final override;
+  void Delay(const uint8_t) const final override;
 
   uint16_t ReadPgmWord(const uint8_t *) const final override;
   uint8_t ReadPgmByte(const uint8_t *) const final override;
