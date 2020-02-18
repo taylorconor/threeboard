@@ -42,8 +42,8 @@ public:
 
   void Delay(uint8_t) const final override;
 
-  uint16_t ReadPgmWord(const uint8_t *) final override;
-  uint8_t ReadPgmByte(const uint8_t *) final override;
+  uint16_t ReadPgmWord(const uint8_t *) const final override;
+  uint8_t ReadPgmByte(const uint8_t *) const final override;
 
   void EnableDDRB(const uint8_t) final override;
   void DisableDDRB(const uint8_t) final override;
@@ -62,30 +62,30 @@ public:
   void SetUEDATX(const uint8_t) final override;
   uint8_t GetUEDATX() final override;
   void SetUEINTX(const uint8_t) final override;
-  uint8_t GetUEINTX() final override;
+  uint8_t GetUEINTX() const final override;
   void SetUDINT(const uint8_t) final override;
-  uint8_t GetUDINT() final override;
-  uint8_t GetRXOUTI() final override;
-  uint8_t GetEORSTI() final override;
-  uint8_t GetEPEN() final override;
+  uint8_t GetUDINT() const final override;
+  uint8_t GetRXOUTI() const final override;
+  uint8_t GetEORSTI() const final override;
+  uint8_t GetEPEN() const final override;
   void SetUECONX(const uint8_t) final override;
-  uint8_t GetUECFG0X() final override;
+  uint8_t GetUECFG0X() const final override;
   void SetUECFG1X(const uint8_t) final override;
-  uint8_t GetUDMFN() final override;
-  uint8_t GetSREG() final override;
+  uint8_t GetUDMFN() const final override;
+  uint8_t GetSREG() const final override;
   void SetSREG(const uint8_t) final override;
-  uint8_t GetUDFNUML() final override;
+  uint8_t GetUDFNUML() const final override;
   void SetUHWCON(const uint8_t) final override;
   void SetUSBCON(const uint8_t) final override;
   void SetPLLCSR(const uint8_t) final override;
-  uint8_t GetPLLCSR() final override;
+  uint8_t GetPLLCSR() const final override;
   void SetUENUM(const uint8_t) final override;
   void SetUDCON(const uint8_t) final override;
   void SetUDIEN(const uint8_t) final override;
-  uint8_t GetUDCON() final override;
+  uint8_t GetUDCON() const final override;
   void SetUECFG0X(const uint8_t) final override;
   void SetUEIENX(const uint8_t) final override;
-  uint8_t GetUDADDR() final override;
+  uint8_t GetUDADDR() const final override;
   void SetUDADDR(const uint8_t) final override;
   void SetUERST(const uint8_t) final override;
 

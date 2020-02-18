@@ -121,11 +121,11 @@ void NativeImpl::Delay(uint8_t ms) const {
   }
 }
 
-uint16_t NativeImpl::ReadPgmWord(const uint8_t *ptr) {
+uint16_t NativeImpl::ReadPgmWord(const uint8_t *ptr) const {
   return pgm_read_word(ptr);
 }
 
-uint8_t NativeImpl::ReadPgmByte(const uint8_t *ptr) {
+uint8_t NativeImpl::ReadPgmByte(const uint8_t *ptr) const {
   return pgm_read_byte(ptr);
 }
 
@@ -146,32 +146,32 @@ uint8_t NativeImpl::GetPINB() const { return PINB; }
 void NativeImpl::SetUEDATX(const uint8_t val) { UEDATX = val; }
 uint8_t NativeImpl::GetUEDATX() { return UEDATX; }
 void NativeImpl::SetUEINTX(const uint8_t val) { UEINTX = val; }
-uint8_t NativeImpl::GetUEINTX() { return UEINTX; }
+uint8_t NativeImpl::GetUEINTX() const { return UEINTX; }
 void NativeImpl::SetUDINT(const uint8_t val) { UDINT = val; }
-uint8_t NativeImpl::GetUDINT() { return UDINT; }
+uint8_t NativeImpl::GetUDINT() const { return UDINT; }
 
-uint8_t NativeImpl::GetRXOUTI() { return RXOUTI; }
-uint8_t NativeImpl::GetEORSTI() { return EORSTI; }
-uint8_t NativeImpl::GetEPEN() { return EPEN; }
+uint8_t NativeImpl::GetRXOUTI() const { return RXOUTI; }
+uint8_t NativeImpl::GetEORSTI() const { return EORSTI; }
+uint8_t NativeImpl::GetEPEN() const { return EPEN; }
 void NativeImpl::SetUECONX(const uint8_t val) { UECONX = val; }
-uint8_t NativeImpl::GetUECFG0X() { return UECFG0X; }
+uint8_t NativeImpl::GetUECFG0X() const { return UECFG0X; }
 void NativeImpl::SetUECFG1X(const uint8_t val) { UECFG1X = val; }
-uint8_t NativeImpl::GetUDMFN() { return UDMFN; }
-uint8_t NativeImpl::GetSREG() { return SREG; }
+uint8_t NativeImpl::GetUDMFN() const { return UDMFN; }
+uint8_t NativeImpl::GetSREG() const { return SREG; }
 void NativeImpl::SetSREG(const uint8_t val) { SREG = val; }
-uint8_t NativeImpl::GetUDFNUML() { return UDFNUML; }
+uint8_t NativeImpl::GetUDFNUML() const { return UDFNUML; }
 void NativeImpl::SetUHWCON(const uint8_t val) { UHWCON = val; }
 void NativeImpl::SetUSBCON(const uint8_t val) { USBCON = val; }
 
 void NativeImpl::SetPLLCSR(const uint8_t val) { PLLCSR = val; }
-uint8_t NativeImpl::GetPLLCSR() { return PLLCSR; }
+uint8_t NativeImpl::GetPLLCSR() const { return PLLCSR; }
 void NativeImpl::SetUENUM(const uint8_t val) { UENUM = val; }
 void NativeImpl::SetUDCON(const uint8_t val) { UDCON = val; }
 void NativeImpl::SetUDIEN(const uint8_t val) { UDIEN = val; }
-uint8_t NativeImpl::GetUDCON() { return UDCON; }
+uint8_t NativeImpl::GetUDCON() const { return UDCON; }
 void NativeImpl::SetUECFG0X(const uint8_t val) { UECFG0X = val; }
 void NativeImpl::SetUEIENX(const uint8_t val) { UEIENX = val; }
-uint8_t NativeImpl::GetUDADDR() { return UDADDR; }
+uint8_t NativeImpl::GetUDADDR() const { return UDADDR; }
 void NativeImpl::SetUDADDR(const uint8_t val) { UDADDR = val; }
 void NativeImpl::SetUERST(const uint8_t val) { UERST = val; }
 
