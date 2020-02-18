@@ -12,17 +12,12 @@ avr_library(
 )
 
 avr_library(
-  name = "timer_interrupt_handler_delegate",
-  hdrs = ["timer_interrupt_handler_delegate.h"],
-)
-
-avr_library(
   name = "native",
   hdrs = ["native.h"],
   deps = [
     ":constants",
-    ":timer_interrupt_handler_delegate",
-    "//src/usb:usb_interrupt_handler_delegate",
+    "//src/delegates:timer_interrupt_handler_delegate",
+    "//src/delegates:usb_interrupt_handler_delegate",
   ],
 )
 
@@ -32,7 +27,7 @@ avr_pure_library(
   hdrs = ["native_impl.h"],
   deps = [
     ":native",
-    ":timer_interrupt_handler_delegate",
+    "//src/delegates:timer_interrupt_handler_delegate",
   ],
 )
 

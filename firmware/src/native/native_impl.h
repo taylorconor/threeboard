@@ -2,7 +2,7 @@
 
 #include "native.h"
 
-#include "src/usb/usb_interrupt_handler_delegate.h"
+#include "src/delegates/usb_interrupt_handler_delegate.h"
 
 // The threeboard uses an atmega32u4 microcontroller with a 16MHz clock.
 #ifndef F_CPU

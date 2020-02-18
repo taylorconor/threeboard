@@ -1,9 +1,9 @@
 #pragma once
 
+#include "src/delegates/usb_interrupt_handler_delegate.h"
 #include "src/native/native.h"
 #include "src/usb/internal/hid_state.h"
 #include "src/usb/usb.h"
-#include "src/usb/usb_interrupt_handler_delegate.h"
 
 namespace threeboard {
 namespace usb {

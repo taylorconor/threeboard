@@ -2,9 +2,9 @@
 
 #include <stdint.h>
 
+#include "src/delegates/timer_interrupt_handler_delegate.h"
+#include "src/delegates/usb_interrupt_handler_delegate.h"
 #include "src/native/constants.h"
-#include "src/native/timer_interrupt_handler_delegate.h"
-#include "src/usb/usb_interrupt_handler_delegate.h"
 
 #undef PROGMEM
 #define PROGMEM __attribute__((__progmem__))

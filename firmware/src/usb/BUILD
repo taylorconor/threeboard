@@ -11,11 +11,6 @@ avr_library(
   hdrs = ["usb.h"],
 )
 
-avr_library(
-  name = "usb_interrupt_handler_delegate",
-  hdrs = ["usb_interrupt_handler_delegate.h"],
-)
-
 avr_pure_library(
   name = "usb_impl",
   srcs = ["usb_impl.cpp"],

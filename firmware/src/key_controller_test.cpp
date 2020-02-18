@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "src/keypress_handler_delegate_mock.h"
+#include "src/delegates/keypress_handler_delegate_mock.h"
 #include "src/native/native_mock.h"
 
 namespace threeboard {
