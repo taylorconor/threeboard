@@ -5,6 +5,7 @@ namespace usb {
 
 class UsbInterruptHandlerDelegate {
 public:
+  virtual ~UsbInterruptHandlerDelegate() {}
   virtual void HandleGeneralInterrupt();
   virtual void HandleEndpointInterrupt();
 };

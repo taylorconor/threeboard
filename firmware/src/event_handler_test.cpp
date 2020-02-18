@@ -6,7 +6,6 @@
 #include "src/native/native_mock.h"
 
 namespace threeboard {
-namespace util {
 namespace {
 
 using testing::_;
@@ -46,5 +45,4 @@ TEST_F(EventHandlerTest, TestDelayCalledBeforeKeypressPresent) {
   ASSERT_TRUE(has_returned);
 }
 } // namespace
-} // namespace util
 } // namespace threeboard

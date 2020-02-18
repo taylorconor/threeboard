@@ -7,11 +7,7 @@
 #include "src/usb/usb_interrupt_handler_delegate.h"
 
 #undef PROGMEM
-#ifdef __AVR__
 #define PROGMEM __attribute__((__progmem__))
-#else
-#define PROGMEM
-#endif
 
 namespace threeboard {
 namespace native {

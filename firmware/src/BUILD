@@ -32,6 +32,11 @@ avr_library(
   hdrs = ["keypress_handler_delegate.h"],
 )
 
+cc_library(
+  name = "keypress_handler_delegate_mock",
+  hdrs = ["keypress_handler_delegate_mock.h"],
+)
+
 avr_library(
   name = "key_controller",
   srcs = ["key_controller.cpp"],
@@ -40,6 +45,18 @@ avr_library(
     ":keypress_handler_delegate",
     "//src/native:native",
     "//src/util:util",
+  ],
+)
+
+cc_test(
+  name = "key_controller_test",
+  srcs = ["key_controller_test.cpp"],
+  deps = [
+    ":key_controller",
+    ":keypress_handler_delegate_mock",
+    "@gtest//:gtest",
+    "@gtest//:gtest_main",
+    "//src/native:native_mock",
   ],
 )
 
