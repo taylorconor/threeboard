@@ -1,6 +1,5 @@
 load(
   "//toolchain:avr.bzl",
-  "avr_pure_library",
   "avr_library",
 )
 
@@ -16,7 +15,7 @@ avr_library(
   hdrs = ["hid_state.h"],
 )
 
-avr_pure_library(
+avr_library(
   name = "protocol",
   hdrs = ["protocol.h"],
   srcs = ["protocol.cpp"],
@@ -25,7 +24,7 @@ avr_pure_library(
   ],
 )
 
-avr_pure_library(
+avr_library(
   name = "descriptors",
   hdrs = ["descriptors.h"],
   srcs = ["descriptors.cpp"],
@@ -36,7 +35,7 @@ avr_pure_library(
   ],
 )
 
-avr_pure_library(
+avr_library(
   name = "handlers",
   srcs = ["handlers.cpp"],
   hdrs = ["handlers.h"],

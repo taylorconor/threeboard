@@ -21,8 +21,9 @@ constexpr uint8_t kBootInterfaceSubclassCode = 1;
 constexpr uint8_t kKeyboardInterfaceProtocol = 1;
 } // namespace hid
 
-constexpr uint16_t kUsbSpecificationReleaseNumber = 0x0200; // USB spec 2.0.
 constexpr uint16_t kLanguageIdEnglish = 0x0409;
+
+constexpr uint16_t kUsbSpecificationReleaseNumber = 0x0200; // USB spec 2.0.
 constexpr uint8_t kDeviceClassCode = 0;
 constexpr uint8_t kDeviceSubclassCode = 0;
 constexpr uint8_t kFullSpeedDeviceProtocol = 0;

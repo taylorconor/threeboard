@@ -8,6 +8,7 @@ DescriptorContainer::ParseFromProgmem(native::Native *native,
   DescriptorContainer descriptor;
   descriptor.id = native->ReadPgmWord(ptr);
   descriptor.index = native->ReadPgmWord(ptr + 2);
+  // TODO: why does this read word rather than byte?
   descriptor.data = (const uint8_t *)native->ReadPgmWord(ptr + 4);
   descriptor.length = native->ReadPgmByte(ptr + 6);
   return descriptor;

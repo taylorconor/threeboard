@@ -1,7 +1,5 @@
 #include "protocol.h"
 
-#include <avr/io.h>
-
 namespace threeboard {
 namespace usb {
 

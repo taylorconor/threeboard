@@ -126,16 +126,19 @@ static constexpr CombinedDescriptor PROGMEM combined_descriptor = {
 // supported_languages decriptor is mandatory, the others are just so the host
 // receives a human-redable device identifier string, and can be removed if
 // necessary.
-static constexpr UnicodeStringDescriptor PROGMEM supported_languages = {
-    .bLength = 4, .bString = {kLanguageIdEnglish}};
-static constexpr UnicodeStringDescriptor PROGMEM manufacturer = {
+// TODO: Don't think we need the null terminator in here.
+static constexpr UnicodeStringDescriptor<1> PROGMEM supported_languages = {
+    .bLength = 4,
+    .bDescriptorType = DescriptorType::STRING,
+    .bString = {kLanguageIdEnglish}};
+static constexpr UnicodeStringDescriptor<15> PROGMEM manufacturer = {
     .bLength = 30,
     .bDescriptorType = DescriptorType::STRING,
-    {.bString = L"threeboard.dev"}};
-static constexpr UnicodeStringDescriptor PROGMEM product = {
+    .bString = L"threeboard.dev"};
+static constexpr UnicodeStringDescriptor<16> PROGMEM product = {
     .bLength = 32,
     .bDescriptorType = DescriptorType::STRING,
-    {.bString = L"threeboard v0.1"}};
+    .bString = L"threeboard v0.1"};
 
 // This table defines which descriptor data is sent for each specific
 // GetDescriptor request from the host, for a given DescriptorValue.

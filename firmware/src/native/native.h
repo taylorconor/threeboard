@@ -7,7 +7,14 @@
 #include "src/native/constants.h"
 
 #undef PROGMEM
+#ifdef __AVR__
+// Only define PROGMEM for avr-gcc since it's not supported (or needed) when
+// compiling for x86.
 #define PROGMEM __attribute__((__progmem__))
+#else
+// Avoid noisy compiler warnings when compiling for x86.
+#define PROGMEM
+#endif
 
 namespace threeboard {
 namespace native {

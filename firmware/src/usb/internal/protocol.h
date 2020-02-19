@@ -173,10 +173,10 @@ struct EndpointDescriptor {
 };
 
 // USB spec rev. 2.0, section 9.6.7, table 9-16.
-struct UnicodeStringDescriptor {
+template <int T> struct UnicodeStringDescriptor {
   uint8_t bLength;
   DescriptorType bDescriptorType = DescriptorType::STRING;
-  const wchar_t bString[];
+  const wchar_t bString[T];
 };
 
 // Setup packet format as defined by the USB spec rev. 2.0, section 9.3, table

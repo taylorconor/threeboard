@@ -1,6 +1,5 @@
 load(
   "//toolchain:avr.bzl",
-  "avr_pure_library",
   "avr_library",
 )
 
@@ -11,7 +10,7 @@ avr_library(
   hdrs = ["usb.h"],
 )
 
-avr_pure_library(
+avr_library(
   name = "usb_impl",
   srcs = ["usb_impl.cpp"],
   hdrs = ["usb_impl.h"],
