@@ -9,7 +9,7 @@
 // Manages the state of the keyboard and acts as a delegate to coordinate all of
 // the various interrupt-driven handlers.
 namespace threeboard {
-class Threeboard : public native::TimerInterruptHandlerDelegate {
+class Threeboard : public TimerInterruptHandlerDelegate {
 public:
   Threeboard(native::Native *native, usb::Usb *usb, EventHandler *event_handler,
              LedController *led_controller, KeyController *key_controller);

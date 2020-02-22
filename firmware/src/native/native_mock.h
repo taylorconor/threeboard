@@ -13,10 +13,10 @@ public:
               (), (const override));
   MOCK_METHOD(void, SetTimerInterruptHandlerDelegate,
               (TimerInterruptHandlerDelegate *), (override));
-  MOCK_METHOD(usb::UsbInterruptHandlerDelegate *,
-              GetUsbInterruptHandlerDelegate, (), (const));
+  MOCK_METHOD(UsbInterruptHandlerDelegate *, GetUsbInterruptHandlerDelegate, (),
+              (const override));
   MOCK_METHOD(void, SetUsbInterruptHandlerDelegate,
-              (usb::UsbInterruptHandlerDelegate *), (override));
+              (UsbInterruptHandlerDelegate *), (override));
 
   MOCK_METHOD(void, EnableInterrupts, (), (override));
   MOCK_METHOD(void, DisableInterrupts, (), (override));
@@ -24,7 +24,7 @@ public:
   MOCK_METHOD(void, EnableTimer1, (), (override));
   MOCK_METHOD(void, EnableTimer3, (), (override));
 
-  MOCK_METHOD(void, Delay, (uint8_t), (const, override));
+  MOCK_METHOD(void, Delay, (uint8_t), (const override));
 
   MOCK_METHOD(uint16_t, ReadPgmWord, (const uint8_t *), (const override));
   MOCK_METHOD(uint8_t, ReadPgmByte, (const uint8_t *), (const override));

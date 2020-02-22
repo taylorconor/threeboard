@@ -101,13 +101,13 @@ void NativeImpl::SetTimerInterruptHandlerDelegate(
   timer_delegate_ = delegate;
 }
 
-usb::UsbInterruptHandlerDelegate *
+UsbInterruptHandlerDelegate *
 NativeImpl::GetUsbInterruptHandlerDelegate() const {
   return usb_delegate_;
 }
 
 void NativeImpl::SetUsbInterruptHandlerDelegate(
-    usb::UsbInterruptHandlerDelegate *delegate) {
+    UsbInterruptHandlerDelegate *delegate) {
   usb_delegate_ = delegate;
 }
 

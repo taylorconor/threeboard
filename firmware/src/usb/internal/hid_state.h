@@ -4,6 +4,7 @@
 
 namespace threeboard {
 namespace usb {
+
 // State of the HID device which can be read and mutated by the USB handlers.
 struct HidState {
   // The configuration of the USB device, set by the host. Zero when not

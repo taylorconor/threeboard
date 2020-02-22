@@ -1,13 +1,11 @@
 #pragma once
 
 namespace threeboard {
-namespace usb {
 
 class UsbInterruptHandlerDelegate {
 public:
   virtual ~UsbInterruptHandlerDelegate() {}
-  virtual void HandleGeneralInterrupt();
-  virtual void HandleEndpointInterrupt();
+  virtual void HandleGeneralInterrupt() = 0;
+  virtual void HandleEndpointInterrupt() = 0;
 };
-} // namespace usb
 } // namespace threeboard

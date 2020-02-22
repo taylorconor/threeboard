@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include "src/native/native.h"
+#include "src/util/util.h"
 
 namespace threeboard {
 namespace usb {
@@ -30,9 +31,13 @@ public:
     OTHER = 3,
   };
 
-  constexpr Direction GetDirection() const { return (Direction)(value_ >> 7); }
-  constexpr Type GetType() const { return (Type)((value_ >> 5) & 3); }
-  constexpr Recipient GetRecipient() const { return (Recipient)(value_ & 31); }
+  __always_inline Direction GetDirection() const {
+    return (Direction)(value_ >> 7);
+  }
+  __always_inline Type GetType() const { return (Type)((value_ >> 5) & 3); }
+  __always_inline Recipient GetRecipient() const {
+    return (Recipient)(value_ & 31);
+  }
 
 private:
   uint8_t value_ = 0;

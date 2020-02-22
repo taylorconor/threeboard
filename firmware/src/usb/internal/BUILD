@@ -20,6 +20,7 @@ avr_library(
   hdrs = ["protocol.h"],
   srcs = ["protocol.cpp"],
   deps = [
+    "//src/util:util",
     "//src/native:native",
   ],
 )

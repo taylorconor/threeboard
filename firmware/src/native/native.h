@@ -27,10 +27,10 @@ public:
   GetTimerInterruptHandlerDelegate() const = 0;
   virtual void
   SetTimerInterruptHandlerDelegate(TimerInterruptHandlerDelegate *) = 0;
-  virtual usb::UsbInterruptHandlerDelegate *
+  virtual UsbInterruptHandlerDelegate *
   GetUsbInterruptHandlerDelegate() const = 0;
   virtual void
-  SetUsbInterruptHandlerDelegate(usb::UsbInterruptHandlerDelegate *) = 0;
+  SetUsbInterruptHandlerDelegate(UsbInterruptHandlerDelegate *) = 0;
 
   virtual void EnableInterrupts() = 0;
   virtual void DisableInterrupts() = 0;
