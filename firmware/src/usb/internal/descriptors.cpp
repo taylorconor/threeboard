@@ -1,5 +1,7 @@
 #include "descriptors.h"
 
+#include <iostream>
+
 namespace threeboard {
 namespace usb {
 DescriptorContainer
@@ -7,10 +9,15 @@ DescriptorContainer::ParseFromProgmem(native::Native *native,
                                       const uint8_t *ptr) {
   DescriptorContainer descriptor;
   descriptor.id = native->ReadPgmWord(ptr);
-  descriptor.index = native->ReadPgmWord(ptr + 2);
-  // TODO: why does this read word rather than byte?
-  descriptor.data = (const uint8_t *)native->ReadPgmWord(ptr + 4);
-  descriptor.length = native->ReadPgmByte(ptr + 6);
+  ptr += sizeof(descriptor.id);
+  descriptor.index = native->ReadPgmWord(ptr);
+  ptr += sizeof(descriptor.index);
+  descriptor.data = (const uint8_t *)native->ReadPgmWord(ptr);
+  ptr += sizeof(descriptor.data);
+  descriptor.length = native->ReadPgmByte(ptr);
+  std::cout << "&&& descriptor id = " << descriptor.id.GetValue()
+            << ", index = " << descriptor.index
+            << ", length = " << (int)descriptor.length << std::endl;
   return descriptor;
 }
 } // namespace usb

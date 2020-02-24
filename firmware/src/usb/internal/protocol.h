@@ -38,6 +38,7 @@ public:
   __always_inline Recipient GetRecipient() const {
     return (Recipient)(value_ & 31);
   }
+  __always_inline uint8_t GetValue() { return value_; }
 
 private:
   uint8_t value_ = 0;
@@ -108,6 +109,8 @@ public:
   constexpr bool operator==(const DescriptorId &other) const {
     return this->value_ == other.value_;
   }
+
+  constexpr uint16_t GetValue() { return value_; }
 
 private:
   uint16_t value_ = 0;
@@ -195,9 +198,6 @@ public:
   uint16_t wLength;
 
   static SetupPacket ParseFromUsbEndpoint(native::Native *);
-
-private:
-  SetupPacket() {}
 };
 } // namespace usb
 } // namespace threeboard

@@ -1,5 +1,7 @@
 #include "handlers.h"
 
+#include <iostream>
+
 #include "src/usb/internal/descriptors.h"
 #include "src/util/util.h"
 
@@ -31,8 +33,10 @@ bool FindMatchingContainer(native::Native *native, const SetupPacket &packet,
   const DescriptorContainer *ptr = descriptor_list;
   // Find the first descriptor with a matching descriptor value.
   uint8_t i = 0;
+  std::cout << "&&& searching for " << packet.wValue << std::endl;
   for (; i < GetDescriptorListSize(); i++, ptr++) {
     DescriptorId id = native->ReadPgmWord((uint8_t *)ptr);
+    std::cout << "&&& found id = " << id.GetValue() << std::endl;
     if (id == packet.wValue) {
       *descriptor =
           DescriptorContainer::ParseFromProgmem(native, (uint8_t *)ptr);
@@ -96,6 +100,10 @@ void HandleGetDescriptor(native::Native *native, const SetupPacket &packet) {
   uint16_t remaining_packet_length =
       util::min(util::min(packet.wLength, 255), container.length);
   uint16_t current_frame_length = 0;
+  std::cout << "&&& remaining length = " << remaining_packet_length
+            << std::endl;
+  std::cout << "&&& wlength = " << packet.wLength
+            << ", container = " << container.length << std::endl;
   while (remaining_packet_length > 0 ||
          current_frame_length == kEndpoint32ByteBank) {
     AwaitTransmitterReady(native);
@@ -111,8 +119,6 @@ void HandleGetDescriptor(native::Native *native, const SetupPacket &packet) {
 
 // Replies with the current Configuration of the device.
 void HandleGetConfiguration(native::Native *native, const HidState &hid_state) {
-  // TODO: Section 9.4.2 specifies different configs for different states.
-  // Should also implement that here.
   AwaitTransmitterReady(native);
   native->SetUEDATX(hid_state.configuration);
   HandshakeTransmitterInterrupt(native);

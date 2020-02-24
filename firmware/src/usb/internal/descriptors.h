@@ -9,8 +9,8 @@ namespace threeboard {
 namespace usb {
 
 // A container for a generic descriptor. Used in a list as a descriptor lookup
-// table.
-struct DescriptorContainer {
+// table. Requires packed attribute to avoid alignment when compiling for x86.
+struct __attribute__((__packed__)) DescriptorContainer {
   DescriptorId id;
   uint16_t index;
   const uint8_t *data;

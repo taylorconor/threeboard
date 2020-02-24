@@ -1,12 +1,13 @@
 #pragma once
 
 #include "native.h"
+#include <iostream>
 
 #include "gmock/gmock.h"
 
 namespace threeboard {
 namespace native {
-namespace {
+
 class NativeMock : public Native {
 public:
   MOCK_METHOD(TimerInterruptHandlerDelegate *, GetTimerInterruptHandlerDelegate,
@@ -26,8 +27,15 @@ public:
 
   MOCK_METHOD(void, Delay, (uint8_t), (const override));
 
-  MOCK_METHOD(uint16_t, ReadPgmWord, (const uint8_t *), (const override));
-  MOCK_METHOD(uint8_t, ReadPgmByte, (const uint8_t *), (const override));
+  // There's more value in implementing these as real methods here than there is
+  // in mocking them.
+  uint16_t ReadPgmWord(const uint8_t *ptr) const override {
+    return *ptr + (*(ptr + 1) << 8);
+  }
+  uint8_t ReadPgmByte(const uint8_t *ptr) const override { return *ptr; }
+
+  //  MOCK_METHOD(uint16_t, ReadPgmWord, (const uint8_t *), (const override));
+  //  MOCK_METHOD(uint8_t, ReadPgmByte, (const uint8_t *), (const override));
 
   MOCK_METHOD(void, EnableDDRB, (const uint8_t), (override));
   MOCK_METHOD(void, DisableDDRB, (const uint8_t), (override));
@@ -73,6 +81,5 @@ public:
   MOCK_METHOD(void, SetUDADDR, (const uint8_t), (override));
   MOCK_METHOD(void, SetUERST, (const uint8_t), (override));
 };
-} // namespace
 } // namespace native
 } // namespace threeboard

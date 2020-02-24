@@ -6,6 +6,8 @@
 
 #include "usb_impl.h"
 
+#include <iostream>
+
 #include "src/usb/internal/handlers.h"
 #include "src/util/util.h"
 
@@ -36,6 +38,8 @@ void UsbImpl::Setup() {
   // (EORSTE).
   native_->SetUDIEN((1 << native::EORSTE) | (1 << native::SOFE));
 }
+
+bool UsbImpl::HasConfigured() { return hid_state_.configuration; }
 
 void UsbImpl::SendKeypress(const uint8_t key, const uint8_t mod) {
   hid_state_.modifier_keys = mod;

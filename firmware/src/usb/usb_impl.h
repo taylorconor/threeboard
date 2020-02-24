@@ -11,6 +11,7 @@ class UsbImpl : public Usb, public UsbInterruptHandlerDelegate {
 public:
   UsbImpl(native::Native *);
   void Setup() final override;
+  bool HasConfigured() final override;
   void SendKeypress(const uint8_t key, const uint8_t mod) final override;
 
   void HandleGeneralInterrupt() final override;

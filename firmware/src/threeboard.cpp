@@ -29,7 +29,7 @@ Threeboard::Threeboard(native::Native *native, usb::Usb *usb,
     : native_(native), usb_(usb), event_handler_(event_handler),
       led_controller_(led_controller), key_controller_(key_controller) {
   // TODO: provide `this` as delegate to receive callback for success/error?
-  usb->Setup();
+  usb_->Setup();
   native_->SetTimerInterruptHandlerDelegate(this);
   native_->EnableTimer1();
   native_->EnableTimer3();
@@ -40,6 +40,9 @@ Threeboard::Threeboard(native::Native *native, usb::Usb *usb,
 }
 
 void Threeboard::Run() {
+  // Wait until the USB stack has been configured before continuing the runloop.
+  while (!usb_->HasConfigured())
+    ;
   while (1) {
     auto event = event_handler_->WaitForKeyboardEvent();
     auto state = properties_[layer_].state;
