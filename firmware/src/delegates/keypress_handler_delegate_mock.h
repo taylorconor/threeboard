@@ -5,8 +5,12 @@
 #include "gmock/gmock.h"
 
 namespace threeboard {
-class KeypressHandlerDelegateMock : public KeypressHandlerDelegate {
+class KeypressHandlerDelegateMockDefault : public KeypressHandlerDelegate {
 public:
   MOCK_METHOD(void, HandleKeypress, (const Keypress), (override));
 };
+
+using KeypressHandlerDelegateMock =
+    ::testing::StrictMock<KeypressHandlerDelegateMockDefault>;
+
 } // namespace threeboard

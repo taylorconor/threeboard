@@ -11,7 +11,6 @@ namespace {
 
 using ::testing::_;
 using ::testing::Return;
-using ::testing::StrictMock;
 
 // Basic tests to prove that SetupPacket requests are handled by the correct
 // handler.
@@ -57,8 +56,8 @@ public:
     return MockEndpointInterrupt(request, 0, 0);
   }
 
-  StrictMock<native::NativeMock> native_mock_;
-  StrictMock<RequestHandlerMock> handler_mock_;
+  native::NativeMock native_mock_;
+  RequestHandlerMock handler_mock_;
   std::unique_ptr<UsbImpl> usb_;
 };
 

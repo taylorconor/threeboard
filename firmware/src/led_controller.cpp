@@ -63,7 +63,7 @@ void LedController::WriteStateToPins(uint8_t row) {
   // They could be set on each scan, but to maintain consistent brightness they
   // have each been assigned their own scan line.
   // TODO: uncomment after testing.
-  /*  if (row == 0) {
+  if (row == 0) {
     if (GetLedState(kLedErr) == LedState::ON) {
       native_->EnablePORTF(1 << native::PF6);
     }
@@ -74,7 +74,7 @@ void LedController::WriteStateToPins(uint8_t row) {
     }
   } else {
     native_->DisablePORTF(1 << native::PF7);
-    }*/
+  }
 
   // Clear all row and column pins first.
   native_->DisablePORTB(0b00100000);

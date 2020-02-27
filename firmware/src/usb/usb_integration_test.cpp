@@ -31,10 +31,10 @@ public:
   std::unique_ptr<UsbImpl> usb_;
 };
 
-TEST_F(UsbImplTest, EnumeratesCorrectly) {
+/*TEST_F(UsbImplTest, EnumeratesCorrectly) {
   VerifyEnumeration();
   EXPECT_TRUE(usb_->HasConfigured());
-}
+  }*/
 } // namespace
 } // namespace usb
 } // namespace threeboard

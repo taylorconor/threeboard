@@ -8,7 +8,7 @@
 namespace threeboard {
 namespace native {
 
-class NativeMock : public Native {
+class NativeMockDefault : public Native {
 public:
   MOCK_METHOD(TimerInterruptHandlerDelegate *, GetTimerInterruptHandlerDelegate,
               (), (const override));
@@ -81,5 +81,8 @@ public:
   MOCK_METHOD(void, SetUDADDR, (const uint8_t), (override));
   MOCK_METHOD(void, SetUERST, (const uint8_t), (override));
 };
+
+using NativeMock = ::testing::StrictMock<NativeMockDefault>;
+
 } // namespace native
 } // namespace threeboard
