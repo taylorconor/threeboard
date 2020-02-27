@@ -29,10 +29,10 @@ public:
   GetTimerInterruptHandlerDelegate() const final override;
   void SetTimerInterruptHandlerDelegate(
       TimerInterruptHandlerDelegate *) final override;
-  usb::UsbInterruptHandlerDelegate *
+  UsbInterruptHandlerDelegate *
   GetUsbInterruptHandlerDelegate() const final override;
-  void SetUsbInterruptHandlerDelegate(
-      usb::UsbInterruptHandlerDelegate *) final override;
+  void
+  SetUsbInterruptHandlerDelegate(UsbInterruptHandlerDelegate *) final override;
 
   void EnableInterrupts() final override;
   void DisableInterrupts() final override;
@@ -93,7 +93,7 @@ private:
   NativeImpl() = default;
 
   TimerInterruptHandlerDelegate *timer_delegate_;
-  usb::UsbInterruptHandlerDelegate *usb_delegate_;
+  UsbInterruptHandlerDelegate *usb_delegate_;
 };
 
 } // namespace native

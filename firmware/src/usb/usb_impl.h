@@ -3,6 +3,7 @@
 #include "src/delegates/usb_interrupt_handler_delegate.h"
 #include "src/native/native.h"
 #include "src/usb/internal/hid_state.h"
+#include "src/usb/internal/request_handler.h"
 #include "src/usb/usb.h"
 
 namespace threeboard {
@@ -17,9 +18,13 @@ public:
   void HandleGeneralInterrupt() final override;
   void HandleEndpointInterrupt() final override;
 
+  // Test only.
+  void SetRequestHandler(RequestHandler *);
+
 private:
   native::Native *native_;
   HidState hid_state_;
+  RequestHandler *request_handler_;
 
   int8_t SendKeypress();
 

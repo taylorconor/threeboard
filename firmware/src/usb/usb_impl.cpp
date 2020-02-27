@@ -6,9 +6,6 @@
 
 #include "usb_impl.h"
 
-#include <iostream>
-
-#include "src/usb/internal/handlers.h"
 #include "src/util/util.h"
 
 namespace threeboard {
@@ -16,6 +13,12 @@ namespace usb {
 
 UsbImpl::UsbImpl(native::Native *native) : native_(native) {
   native_->SetUsbInterruptHandlerDelegate(this);
+  // There's no reason to expose RequestHandler outside usb/internal, but we
+  // also need to be able to inject a mock. Instead of exposing it, we compose
+  // it here and allow overwriting the pointer in SetRequestHandler for mock
+  // injection.
+  static RequestHandler handler(native_);
+  request_handler_ = &handler;
 }
 
 void UsbImpl::Setup() {
@@ -115,23 +118,23 @@ void UsbImpl::HandleEndpointInterrupt() {
   // tested.
   // Call the appropriate device handlers for device requests.
   if (packet.bRequest == Request::GET_STATUS) {
-    device_handler::HandleGetStatus(native_);
+    request_handler_->HandleGetStatus();
   }
   if (packet.bRequest == Request::SET_ADDRESS) {
-    device_handler::HandleSetAddress(native_, packet);
+    request_handler_->HandleSetAddress(packet);
   }
   if (packet.bRequest == Request::GET_DESCRIPTOR) {
-    device_handler::HandleGetDescriptor(native_, packet);
+    request_handler_->HandleGetDescriptor(packet);
   }
   if (packet.bRequest == Request::GET_CONFIGURATION &&
       packet.bmRequestType.GetDirection() ==
           RequestType::Direction::DEVICE_TO_HOST) {
-    device_handler::HandleGetConfiguration(native_, hid_state_);
+    request_handler_->HandleGetConfiguration(hid_state_);
   }
   if (packet.bRequest == Request::SET_CONFIGURATION &&
       packet.bmRequestType.GetDirection() ==
           RequestType::Direction::HOST_TO_DEVICE) {
-    device_handler::HandleSetConfiguration(native_, packet, &hid_state_);
+    request_handler_->HandleSetConfiguration(packet, &hid_state_);
   }
 
   // Call the appropriate HID handlers for HID requests.
@@ -142,25 +145,30 @@ void UsbImpl::HandleEndpointInterrupt() {
     if (packet.bmRequestType.GetDirection() ==
         RequestType::Direction::DEVICE_TO_HOST) {
       if (packet.bRequest == Request::HID_GET_REPORT) {
-        hid_handler::HandleGetReport(native_, hid_state_);
+        request_handler_->HandleGetReport(hid_state_);
       }
       if (packet.bRequest == Request::HID_GET_IDLE) {
-        hid_handler::HandleGetIdle(native_, hid_state_);
+        request_handler_->HandleGetIdle(hid_state_);
       }
       if (packet.bRequest == Request::HID_GET_PROTOCOL) {
-        hid_handler::HandleGetProtocol(native_, hid_state_);
+        request_handler_->HandleGetProtocol(hid_state_);
       }
     }
     if (packet.bmRequestType.GetDirection() ==
         RequestType::Direction::HOST_TO_DEVICE) {
       if (packet.bRequest == Request::HID_SET_IDLE) {
-        hid_handler::HandleSetIdle(native_, packet, &hid_state_);
+        request_handler_->HandleSetIdle(packet, &hid_state_);
       }
       if (packet.bRequest == Request::HID_SET_PROTOCOL) {
-        hid_handler::HandleSetProtocol(native_, packet, &hid_state_);
+        request_handler_->HandleSetProtocol(packet, &hid_state_);
       }
     }
   }
+}
+
+// Test only.
+void UsbImpl::SetRequestHandler(RequestHandler *request_handler) {
+  request_handler_ = request_handler;
 }
 
 int8_t UsbImpl::SendKeypress() {

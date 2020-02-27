@@ -59,10 +59,6 @@ void FakeHost::AddFakeEndpointExpectations(Request request) {
   packet.bRequest = request;
   packet.wValue = DescriptorId(DescriptorType::DEVICE, 0).GetValue();
   packet.wLength = 255;
-  std::cout << "&&& packet.wValue = " << packet.wValue << std::endl;
-  std::cout << "&&& 1st = " << (int)((uint8_t)packet.wValue) << std::endl;
-  std::cout << "&&& 2nd = " << (int)((uint8_t)(packet.wValue >> 8))
-            << std::endl;
   EXPECT_CALL(*native_mock_, GetUEDATX())
       .Times(8)
       .WillOnce(Return(packet.bmRequestType.GetValue()))

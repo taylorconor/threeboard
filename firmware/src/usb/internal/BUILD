@@ -37,14 +37,24 @@ avr_library(
 )
 
 avr_library(
-  name = "handlers",
-  srcs = ["handlers.cpp"],
-  hdrs = ["handlers.h"],
+  name = "request_handler",
+  srcs = ["request_handler.cpp"],
+  hdrs = ["request_handler.h"],
   deps = [
     ":protocol",
     ":descriptors",
     ":constants",
     ":hid_state",
+    "//src/native:native",
     "//src/util:util",
+  ],
+)
+
+cc_library(
+  name = "request_handler_mock",
+  testonly = 1,
+  hdrs = ["request_handler_mock.h"],
+  deps = [
+    ":request_handler",
   ],
 )

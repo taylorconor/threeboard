@@ -2,7 +2,7 @@
 
 #include "src/delegates/usb_interrupt_handler_delegate.h"
 #include "src/native/native_mock.h"
-#include "src/usb/fake_host.h"
+#include "src/usb/testutil/fake_host.h"
 #include "gmock/gmock.h"
 
 namespace threeboard {

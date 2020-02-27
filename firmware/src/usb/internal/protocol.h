@@ -13,7 +13,7 @@ namespace usb {
 class RequestType {
 public:
   constexpr RequestType() {}
-  constexpr RequestType(const uint8_t value) { value_ = value; }
+
   enum class Direction : uint8_t {
     HOST_TO_DEVICE = 0,
     DEVICE_TO_HOST = 1,
@@ -31,6 +31,14 @@ public:
     OTHER = 3,
   };
 
+  constexpr RequestType(const uint8_t value) { value_ = value; }
+  constexpr RequestType(const Direction direction,
+                        const Type type = Type::STANDARD,
+                        const Recipient recipient = Recipient::DEVICE) {
+    value_ =
+        (uint8_t)recipient | ((uint8_t)type << 5) | ((uint8_t)direction << 7);
+  }
+
   __always_inline Direction GetDirection() const {
     return (Direction)(value_ >> 7);
   }
@@ -38,7 +46,7 @@ public:
   __always_inline Recipient GetRecipient() const {
     return (Recipient)(value_ & 31);
   }
-  __always_inline uint8_t GetValue() { return value_; }
+  __always_inline uint8_t GetValue() const { return value_; }
 
 private:
   uint8_t value_ = 0;
@@ -198,6 +206,12 @@ public:
   uint16_t wLength;
 
   static SetupPacket ParseFromUsbEndpoint(native::Native *);
+
+  bool operator==(const SetupPacket &other) const {
+    return bmRequestType.GetValue() == other.bmRequestType.GetValue() &&
+           bRequest == other.bRequest && wValue == other.wValue &&
+           wIndex == other.wIndex && wLength == other.wLength;
+  }
 };
 } // namespace usb
 } // namespace threeboard

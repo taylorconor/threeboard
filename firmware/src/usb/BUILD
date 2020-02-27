@@ -19,30 +19,33 @@ avr_library(
     "//src/delegates:usb_interrupt_handler_delegate",
     "//src/native:native",
     "//src/usb/internal:constants",
-    "//src/usb/internal:handlers",
+    "//src/usb/internal:request_handler",
     "//src/usb/internal:descriptors",
   ],
 )
 
-cc_library(
-  name = "fake_host",
-  srcs = ["fake_host.cpp"],
-  hdrs = ["fake_host.h"],
-  deps = [
-    ":usb_impl",
-    "//src/native:native_mock",
-    "//src/usb/internal:protocol",
- ],
-)
-
 cc_test(
-  name = "usb_impl_test_it",
-  srcs = ["usb_impl_test_it.cpp"],
+  name = "usb_impl_test",
+  linkstatic = 1,
+  srcs = ["usb_impl_test.cpp"],
   deps = [
     "@gtest//:gtest",
     "@gtest//:gtest_main",
-    ":fake_host",
-     ":usb_impl",
+    ":usb_impl",
+    "//src/native:native_mock",
+    "//src/usb/internal:request_handler_mock",
+    "//src/usb/testutil:testutil",
+  ],
+)
+
+cc_test(
+  name = "usb_integration_test",
+  srcs = ["usb_integration_test.cpp"],
+  deps = [
+    "@gtest//:gtest",
+    "@gtest//:gtest_main",
+    ":usb_impl",
+    "//src/usb/testutil:fake_host",
     "//src/delegates:usb_interrupt_handler_delegate",
     "//src/native:native_mock",
   ],
