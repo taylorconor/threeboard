@@ -1,15 +1,17 @@
 load(
-  "//toolchain:avr.bzl",
-  "avr_tools_repository",
+    "//toolchain:avr.bzl",
+    "avr_tools_repository",
 )
+
 avr_tools_repository()
 
 load(
-  "@bazel_tools//tools/build_defs/repo:git.bzl",
-  "git_repository",
+    "@bazel_tools//tools/build_defs/repo:git.bzl",
+    "git_repository",
 )
+
 git_repository(
-  name = "gtest",
-  remote = "https://github.com/google/googletest",
-  commit = "703bd9caab50b139428cea1aaff9974ebee5742e",
+    name = "gtest",
+    commit = "703bd9caab50b139428cea1aaff9974ebee5742e",
+    remote = "https://github.com/google/googletest",
 )

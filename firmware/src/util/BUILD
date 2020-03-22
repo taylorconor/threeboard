@@ -1,41 +1,41 @@
 load(
-  "//toolchain:avr.bzl",
-  "avr_library",
+    "//toolchain:avr.bzl",
+    "avr_library",
 )
 
 package(default_visibility = ["//visibility:public"])
 
 avr_library(
-  name = "bitset",
-  hdrs = ["bitset.h"],
+    name = "bitset",
+    hdrs = ["bitset.h"],
 )
 
 cc_test(
-  name = "bitset_test",
-  srcs = ["bitset_test.cpp"],
-  deps = [
-    "@gtest//:gtest",
-    "@gtest//:gtest_main",
-    ":bitset"
-  ],
+    name = "bitset_test",
+    srcs = ["bitset_test.cpp"],
+    deps = [
+        ":bitset",
+        "@gtest",
+        "@gtest//:gtest_main",
+    ],
 )
 
 avr_library(
-  name = "enum",
-  hdrs = ["enum.h"],
+    name = "enum",
+    hdrs = ["enum.h"],
 )
 
 cc_test(
-  name = "enum_test",
-  srcs = ["enum_test.cpp"],
-  deps = [
-    "@gtest//:gtest",
-    "@gtest//:gtest_main",
-    ":enum"
-  ],
+    name = "enum_test",
+    srcs = ["enum_test.cpp"],
+    deps = [
+        ":enum",
+        "@gtest",
+        "@gtest//:gtest_main",
+    ],
 )
 
 avr_library(
-  name = "util",
-  hdrs = ["util.h"],
+    name = "util",
+    hdrs = ["util.h"],
 )

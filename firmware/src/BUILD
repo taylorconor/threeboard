@@ -1,102 +1,102 @@
 load(
-  "//toolchain:avr.bzl",
-  "avr_binary",
-  "avr_library",
-  "avr_hex",
+    "//toolchain:avr.bzl",
+    "avr_binary",
+    "avr_hex",
+    "avr_library",
 )
 
 avr_library(
-  name = "led_controller",
-  srcs = ["led_controller.cpp"],
-  hdrs = ["led_controller.h"],
-  deps = [
-    "//src/util:bitset",
-    "//src/native:native",
-  ],
-  visibility = ["//visibility:public"]
+    name = "led_controller",
+    srcs = ["led_controller.cpp"],
+    hdrs = ["led_controller.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//src/native",
+        "//src/util:bitset",
+    ],
 )
 
 cc_test(
-  name = "led_controller_test",
-  srcs = ["led_controller_test.cpp"],
-  deps = [
-    "@gtest//:gtest",
-    "@gtest//:gtest_main",
-    "//src/native:native_mock",
-    ":led_controller"
-  ],
+    name = "led_controller_test",
+    srcs = ["led_controller_test.cpp"],
+    deps = [
+        ":led_controller",
+        "//src/native:native_mock",
+        "@gtest",
+        "@gtest//:gtest_main",
+    ],
 )
 
 avr_library(
-  name = "key_controller",
-  srcs = ["key_controller.cpp"],
-  hdrs = ["key_controller.h"],
-  deps = [
-    "//src/delegates:keypress_handler_delegate",
-    "//src/native:native",
-    "//src/util:util",
-  ],
+    name = "key_controller",
+    srcs = ["key_controller.cpp"],
+    hdrs = ["key_controller.h"],
+    deps = [
+        "//src/delegates:keypress_handler_delegate",
+        "//src/native",
+        "//src/util",
+    ],
 )
 
 cc_test(
-  name = "key_controller_test",
-  srcs = ["key_controller_test.cpp"],
-  deps = [
-    ":key_controller",
-    "@gtest//:gtest",
-    "@gtest//:gtest_main",
-    "//src/native:native_mock",
-    "//src/delegates:keypress_handler_delegate_mock",
-  ],
+    name = "key_controller_test",
+    srcs = ["key_controller_test.cpp"],
+    deps = [
+        ":key_controller",
+        "//src/delegates:keypress_handler_delegate_mock",
+        "//src/native:native_mock",
+        "@gtest",
+        "@gtest//:gtest_main",
+    ],
 )
 
 avr_library(
-  name = "event_handler",
-  srcs = ["event_handler.cpp"],
-  hdrs = ["event_handler.h"],
-  deps = [
-    "//src/native:native",
-    "//src/delegates:keypress_handler_delegate",
-  ],
+    name = "event_handler",
+    srcs = ["event_handler.cpp"],
+    hdrs = ["event_handler.h"],
+    deps = [
+        "//src/delegates:keypress_handler_delegate",
+        "//src/native",
+    ],
 )
 
 cc_test(
-  name = "event_handler_test",
-  srcs = ["event_handler_test.cpp"],
-  deps = [
-    "@gtest//:gtest",
-    "@gtest//:gtest_main",
-    "//src/native:native_mock",
-    ":event_handler"
-  ],
+    name = "event_handler_test",
+    srcs = ["event_handler_test.cpp"],
+    deps = [
+        ":event_handler",
+        "//src/native:native_mock",
+        "@gtest",
+        "@gtest//:gtest_main",
+    ],
 )
 
 avr_library(
-  name = "threeboard_lib",
-  srcs = ["threeboard.cpp"],
-  hdrs = ["threeboard.h"],
-  deps = [
-    ":led_controller",
-    ":key_controller",
-    ":event_handler",
-    "//src/native:native",
-    "//src/usb:usb",
-    "//src/util:enum",
-  ]
+    name = "threeboard_lib",
+    srcs = ["threeboard.cpp"],
+    hdrs = ["threeboard.h"],
+    deps = [
+        ":event_handler",
+        ":key_controller",
+        ":led_controller",
+        "//src/native",
+        "//src/usb",
+        "//src/util:enum",
+    ],
 )
 
 avr_binary(
-  name = "threeboard_bin",
-  srcs = ["main.cpp"],
-  deps = [
-    ":threeboard_lib",
-    "//src/native:native_impl",
-    "//src/usb:usb_impl",
-    "//src/native:i2c",
-  ],
+    name = "threeboard_bin",
+    srcs = ["main.cpp"],
+    deps = [
+        ":threeboard_lib",
+        "//src/native:i2c",
+        "//src/native:native_impl",
+        "//src/usb:usb_impl",
+    ],
 )
 
 avr_hex(
-  name = "threeboard",
-  src = ":threeboard_bin",
+    name = "threeboard",
+    src = ":threeboard_bin",
 )
