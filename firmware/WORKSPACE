@@ -1,3 +1,4 @@
+# custom AVR-specific rules
 load(
     "@bazel_tools//tools/build_defs/repo:git.bzl",
     "git_repository",
@@ -16,8 +17,17 @@ load(
 )
 avr_tools_repository()
 
+# google test and google mock
 git_repository(
     name = "gtest",
     commit = "703bd9caab50b139428cea1aaff9974ebee5742e",
     remote = "https://github.com/google/googletest",
+)
+
+# a local repo representing the third party library locations (e.g. for simavr).
+# TODO: this is platform-specific and needs to be generalised.
+new_local_repository(
+    name = "third_party",
+    path = "/usr/local/",
+    build_file = "third_party/BUILD.third_party",
 )
