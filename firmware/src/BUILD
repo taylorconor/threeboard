@@ -1,3 +1,5 @@
+package(default_visibility = ["//visibility:public"])
+
 load(
     "@avr-bazel//:avr.bzl",
     "avr_binary",
