@@ -1,3 +1,4 @@
+#include "bootstrap.h"
 #include "src/native/i2c.h"
 #include "src/native/native_impl.h"
 #include "src/threeboard.h"
@@ -5,7 +6,7 @@
 
 using namespace threeboard;
 
-int main() {
+void RunThreeboard() {
   // The native interface is used to abstract away all "native" code (e.g.
   // interrupt setup code, setting various pin port values). This is the only
   // place that NativeImpl is injected. To keep all other components testable,

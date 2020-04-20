@@ -12,6 +12,11 @@ avr_library(
 )
 
 avr_library(
+    name = "mcu",
+    hdrs = ["mcu.h"],
+)
+
+avr_library(
     name = "native",
     hdrs = ["native.h"],
     deps = [
@@ -21,22 +26,23 @@ avr_library(
     ],
 )
 
-avr_pure_library(
-    name = "native_impl",
-    srcs = ["native_impl.cpp"],
-    hdrs = ["native_impl.h"],
-    deps = [
-        ":native",
-        "//src/delegates:timer_interrupt_handler_delegate",
-    ],
-)
-
 cc_library(
     name = "native_mock",
     hdrs = ["native_mock.h"],
     deps = [
         ":native",
         "@gtest",
+    ],
+)
+
+avr_pure_library(
+    name = "native_impl",
+    srcs = ["native_impl.cpp"],
+    hdrs = ["native_impl.h"],
+    deps = [
+        ":mcu",
+        ":native",
+        "//src/delegates:timer_interrupt_handler_delegate",
     ],
 )
 

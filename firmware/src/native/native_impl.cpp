@@ -1,4 +1,5 @@
 #include "native_impl.h"
+#include "mcu.h"
 
 // Defining this allows delay_ms to accept non-compiletime constants as
 // parameters.

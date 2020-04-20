@@ -5,6 +5,7 @@ load(
     "avr_binary",
     "avr_hex",
     "avr_library",
+    "avr_pure_library",
 )
 
 avr_library(
@@ -87,13 +88,24 @@ avr_library(
     ],
 )
 
-avr_binary(
-    name = "threeboard_bin",
-    srcs = ["main.cpp"],
+avr_pure_library(
+    name = "bootstrap",
+    srcs = ["bootstrap.cpp"],
+    hdrs = ["bootstrap.h"],
     deps = [
         ":threeboard_lib",
+	"//src/native:i2c",
         "//src/native:native_impl",
         "//src/usb:usb_impl",
+    ],
+)
+
+avr_binary(
+    name = "threeboard_bin",
+    srcs = ["main.c"],
+    deps = [
+      ":bootstrap",
+      "//src/native:mcu",
     ],
 )
 
