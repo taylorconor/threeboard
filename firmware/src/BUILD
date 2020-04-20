@@ -92,7 +92,6 @@ avr_binary(
     srcs = ["main.cpp"],
     deps = [
         ":threeboard_lib",
-        "//src/native:i2c",
         "//src/native:native_impl",
         "//src/usb:usb_impl",
     ],
