@@ -1,4 +1,3 @@
-# custom AVR-specific rules
 load(
     "@bazel_tools//tools/build_defs/repo:git.bzl",
     "git_repository",
@@ -7,7 +6,7 @@ load(
 # custom AVR-specific rules
 git_repository(
     name = "avr-bazel",
-    commit = "d898f734aa2803de14c10d4cbddc278d7a59b540",
+    commit = "b9af17ea27c463d2104d4240a7b3b44d55b29b23",
     remote = "https://github.com/taylorconor/avr-bazel",
 )
 
@@ -29,5 +28,6 @@ git_repository(
 new_local_repository(
     name = "third_party",
     path = "/usr/local/",
+    workspace_file = "third_party/WORKSPACE.third_party",
     build_file = "third_party/BUILD.third_party",
 )

@@ -4,11 +4,6 @@
 
 #include "src/delegates/usb_interrupt_handler_delegate.h"
 
-// The threeboard uses an atmega32u4 microcontroller with a 16MHz clock.
-#ifndef F_CPU
-#define F_CPU 16000000UL
-#endif
-
 // Provide an implementation of __cxa_guard* functions to allow the AVR compiler
 // to link against guards for static variable initialisation (which are not
 // provided otherwise). x86 compilation will link against these by default.

@@ -1,5 +1,11 @@
 package(default_visibility = ["//visibility:public"])
 
+load(
+    "@avr-bazel//:avr.bzl",
+    "avr_library",
+    "avr_pure_library",
+)
+
 cc_library(
     name = "libelf",
     srcs = ["lib/libelf.a"],
@@ -14,4 +20,9 @@ cc_library(
     srcs = ["lib/libsimavr.a"],
     deps = [":libelf"],
     alwayslink = 1,
+)
+
+avr_pure_library(
+    name = "simavr_avr_hdrs",
+    hdrs = glob(["include/simavr/**"]),
 )
