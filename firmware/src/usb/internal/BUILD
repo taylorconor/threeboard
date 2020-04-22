@@ -1,5 +1,5 @@
 load(
-    "//toolchain:avr.bzl",
+    "@avr-bazel//:avr.bzl",
     "avr_library",
 )
 
