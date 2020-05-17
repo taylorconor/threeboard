@@ -57,12 +57,17 @@ private:
   typedef void (Threeboard::*handler_function)(const Keypress);
   static const handler_function state_machine[4][2][1];
 
+  // All of the components composed into this class which we need to coordinate.
   native::Native *native_;
   usb::Usb *usb_;
   EventHandler *event_handler_;
   LedController *led_controller_;
   KeyController *key_controller_;
+
+  // Current layer of the keyboard.
   Layer layer_;
+
+  // The state/properties of each layer is held in memory in properties_.
   LayerProperties properties_[4];
 
   void UpdateLedState();

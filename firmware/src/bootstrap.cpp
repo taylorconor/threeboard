@@ -14,12 +14,10 @@ void RunThreeboard() {
   auto native_impl = native::NativeImpl::Get();
   native_impl->EnableInterrupts();
 
+  // Similar to how we construct native_impl above, this is the only place where
+  // UsbImpl is injected, so as to enable other components to be testable with a
+  // mocked USB implementation.
   auto usb_impl = usb::UsbImpl(native_impl);
-  auto i2c = native::I2C();
-
-  i2c.Init();
-  uint8_t data = 1;
-  i2c.SequentialRead(0, &data, 1);
 
   // Set up the remaining objects to inject into the Threeboard instance. These
   // could be constructed within the instance, but injecting them makes testing
@@ -27,8 +25,9 @@ void RunThreeboard() {
   EventHandler event_handler(native_impl);
   LedController led_controller(native_impl);
   KeyController key_controller(native_impl, &event_handler);
-  led_controller.SetBank0(data);
 
+  // The threeboard obejct composes in all of these controllers, handlers and
+  // implementation objects, and synchronises them in an infinite runloop.
   Threeboard threeboard(native_impl, &usb_impl, &event_handler, &led_controller,
                         &key_controller);
 

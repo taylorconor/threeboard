@@ -40,9 +40,11 @@ Threeboard::Threeboard(native::Native *native, usb::Usb *usb,
 }
 
 void Threeboard::Run() {
+  //  LedController *ctrl = nullptr;
+  //  ctrl->SetErr(LedState::ON);
   // Wait until the USB stack has been configured before continuing the runloop.
-  while (!usb_->HasConfigured())
-    ;
+  //  while (!usb_->HasConfigured())
+  //    ;
   while (1) {
     auto event = event_handler_->WaitForKeyboardEvent();
     auto state = properties_[layer_].state;
@@ -83,6 +85,7 @@ void Threeboard::SwitchToNextLayer() {
 }
 
 void Threeboard::HandleDefaultInput(const Keypress keypress) {
+
   if (keypress == Keypress::X) {
     properties_[layer_].bank0++;
   } else if (keypress == Keypress::Y) {

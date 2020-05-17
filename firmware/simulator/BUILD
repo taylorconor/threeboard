@@ -19,14 +19,32 @@ cc_library(
     hdrs = ["simulator.h"],
     srcs = ["simulator.cpp"],
     deps = [
-        "//simulator/core:simavr_core",
         "@third_party//:simavr"
     ],
     data = [":threeboard_sim_binary"],
 )
 
+cc_library(
+    name = "sim_ui",
+    hdrs = ["sim_ui.h"],
+    srcs = ["sim_ui.cpp"],
+    linkopts = ["-lcurses"],
+)
+
+cc_library(
+    name = "sim_runner",
+    hdrs = ["sim_runner.h"],
+    srcs = ["sim_runner.cpp"],
+    deps = [
+        ":simulator_lib",
+	":sim_ui",
+    ],
+)
+
 cc_binary(
     name = "simulator",
     srcs = ["main.cpp"],
-    deps = [":simulator_lib"],
+    deps = [
+        ":sim_runner",
+    ],
 )
