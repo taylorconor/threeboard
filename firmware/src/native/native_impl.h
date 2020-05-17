@@ -42,11 +42,14 @@ public:
 
   void EnableDDRB(const uint8_t) final override;
   void DisableDDRB(const uint8_t) final override;
+  void EnableDDRC(const uint8_t) final override;
   void EnableDDRD(const uint8_t) final override;
   void EnableDDRF(const uint8_t) final override;
 
   void EnablePORTB(const uint8_t) final override;
   void DisablePORTB(const uint8_t) final override;
+  void EnablePORTC(const uint8_t) final override;
+  void DisablePORTC(const uint8_t) final override;
   void EnablePORTD(const uint8_t) final override;
   void DisablePORTD(const uint8_t) final override;
   void EnablePORTF(const uint8_t) final override;

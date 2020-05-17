@@ -132,11 +132,14 @@ uint8_t NativeImpl::ReadPgmByte(const uint8_t *ptr) const {
 
 void NativeImpl::EnableDDRB(const uint8_t val) { DDRB |= val; }
 void NativeImpl::DisableDDRB(const uint8_t val) { DDRB &= ~val; }
+void NativeImpl::EnableDDRC(const uint8_t val) { DDRC |= val; }
 void NativeImpl::EnableDDRD(const uint8_t val) { DDRD |= val; }
 void NativeImpl::EnableDDRF(const uint8_t val) { DDRF |= val; }
 
 void NativeImpl::EnablePORTB(const uint8_t val) { PORTB |= val; }
 void NativeImpl::DisablePORTB(const uint8_t val) { PORTB &= ~val; }
+void NativeImpl::EnablePORTC(const uint8_t val) { PORTC |= val; }
+void NativeImpl::DisablePORTC(const uint8_t val) { PORTC &= ~val; }
 void NativeImpl::EnablePORTD(const uint8_t val) { PORTD |= val; }
 void NativeImpl::DisablePORTD(const uint8_t val) { PORTD &= ~val; }
 void NativeImpl::EnablePORTF(const uint8_t val) { PORTF |= val; }

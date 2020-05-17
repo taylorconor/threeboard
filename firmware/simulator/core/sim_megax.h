@@ -1,64 +1,36 @@
-/*
-	sim_megax.h
-
-	Copyright 2008, 2009 Michel Pollet <buserror@gmail.com>
-
- 	This file is part of simavr.
-
-	simavr is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
-
-	simavr is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with simavr.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#ifndef __SIM_MEGAX_H__
-#define __SIM_MEGAX_H__
+#pragma once
 
 #include "sim_core_declare.h"
-#include "simavr/avr_eeprom.h"
-#include "simavr/avr_flash.h"
-#include "simavr/avr_watchdog.h"
-#include "simavr/avr_extint.h"
-#include "simavr/avr_ioport.h"
-#include "simavr/avr_uart.h"
-#include "simavr/avr_adc.h"
-#include "simavr/avr_timer.h"
-#include "simavr/avr_spi.h"
-#include "simavr/avr_twi.h"
 #include "simavr/avr_acomp.h"
+#include "simavr/avr_adc.h"
+#include "simavr/avr_eeprom.h"
+#include "simavr/avr_extint.h"
+#include "simavr/avr_flash.h"
+#include "simavr/avr_ioport.h"
+#include "simavr/avr_spi.h"
+#include "simavr/avr_timer.h"
+#include "simavr/avr_twi.h"
+#include "simavr/avr_uart.h"
+#include "simavr/avr_usb.h"
+#include "simavr/avr_watchdog.h"
 
+void mx_init(struct avr_t *avr);
+void mx_reset(struct avr_t *avr);
 
-void mx_init(struct avr_t * avr);
-void mx_reset(struct avr_t * avr);
-
-/*
- * This is a template for all of the 8/16/32 devices, hopefully
- */
 struct mcu_t {
-	avr_t          core;
-	avr_eeprom_t 	eeprom;
-	avr_flash_t 	selfprog;
-	avr_watchdog_t	watchdog;
-	avr_extint_t	extint;
-	avr_ioport_t	portb, portc, portd;
-	avr_uart_t		uart;
-	avr_acomp_t		acomp;
-	avr_adc_t		adc;
-	avr_timer_t		timer0,timer1,timer2;
-	avr_spi_t		spi;
-	avr_twi_t		twi;
-	// PORTA exists on m16 and 32, but not on 8. 
-	// It is still necessary to declare this as otherwise
-	// the core_megax shared constructor will be confused
-	avr_ioport_t	porta;
+  avr_t core;
+  avr_eeprom_t eeprom;
+  avr_flash_t selfprog;
+  avr_watchdog_t watchdog;
+  avr_extint_t extint;
+  avr_ioport_t portb, portc, portd, porte, portf;
+  avr_uart_t uart1;
+  avr_acomp_t acomp;
+  avr_adc_t adc;
+  avr_timer_t timer0, timer1, timer3;
+  avr_spi_t spi;
+  avr_twi_t twi;
+  avr_usb_t usb;
 };
 
 #ifdef SIM_CORENAME
@@ -331,5 +303,3 @@ const struct mcu_t SIM_CORENAME = {
 };
 
 #endif /* SIM_CORENAME */
-
-#endif /* __SIM_MEGAX_H__ */

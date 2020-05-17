@@ -17,26 +17,27 @@ constexpr uint8_t kPrevScanLine = 45;
 
 /**
    Pin mappings:
-   STATUS (status1) - 36 - PF7
-   ERR (status0) - 37 - PF6
-   row0 - 38 - PF5
-   row1 - 39 - PF4
-   row2 - 40 - PF1
-   row3 - 41 - PF0
-   row4 - 42 - PB5
-   col0 - 25 - PD4
-   col1 - 26 - PD6
-   col2 - 27 - PD7
-   col3 - 28 - PB4
+   STATUS (status1) - 31 - PC6
+   ERR (status0) - 30 - PB6
+   row0 - 27 - PD7
+   row1 - 28 - PB4
+   row2 - 26 - PD6
+   row3 - 25 - PD4
+   row4 - 29 - PB5
+   col0 - 41 - PF0
+   col1 - 40 - PF1
+   col2 - 39 - PF4
+   col3 - 38 - PF5
  */
 
 } // namespace
 
 LedController::LedController(native::Native *native) : native_(native) {
   // Specify which pins will be used by this controller.
-  native_->EnableDDRB(0b00110000);
+  native_->EnableDDRB(0b01110000);
+  native_->EnableDDRC(0b01000000);
   native_->EnableDDRD(0b11010000);
-  native_->EnableDDRF(0b11110011);
+  native_->EnableDDRF(0b00110011);
 }
 
 void LedController::ScanNextLine() {
@@ -65,39 +66,39 @@ void LedController::WriteStateToPins(uint8_t row) {
   // TODO: uncomment after testing.
   if (row == 0) {
     if (GetLedState(kLedErr) == LedState::ON) {
-      native_->EnablePORTF(1 << native::PF6);
+      native_->EnablePORTB(1 << native::PB6);
     }
   } else if (row == 1) {
-    native_->DisablePORTF(1 << native::PF6);
+    native_->DisablePORTB(1 << native::PB6);
     if (GetLedState(kLedStatus) == LedState::ON) {
-      native_->EnablePORTF(1 << native::PF7);
+      native_->EnablePORTC(1 << native::PC6);
     }
   } else {
-    native_->DisablePORTF(1 << native::PF7);
+    native_->DisablePORTC(1 << native::PC6);
   }
 
-  // Clear all row and column pins first.
-  native_->DisablePORTB(0b00100000);
-  native_->EnablePORTB(0b00010000);
-  native_->DisablePORTF(0b00110011);
-  native_->EnablePORTD(0b11010000);
+  // Clear all row and column pins first. The column pins in PORTF should be
+  // considered as active low (they need to be grounded to enable the LED).
+  native_->DisablePORTB(0b00110000);
+  native_->DisablePORTD(0b11010000);
+  native_->EnablePORTF(0b00110011);
 
   // Enable the corect row pin and column pins for the current row.
   if (row == 0) {
     // row 0: 4 MSB of bank 0
-    native_->EnablePORTF(1 << native::PF5);
+    native_->EnablePORTD(1 << native::PD7);
     WriteColumns(kBank0);
   } else if (row == 1) {
     // row 1: 4 LSB of bank 0
-    native_->EnablePORTF(1 << native::PF4);
+    native_->EnablePORTB(1 << native::PB4);
     WriteColumns(kBank0 + 8);
   } else if (row == 2) {
     // row 2: 4 MSB of bank 1
-    native_->EnablePORTF(1 << native::PF1);
+    native_->EnablePORTD(1 << native::PD6);
     WriteColumns(kBank1);
   } else if (row == 3) {
     // row 3: 4 LSB of bank 1
-    native_->EnablePORTF(1 << native::PF0);
+    native_->EnablePORTD(1 << native::PD4);
     WriteColumns(kBank1 + 8);
   } else if (row == 4) {
     // row 4: R,G,B and PROG
@@ -126,16 +127,16 @@ LedController::LedState LedController::GetLedState(int led_index) {
 
 void LedController::WriteColumns(uint8_t col0) {
   if (GetLedState(col0) == LedState::ON) {
-    native_->DisablePORTD(1 << native::PD4);
+    native_->DisablePORTF(1 << native::PF0);
   }
   if (GetLedState(col0 + 2) == LedState::ON) {
-    native_->DisablePORTD(1 << native::PD6);
+    native_->DisablePORTF(1 << native::PF1);
   }
   if (GetLedState(col0 + 4) == LedState::ON) {
-    native_->DisablePORTD(1 << native::PD7);
+    native_->DisablePORTF(1 << native::PF4);
   }
   if (GetLedState(col0 + 6) == LedState::ON) {
-    native_->DisablePORTB(1 << native::PB4);
+    native_->DisablePORTF(1 << native::PF5);
   }
 }
 

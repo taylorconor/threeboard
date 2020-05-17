@@ -45,11 +45,14 @@ public:
 
   virtual void EnableDDRB(const uint8_t) = 0;
   virtual void DisableDDRB(const uint8_t) = 0;
+  virtual void EnableDDRC(const uint8_t) = 0;
   virtual void EnableDDRD(const uint8_t) = 0;
   virtual void EnableDDRF(const uint8_t) = 0;
 
   virtual void EnablePORTB(const uint8_t) = 0;
   virtual void DisablePORTB(const uint8_t) = 0;
+  virtual void EnablePORTC(const uint8_t) = 0;
+  virtual void DisablePORTC(const uint8_t) = 0;
   virtual void EnablePORTD(const uint8_t) = 0;
   virtual void DisablePORTD(const uint8_t) = 0;
   virtual void EnablePORTF(const uint8_t) = 0;

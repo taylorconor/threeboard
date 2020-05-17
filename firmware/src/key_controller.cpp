@@ -39,21 +39,21 @@ KeyController::KeyController(native::Native *native,
 void KeyController::PollKeyState() {
   uint8_t pinb = native_->GetPINB();
   // Key X.
-  if (is_pressed(pinb, native::PB1)) {
+  if (is_pressed(pinb, native::PB2)) {
     key_mask_ |= (1 << kXIndex);
   } else if (was_pressed(key_mask_, kXIndex)) {
     key_mask_ &= ~(1 << kXIndex);
     key_mask_ |= (uint8_t)Keypress::X;
   }
   // Key Y.
-  if (is_pressed(pinb, native::PB2)) {
+  if (is_pressed(pinb, native::PB3)) {
     key_mask_ |= (1 << kYIndex);
   } else if (was_pressed(key_mask_, kYIndex)) {
     key_mask_ &= ~(1 << kYIndex);
     key_mask_ |= (uint8_t)Keypress::Y;
   }
   // Key Z.
-  if (is_pressed(pinb, native::PB3)) {
+  if (is_pressed(pinb, native::PB1)) {
     key_mask_ |= (1 << kZIndex);
   } else if (was_pressed(key_mask_, kZIndex)) {
     key_mask_ &= ~(1 << kZIndex);

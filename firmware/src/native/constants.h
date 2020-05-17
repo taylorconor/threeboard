@@ -19,6 +19,10 @@ constexpr uint8_t PB5 = 5;
 constexpr uint8_t PB6 = 6;
 constexpr uint8_t PB7 = 7;
 
+// Port C
+constexpr uint8_t PC6 = 6;
+constexpr uint8_t PC7 = 7;
+
 // Port D
 constexpr uint8_t PD0 = 0;
 constexpr uint8_t PD1 = 1;
