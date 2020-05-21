@@ -34,16 +34,16 @@ public:
   }
   uint8_t ReadPgmByte(const uint8_t *ptr) const override { return *ptr; }
 
-  //  MOCK_METHOD(uint16_t, ReadPgmWord, (const uint8_t *), (const override));
-  //  MOCK_METHOD(uint8_t, ReadPgmByte, (const uint8_t *), (const override));
-
   MOCK_METHOD(void, EnableDDRB, (const uint8_t), (override));
   MOCK_METHOD(void, DisableDDRB, (const uint8_t), (override));
+  MOCK_METHOD(void, EnableDDRC, (const uint8_t), (override));
   MOCK_METHOD(void, EnableDDRD, (const uint8_t), (override));
   MOCK_METHOD(void, EnableDDRF, (const uint8_t), (override));
 
   MOCK_METHOD(void, EnablePORTB, (const uint8_t), (override));
   MOCK_METHOD(void, DisablePORTB, (const uint8_t), (override));
+  MOCK_METHOD(void, EnablePORTC, (const uint8_t), (override));
+  MOCK_METHOD(void, DisablePORTC, (const uint8_t), (override));
   MOCK_METHOD(void, EnablePORTD, (const uint8_t), (override));
   MOCK_METHOD(void, DisablePORTD, (const uint8_t), (override));
   MOCK_METHOD(void, EnablePORTF, (const uint8_t), (override));

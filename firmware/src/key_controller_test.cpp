@@ -35,7 +35,7 @@ TEST_F(KeyControllerTest, HandleKeypressImmediatelyAfterKeyup) {
   // Press key X for the duration of 10 keystate polls.
   EXPECT_CALL(native_mock_, GetPINB())
       .Times(10)
-      .WillRepeatedly(Return(~(1 << native::PB1)));
+      .WillRepeatedly(Return(~(1 << native::PB2)));
   EXPECT_CALL(delegate_mock_, HandleKeypress(_)).Times(0);
   for (int i = 0; i < 10; i++) {
     controller_->PollKeyState();
@@ -53,19 +53,19 @@ TEST_F(KeyControllerTest, HandleSubKeypressAsComboAtTotalKeyup) {
   EXPECT_CALL(delegate_mock_, HandleKeypress(_)).Times(0);
   EXPECT_CALL(native_mock_, GetPINB())
       .Times(10)
-      .WillRepeatedly(Return(~(1 << native::PB1)));
+      .WillRepeatedly(Return(~(1 << native::PB2)));
   for (int i = 0; i < 10; i++) {
     controller_->PollKeyState();
   }
   // Press keys X and Y for a single keystate poll.
   EXPECT_CALL(native_mock_, GetPINB())
       .Times(1)
-      .WillOnce(Return(~((1 << native::PB2) | (1 << native::PB1))));
+      .WillOnce(Return(~((1 << native::PB2) | (1 << native::PB3))));
   controller_->PollKeyState();
   // Press key X for another 10 keystate polls.
   EXPECT_CALL(native_mock_, GetPINB())
       .Times(10)
-      .WillRepeatedly(Return(~(1 << native::PB1)));
+      .WillRepeatedly(Return(~(1 << native::PB2)));
   EXPECT_CALL(delegate_mock_, HandleKeypress(_)).Times(0);
   for (int i = 0; i < 10; i++) {
     controller_->PollKeyState();
@@ -81,21 +81,21 @@ TEST_F(KeyControllerTest, HandleOverlappingKeypressesAsComboAtTotalKeyup) {
   EXPECT_CALL(delegate_mock_, HandleKeypress(_)).Times(0);
   EXPECT_CALL(native_mock_, GetPINB())
       .Times(10)
-      .WillRepeatedly(Return(~(1 << native::PB1)));
+      .WillRepeatedly(Return(~(1 << native::PB2)));
   for (int i = 0; i < 10; i++) {
     controller_->PollKeyState();
   }
   // Press keys XY for the duration of 10 keystate polls.
   EXPECT_CALL(native_mock_, GetPINB())
       .Times(10)
-      .WillRepeatedly(Return(~((1 << native::PB1) | (1 << native::PB2))));
+      .WillRepeatedly(Return(~((1 << native::PB2) | (1 << native::PB3))));
   for (int i = 0; i < 10; i++) {
     controller_->PollKeyState();
   }
   // Press key Y for the duration of 10 keystate polls.
   EXPECT_CALL(native_mock_, GetPINB())
       .Times(10)
-      .WillRepeatedly(Return(~(1 << native::PB2)));
+      .WillRepeatedly(Return(~(1 << native::PB3)));
   for (int i = 0; i < 10; i++) {
     controller_->PollKeyState();
   }
@@ -110,14 +110,14 @@ TEST_F(KeyControllerTest, HandleImmediatelyConsecutiveKeypressesAsCombo) {
   EXPECT_CALL(delegate_mock_, HandleKeypress(_)).Times(0);
   EXPECT_CALL(native_mock_, GetPINB())
       .Times(10)
-      .WillRepeatedly(Return(~(1 << native::PB1)));
+      .WillRepeatedly(Return(~(1 << native::PB2)));
   for (int i = 0; i < 10; i++) {
     controller_->PollKeyState();
   }
   // Release key X and press key Y for the duration of 10 keystate polls.
   EXPECT_CALL(native_mock_, GetPINB())
       .Times(10)
-      .WillRepeatedly(Return(~(1 << native::PB2)));
+      .WillRepeatedly(Return(~(1 << native::PB3)));
   for (int i = 0; i < 10; i++) {
     controller_->PollKeyState();
   }
@@ -132,7 +132,7 @@ TEST_F(KeyControllerTest, HandleConsecutiveKeypressesAsIndependent) {
   EXPECT_CALL(delegate_mock_, HandleKeypress(_)).Times(0);
   EXPECT_CALL(native_mock_, GetPINB())
       .Times(10)
-      .WillRepeatedly(Return(~(1 << native::PB1)));
+      .WillRepeatedly(Return(~(1 << native::PB2)));
   for (int i = 0; i < 10; i++) {
     controller_->PollKeyState();
   }
@@ -145,7 +145,7 @@ TEST_F(KeyControllerTest, HandleConsecutiveKeypressesAsIndependent) {
   // Press key Y for the duration of 10 keystate polls.
   EXPECT_CALL(native_mock_, GetPINB())
       .Times(10)
-      .WillRepeatedly(Return(~(1 << native::PB2)));
+      .WillRepeatedly(Return(~(1 << native::PB3)));
   for (int i = 0; i < 10; i++) {
     controller_->PollKeyState();
   }
