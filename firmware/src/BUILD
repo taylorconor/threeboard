@@ -84,7 +84,6 @@ avr_library(
         ":led_controller",
         "//src/native",
         "//src/usb",
-        "//src/util:enum",
     ],
 )
 

@@ -1,7 +1,10 @@
 #pragma once
 
-#include "simavr/sim_avr.h"
+#include <atomic>
+#include <functional>
 #include <thread>
+
+#include "simavr/sim_avr.h"
 
 namespace threeboard {
 namespace simulator {

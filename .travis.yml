@@ -1,0 +1,24 @@
+dist: bionic
+language: c++
+osx_image: xcode11.4
+sudo: required
+
+os:
+  - linux
+  - osx
+
+compiler:
+  - gcc
+  - clang
+
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then bash .ci/install/osx.sh; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then bash .ci/install/linux.sh; fi
+
+script:
+  # these flags are required to force compilation with c++17 on macos
+  - export BAZEL_CXXOPTS="-std=c++17"
+  - export BAZEL_USE_CPP_ONLY_TOOLCHAIN=1
+  - cd firmware
+  - bazel build -k //...
+  - bazel test -k --test_output=errors //...

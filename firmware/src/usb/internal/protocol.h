@@ -39,14 +39,14 @@ public:
         (uint8_t)recipient | ((uint8_t)type << 5) | ((uint8_t)direction << 7);
   }
 
-  __always_inline Direction GetDirection() const {
+  __force_inline Direction GetDirection() const {
     return (Direction)(value_ >> 7);
   }
-  __always_inline Type GetType() const { return (Type)((value_ >> 5) & 3); }
-  __always_inline Recipient GetRecipient() const {
+  __force_inline Type GetType() const { return (Type)((value_ >> 5) & 3); }
+  __force_inline Recipient GetRecipient() const {
     return (Recipient)(value_ & 31);
   }
-  __always_inline uint8_t GetValue() const { return value_; }
+  __force_inline uint8_t GetValue() const { return value_; }
 
 private:
   uint8_t value_ = 0;
@@ -126,8 +126,8 @@ private:
 
 // USB spec rev. 2.0, section 9.6.1, table 9-8.
 struct DeviceDescriptor {
-  uint8_t bLength = 18;
-  DescriptorType bDescriptorType = DescriptorType::DEVICE;
+  uint8_t bLength;
+  DescriptorType bDescriptorType;
   uint16_t bcdUSB;
   uint8_t bDeviceClass;
   uint8_t bDeviceSubClass;
@@ -144,8 +144,8 @@ struct DeviceDescriptor {
 
 // USB spec rev. 2.0, section 9.6.3, table 9-10.
 struct ConfigurationDescriptor {
-  uint8_t bLength = 9;
-  DescriptorType bDescriptorType = DescriptorType::CONFIGURATION;
+  uint8_t bLength;
+  DescriptorType bDescriptorType;
   uint16_t wTotalLength;
   uint8_t bNumInterfaces;
   uint8_t bConfigurationValue;
@@ -156,8 +156,8 @@ struct ConfigurationDescriptor {
 
 // USB spec rev. 2.0, section 9.6.5, table 9-12.
 struct InterfaceDescriptor {
-  uint8_t bLength = 9;
-  DescriptorType bDescriptorType = DescriptorType::INTERFACE;
+  uint8_t bLength;
+  DescriptorType bDescriptorType;
   uint8_t bInterfaceNumber;
   uint8_t bAlternateSetting;
   uint8_t bNumEndpoints;
@@ -169,8 +169,8 @@ struct InterfaceDescriptor {
 
 // HID spec v1.11, section 6.2.1.
 struct HidDescriptor {
-  uint8_t bLength = 9;
-  DescriptorType bDescriptorType = DescriptorType::HID;
+  uint8_t bLength;
+  DescriptorType bDescriptorType;
   uint16_t bcdHID;
   uint8_t bCountryCode;
   uint8_t bNumDescriptors;
@@ -180,8 +180,8 @@ struct HidDescriptor {
 
 // USB spec rev. 2.0, section 9.6.6, table 9-13.
 struct EndpointDescriptor {
-  uint8_t bLength = 7;
-  DescriptorType bDescriptorType = DescriptorType::ENDPOINT;
+  uint8_t bLength;
+  DescriptorType bDescriptorType;
   uint8_t bEndpointAddress;
   uint8_t bmAttributes;
   uint16_t wMaxPacketSize;
@@ -191,7 +191,7 @@ struct EndpointDescriptor {
 // USB spec rev. 2.0, section 9.6.7, table 9-16.
 template <int T> struct UnicodeStringDescriptor {
   uint8_t bLength;
-  DescriptorType bDescriptorType = DescriptorType::STRING;
+  DescriptorType bDescriptorType;
   const wchar_t bString[T];
 };
 

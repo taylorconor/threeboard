@@ -202,21 +202,21 @@ int8_t UsbImpl::SendKeypress() {
 }
 
 // Misc functions to wait for ready and send/receive packets
-__always_inline void UsbImpl::AwaitTransmitterReady() {
+__force_inline void UsbImpl::AwaitTransmitterReady() {
   while (!(native_->GetUEINTX() & (1 << native::TXINI)))
     ;
 }
 
-__always_inline void UsbImpl::AwaitReceiverReady() {
+__force_inline void UsbImpl::AwaitReceiverReady() {
   while (!(native_->GetUEINTX() & (1 << native::RXOUTI)))
     ;
 }
 
-__always_inline void UsbImpl::HandshakeTransmitterInterrupt() {
+__force_inline void UsbImpl::HandshakeTransmitterInterrupt() {
   native_->SetUEINTX(~(1 << native::TXINI));
 }
 
-__always_inline void UsbImpl::HandshakeReceiverInterrupt() {
+__force_inline void UsbImpl::HandshakeReceiverInterrupt() {
   native_->SetUEINTX(~(1 << native::RXOUTI));
 }
 

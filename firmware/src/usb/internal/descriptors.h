@@ -22,9 +22,10 @@ struct __attribute__((__packed__)) DescriptorContainer {
                                               const uint8_t *ptr);
 };
 
-// static_assert(0, PROGMEM);
 // The top-level USB device descriptor.
 static constexpr DeviceDescriptor PROGMEM device_descriptor = {
+    .bLength = 18,
+    .bDescriptorType = DescriptorType::DEVICE,
     .bcdUSB = kUsbSpecificationReleaseNumber,
     .bDeviceClass = kDeviceClassCode,
     .bDeviceSubClass = kDeviceSubclassCode,
@@ -91,6 +92,8 @@ struct CombinedDescriptor {
 static constexpr CombinedDescriptor PROGMEM combined_descriptor = {
     .configuration_descriptor =
         {
+            .bLength = 9,
+            .bDescriptorType = DescriptorType::CONFIGURATION,
             .wTotalLength = sizeof(CombinedDescriptor),
             .bNumInterfaces = hid::kNumInterfaces,
             .bConfigurationValue = kKeyboardConfigurationValue,
@@ -100,6 +103,8 @@ static constexpr CombinedDescriptor PROGMEM combined_descriptor = {
         },
     .interface_descriptor =
         {
+            .bLength = 9,
+            .bDescriptorType = DescriptorType::INTERFACE,
             .bInterfaceNumber = kKeyboardInterface,
             .bAlternateSetting = 0,
             .bNumEndpoints = 1,
@@ -110,13 +115,17 @@ static constexpr CombinedDescriptor PROGMEM combined_descriptor = {
         },
     .hid_descriptor =
         {
+            .bLength = 9,
+            .bDescriptorType = DescriptorType::HID,
             .bcdHID = hid::kSpecificationComplianceVersion,
             .bCountryCode = hid::kNotLocalized,
             .bNumDescriptors = 1,
             .bReportDescriptorType = DescriptorType::HID_REPORT,
             .wReportDescriptorLength = sizeof(hid_report),
         },
-    .endpoint_descriptor = {.bEndpointAddress =
+    .endpoint_descriptor = {.bLength = 7,
+                            .bDescriptorType = DescriptorType::ENDPOINT,
+                            .bEndpointAddress =
                                 kKeyboardEndpoint | kEndpointPipeTypeIn,
                             .bmAttributes = kKeyboardEndpointTransferType,
                             .wMaxPacketSize = kKeyboardMaxPacketSize,

@@ -1,10 +1,7 @@
 #include "threeboard.h"
 
-#include "src/util/enum.h"
-
-#if !(defined(__clang__) || defined(__GNUC__) && __GNUC__ >= 9)
-static_assert(false, "Unsupported compiler. Threeboard requires clang (>=5) or "
-                     "gcc/avr-gcc (>=9)");
+#if (defined(AVR) && (!defined(__GNUC__) || __GNUC__ < 9))
+static_assert(false, "Unsupported compiler: threeboard requires avr-gcc >=9");
 #endif
 
 namespace threeboard {
@@ -40,8 +37,6 @@ Threeboard::Threeboard(native::Native *native, usb::Usb *usb,
 }
 
 void Threeboard::Run() {
-  //  LedController *ctrl = nullptr;
-  //  ctrl->SetErr(LedState::ON);
   // Wait until the USB stack has been configured before continuing the runloop.
   //  while (!usb_->HasConfigured())
   //    ;
@@ -81,7 +76,7 @@ void Threeboard::UpdateLedState() {
 }
 
 void Threeboard::SwitchToNextLayer() {
-  layer_ = (Layer)(((uint8_t)layer_ + 1) % util::element_count<Layer>());
+  layer_ = (Layer)(((uint8_t)layer_ + 1) % 4);
 }
 
 void Threeboard::HandleDefaultInput(const Keypress keypress) {

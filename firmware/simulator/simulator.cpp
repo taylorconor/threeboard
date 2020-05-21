@@ -41,23 +41,6 @@ uint8_t ReadCallbackWrapper(struct avr_t *avr, avr_io_addr_t addr,
   Simulator::ReadCallback *callback = (Simulator::ReadCallback *)param;
   return (*callback)(addr);
 }
-
-uint64_t GetNanosecondsSince(
-    const std::chrono::time_point<std::chrono::high_resolution_clock> &time) {
-  //  auto now = std::chrono::high_resolution_clock::now();
-  //  int diff =
-  //      std::chrono::duration_cast<std::chrono::nanoseconds>(now -
-  //      time).count();
-  /*  std::cout << "now = "
-            << std::chrono::duration_cast<std::chrono::nanoseconds>(
-                   now.time_since_epoch())
-                   .count()
-            << std::endl;
-            std::cout << "time diff = " << diff << std::endl;*/
-  //  return diff;
-  return 0;
-}
-
 } // namespace
 
 Simulator::~Simulator() {
@@ -151,7 +134,7 @@ void Simulator::RunDetached() {
     // the processor that the code sequence is a spin-wait loop, which can help
     // improve the performance and power consumption of spin-wait loops in
     // supported processors.
-    auto start = std::chrono::high_resolution_clock::now();
+    // auto start = std::chrono::high_resolution_clock::now();
     uint64_t spinloop_ticks = 0;
     // TODO: fix this (hopefully with a sleep in event_handler.cpp), it's not
     // portable.

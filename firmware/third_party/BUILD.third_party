@@ -1,28 +1,38 @@
 package(default_visibility = ["//visibility:public"])
 
+MACOS_PREFIX="usr/local/"
+LINUX_PREFIX="usr/"
+
 load(
     "@avr-bazel//:avr.bzl",
-    "avr_library",
     "avr_pure_library",
 )
 
 cc_library(
     name = "libelf",
-    srcs = ["lib/libelf.a"],
+    srcs = select({
+        "@bazel_tools//src/conditions:darwin": [MACOS_PREFIX + "lib/libelf.a"],
+	"//conditions:default": [LINUX_PREFIX + "lib/x86_64-linux-gnu/libelf.a"],
+    }),
+    linkopts = select({
+        "@bazel_tools//src/conditions:darwin": [],
+	"//conditions:default": ["-lz", "-pthread"],
+    }),
     visibility = ["//visibility:private"],
     alwayslink = 1,
 )
 
+# simavr is hardcoded to install in /usr/local/* regardless of target OS.
 cc_library(
     name = "simavr",
-    hdrs = glob(["include/simavr/**"]),
-    strip_include_prefix = "include",
-    srcs = ["lib/libsimavr.a"],
+    hdrs = glob([MACOS_PREFIX + "include/simavr/**"]),
+    strip_include_prefix = MACOS_PREFIX + "include",
+    srcs = [MACOS_PREFIX + "lib/libsimavr.a"],
     deps = [":libelf"],
     alwayslink = 1,
 )
 
 avr_pure_library(
     name = "simavr_avr_hdrs",
-    hdrs = glob(["include/simavr/**"]),
+    hdrs = glob([MACOS_PREFIX + "include/simavr/**"]),
 )

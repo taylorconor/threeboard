@@ -1,6 +1,5 @@
 load(
     "@avr-bazel//:avr.bzl",
-    "avr_pure_library",
     "avr_binary",
 )
 
@@ -11,7 +10,10 @@ avr_binary(
         "@third_party//:simavr_avr_hdrs",
         "//src:bootstrap",
     ],
-    copts = ["-DTHREEBOARD_SIM"],
+    copts = select({
+        "@bazel_tools//src/conditions:darwin": ["-DDARWIN", "-DTHREEBOARD_SIM"],
+	"//conditions:default": ["-DLINUX", "-DTHREEBOARD_SIM"],
+    }),
 )
 
 cc_library(

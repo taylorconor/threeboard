@@ -9,13 +9,11 @@ constexpr uint8_t kXIndex = 3;
 constexpr uint8_t kYIndex = 4;
 constexpr uint8_t kZIndex = 5;
 
-__always_inline constexpr bool is_pressed(const uint8_t pin_register,
-                                          const uint8_t idx) {
+constexpr bool is_pressed(const uint8_t pin_register, const uint8_t idx) {
   return !(pin_register & (1 << idx));
 }
 
-__always_inline constexpr bool was_pressed(const uint8_t state,
-                                           const uint8_t offset) {
+constexpr bool was_pressed(const uint8_t state, const uint8_t offset) {
   return state & (1 << offset);
 }
 

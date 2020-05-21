@@ -21,21 +21,6 @@ cc_test(
 )
 
 avr_library(
-    name = "enum",
-    hdrs = ["enum.h"],
-)
-
-cc_test(
-    name = "enum_test",
-    srcs = ["enum_test.cpp"],
-    deps = [
-        ":enum",
-        "@gtest",
-        "@gtest//:gtest_main",
-    ],
-)
-
-avr_library(
     name = "util",
     hdrs = ["util.h"],
 )

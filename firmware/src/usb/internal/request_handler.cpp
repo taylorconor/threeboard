@@ -11,12 +11,11 @@ static constexpr uint8_t GetDescriptorListSize() {
   return sizeof(descriptor_list) / sizeof(DescriptorContainer);
 }
 
-static __always_inline void AwaitTransmitterReady(native::Native *native) {
+static void AwaitTransmitterReady(native::Native *native) {
   while (!(native->GetUEINTX() & (1 << native::TXINI)))
     ;
 }
-static __always_inline void
-HandshakeTransmitterInterrupt(native::Native *native) {
+static void HandshakeTransmitterInterrupt(native::Native *native) {
   native->SetUEINTX(~(1 << native::TXINI));
 }
 
