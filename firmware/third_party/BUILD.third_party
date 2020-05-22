@@ -1,5 +1,3 @@
-load("@rules_foreign_cc//tools/build_defs:make.bzl", "make")
-
 package(default_visibility = ["//visibility:public"])
 
 load(
@@ -22,14 +20,6 @@ cc_library(
     srcs = ["lib/libsimavr.a"],
     deps = [":libelf"],
     alwayslink = 1,
-)
-
-# TODO: might be better to build from source in future.
-make(
-    name = "simavr_make",
-    lib_source = "@simavr//:all",
-    out_include_dir = "third_party/simavr",
-    static_libraries = ["simavr.a"],
 )
 
 avr_pure_library(
