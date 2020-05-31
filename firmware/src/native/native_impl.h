@@ -31,11 +31,12 @@ public:
 
   void EnableInterrupts() final override;
   void DisableInterrupts() final override;
+  void EnableCpuSleep() final override;
+  void SleepCpu() final override;
+  void DisableCpuSleep() final override;
 
   void EnableTimer1() final override;
   void EnableTimer3() final override;
-
-  void Delay(const uint8_t) const final override;
 
   uint16_t ReadPgmWord(const uint8_t *) const final override;
   uint8_t ReadPgmByte(const uint8_t *) const final override;

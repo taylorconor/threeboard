@@ -5,22 +5,20 @@
 
 namespace threeboard {
 
-class EventHandler : public KeypressHandlerDelegate {
+class EventBuffer : public KeypressHandlerDelegate {
 public:
-  EventHandler(native::Native *native);
-
-  // Blocking method which returns the latest keyboard event when available, and
-  // pops it off the buffer. It will block indefinitely until an event appears.
-  Keypress WaitForKeyboardEvent();
+  // Immediately returns the pending keypress event if it's available, otherwise
+  // it returns INACTIVE.
+  Keypress GetPendingEventIfAvailable();
 
   // Implement the KeypressHandlerDelegate override. This method is responsible
   // for handling all keypresses and combos. It runs inside the ISR, so to keep
   // ISR executions as short as possible, it offloads the event to a buffer
-  // variable (pending_keypress_) which is picked up in the main program.
+  // variable (pending_keypress_) which is picked up in the main program's
+  // runloop.
   void HandleKeypress(const Keypress) override;
 
 private:
-  native::Native *native_;
   Keypress pending_keypress_ = Keypress::INACTIVE;
 };
 } // namespace threeboard

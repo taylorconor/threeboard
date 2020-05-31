@@ -1,7 +1,9 @@
 #include "sim_ui.h"
 
 #include <curses.h>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 
 namespace threeboard {
 namespace simulator {
@@ -121,7 +123,7 @@ std::string ParseCpuFreq(uint64_t ticks_per_sec) {
   return str.substr(0, 2) + "." + str.substr(2, 2) + " MHz";
 }
 
-std::string ParseCpuState(int state) {
+std::string GetCpuStateName(int state) {
   switch (state) {
   case 0:
     return "LIMBO";
@@ -257,6 +259,7 @@ void SimUI::UpdateKeyState() {
 
 void SimUI::RenderLoop() {
   while (is_running_) {
+    current_frame_++;
     state_update_callback_();
     UpdateKeyState();
     DrawBorder();
@@ -302,29 +305,60 @@ void SimUI::DrawKeys() {
 
 void SimUI::DrawStatusText() {
   move(kRootY + 1, kRootX + 47);
-  printw("threeboard v1");
+  printw("threeboard v1 (x86 simulator)");
   move(kRootY + 2, kRootX + 47);
-  printw("freq: %s", GetClockSpeed().c_str());
+  printw("freq: %s", GetClockSpeedString().c_str());
   move(kRootY + 3, kRootX + 47);
-  printw("state: %s", ParseCpuState(sim_state_).c_str());
+  printw("state: %s", GetCpuStateBreakdownString().c_str());
   move(kRootY + 4, kRootX + 47);
   printw("usb state: DISCONNECTED");
+
+  if (cycles_since_memo_update_++ == kSimulatorFps) {
+    cycles_since_memo_update_ = 0;
+  }
 }
 
-std::string SimUI::GetClockSpeed() {
-  if (cycles_since_print_++ < kSimulatorFps) {
-    return cycle_str_;
+std::string SimUI::GetClockSpeedString() {
+  if (cycles_since_memo_update_ < kSimulatorFps) {
+    return freq_str_memo_;
   }
 
-  cycles_since_print_ = 0;
   uint64_t current_cycle = sim_cycle_;
   uint64_t diff = current_cycle - prev_sim_cycle_;
   if (prev_sim_cycle_ > current_cycle) {
     diff = current_cycle + ((uint64_t)-1 - prev_sim_cycle_);
   }
   prev_sim_cycle_ = sim_cycle_;
-  cycle_str_ = ParseCpuFreq(diff);
-  return cycle_str_;
+  freq_str_memo_ = ParseCpuFreq(diff);
+  return freq_str_memo_;
 }
+
+std::string SimUI::GetCpuStateBreakdownString() {
+  auto state = sim_state_;
+  if (cpu_mode_distribution_.find(state) == cpu_mode_distribution_.end()) {
+    cpu_mode_distribution_[state] = 0;
+  } else {
+    cpu_mode_distribution_[state]++;
+  }
+
+  if (cycles_since_memo_update_ < kSimulatorFps) {
+    return state_str_memo_;
+  }
+
+  std::string state_str;
+  for (const auto &[key, value] : cpu_mode_distribution_) {
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(2);
+    double mode_ratio = ((double)(value * 100) / current_frame_);
+    ss << GetCpuStateName(key) << " (" << mode_ratio << "%)";
+    if (state_str.length() > 0) {
+      state_str += ", ";
+    }
+    state_str += ss.str();
+  }
+  state_str_memo_ = state_str;
+  return state_str;
+}
+
 } // namespace simulator
 } // namespace threeboard

@@ -22,13 +22,13 @@ void RunThreeboard() {
   // Set up the remaining objects to inject into the Threeboard instance. These
   // could be constructed within the instance, but injecting them makes testing
   // easier since we can inject mocks for tets.
-  EventHandler event_handler(native_impl);
+  EventBuffer event_buffer;
   LedController led_controller(native_impl);
-  KeyController key_controller(native_impl, &event_handler);
+  KeyController key_controller(native_impl, &event_buffer);
 
   // The threeboard obejct composes in all of these controllers, handlers and
   // implementation objects, and synchronises them in an infinite runloop.
-  Threeboard threeboard(native_impl, &usb_impl, &event_handler, &led_controller,
+  Threeboard threeboard(native_impl, &usb_impl, &event_buffer, &led_controller,
                         &key_controller);
 
   // Run the firmware event loop. This will run forever.

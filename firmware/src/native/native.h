@@ -34,11 +34,12 @@ public:
 
   virtual void EnableInterrupts() = 0;
   virtual void DisableInterrupts() = 0;
+  virtual void EnableCpuSleep() = 0;
+  virtual void SleepCpu() = 0;
+  virtual void DisableCpuSleep() = 0;
 
   virtual void EnableTimer1() = 0;
   virtual void EnableTimer3() = 0;
-
-  virtual void Delay(const uint8_t) const = 0;
 
   virtual uint16_t ReadPgmWord(const uint8_t *) const = 0;
   virtual uint8_t ReadPgmByte(const uint8_t *) const = 0;

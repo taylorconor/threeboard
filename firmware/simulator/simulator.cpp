@@ -123,24 +123,13 @@ void Simulator::RunDetached() {
       should_reset_ = false;
     }
 
+    // Since the threeboard is entirely interrupt driven (the main runloop does
+    // poll the keyboard state, but sleeps the CPU between interrupts), simavr
+    // will attempt to match the simulator frequency to the target 16 MHz
+    // frequency. It's a difficult problem so it's not perfect (and simavr
+    // doesn't attempt to make it perfect), but in my experience you can
+    // expect 17.5±1.5MHz.
     avr_run(avr_.get());
-
-    // We want to try to maintain as steady a CPU 16MHz frequency as possible.
-    // Since the time difference between ticks at 16 MHz is 62.5ns, it's not
-    // possible to yield the thread and sleep while maintaining a 16MHz
-    // simulation. Instead, we busyloop for the required amount of time based on
-    // the high resolution clock. To prevent unnecessary power usage on the host
-    // CPU, we use the SSE2 pause instruction (_mm_pause) to provide a hint to
-    // the processor that the code sequence is a spin-wait loop, which can help
-    // improve the performance and power consumption of spin-wait loops in
-    // supported processors.
-    // auto start = std::chrono::high_resolution_clock::now();
-    uint64_t spinloop_ticks = 0;
-    // TODO: fix this (hopefully with a sleep in event_handler.cpp), it's not
-    // portable.
-    while (is_running_ && spinloop_ticks++ < 28) {
-      _mm_pause();
-    }
   }
   is_running_ = false;
   if (state == cpu_Done || state == cpu_Crashed) {

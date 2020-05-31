@@ -1,13 +1,10 @@
 #include "native_impl.h"
 #include "mcu.h"
 
-// Defining this allows delay_ms to accept non-compiletime constants as
-// parameters.
-#define __DELAY_BACKWARD_COMPATIBLE__
-
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <avr/pgmspace.h>
+#include <avr/sleep.h>
 #include <stdlib.h>
 #include <util/delay.h>
 
@@ -116,11 +113,15 @@ void NativeImpl::EnableInterrupts() { sei(); }
 
 void NativeImpl::DisableInterrupts() { cli(); }
 
+void NativeImpl::EnableCpuSleep() { sleep_enable(); }
+
+void NativeImpl::SleepCpu() { sleep_cpu(); }
+
+void NativeImpl::DisableCpuSleep() { sleep_disable(); }
+
 void NativeImpl::EnableTimer1() { Timer1Init(); }
 
 void NativeImpl::EnableTimer3() { Timer3Init(); }
-
-void NativeImpl::Delay(const uint8_t ms) const { _delay_ms(ms); }
 
 uint16_t NativeImpl::ReadPgmWord(const uint8_t *ptr) const {
   return pgm_read_word(ptr);

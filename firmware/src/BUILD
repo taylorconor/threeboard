@@ -54,23 +54,12 @@ cc_test(
 )
 
 avr_library(
-    name = "event_handler",
-    srcs = ["event_handler.cpp"],
-    hdrs = ["event_handler.h"],
+    name = "event_buffer",
+    srcs = ["event_buffer.cpp"],
+    hdrs = ["event_buffer.h"],
     deps = [
         "//src/delegates:keypress_handler_delegate",
         "//src/native",
-    ],
-)
-
-cc_test(
-    name = "event_handler_test",
-    srcs = ["event_handler_test.cpp"],
-    deps = [
-        ":event_handler",
-        "//src/native:native_mock",
-        "@gtest",
-        "@gtest//:gtest_main",
     ],
 )
 
@@ -79,7 +68,7 @@ avr_library(
     srcs = ["threeboard.cpp"],
     hdrs = ["threeboard.h"],
     deps = [
-        ":event_handler",
+        ":event_buffer",
         ":key_controller",
         ":led_controller",
         "//src/native",

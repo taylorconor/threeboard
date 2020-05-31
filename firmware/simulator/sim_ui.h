@@ -3,6 +3,7 @@
 #include <atomic>
 #include <functional>
 #include <thread>
+#include <unordered_map>
 
 namespace threeboard {
 namespace simulator {
@@ -46,21 +47,34 @@ private:
   void DrawLeds();
   void DrawKeys();
   void DrawStatusText();
-  std::string GetClockSpeed();
+  std::string GetClockSpeedString();
+  std::string GetCpuStateBreakdownString();
 
   StateUpdateCallback state_update_callback_;
   KeypressCallback keypress_callback_;
+
+  // Reference variables to frequently-updated properties of the simulator.
   const int &sim_state_;
-  uint64_t prev_sim_cycle_;
   const uint64_t &sim_cycle_;
-  std::string cycle_str_;
-  uint8_t cycles_since_print_;
+
+  // Keep track of the simulator cycle count from the previous render pass so we
+  // can calculate CPU frequency.
+  uint64_t prev_sim_cycle_;
+
+  // Memoize some stats so we don't have to constantly recalculate and so that
+  // their values don't update so fast they flicker.
+  uint8_t cycles_since_memo_update_;
+  std::string freq_str_memo_ = "Loading...";
+  std::string state_str_memo_ = "Loading...";
+
+  std::unordered_map<uint8_t, uint64_t> cpu_mode_distribution_;
 
   uint8_t key_a_ = 0;
   uint8_t key_s_ = 0;
   uint8_t key_d_ = 0;
 
   std::atomic<bool> is_running_;
+  uint64_t current_frame_ = 0;
 
   uint8_t r_ = 0;
   uint8_t g_ = 0;

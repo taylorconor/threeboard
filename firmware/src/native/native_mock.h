@@ -21,11 +21,12 @@ public:
 
   MOCK_METHOD(void, EnableInterrupts, (), (override));
   MOCK_METHOD(void, DisableInterrupts, (), (override));
+  MOCK_METHOD(void, EnableCpuSleep, (), (override));
+  MOCK_METHOD(void, SleepCpu, (), (override));
+  MOCK_METHOD(void, DisableCpuSleep, (), (override));
 
   MOCK_METHOD(void, EnableTimer1, (), (override));
   MOCK_METHOD(void, EnableTimer3, (), (override));
-
-  MOCK_METHOD(void, Delay, (uint8_t), (const override));
 
   // There's more value in implementing these as real methods here than there is
   // in mocking them.

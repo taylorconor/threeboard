@@ -20,10 +20,9 @@ const Threeboard::handler_function Threeboard::state_machine[4][2][1] = {
                   [State::FLUSH] = {&Threeboard::HandleDefaultFlush}}};
 
 Threeboard::Threeboard(native::Native *native, usb::Usb *usb,
-                       EventHandler *event_handler,
-                       LedController *led_controller,
+                       EventBuffer *event_buffer, LedController *led_controller,
                        KeyController *key_controller)
-    : native_(native), usb_(usb), event_handler_(event_handler),
+    : native_(native), usb_(usb), event_buffer_(event_buffer),
       led_controller_(led_controller), key_controller_(key_controller) {
   // TODO: provide `this` as delegate to receive callback for success/error?
   usb_->Setup();
@@ -38,13 +37,29 @@ Threeboard::Threeboard(native::Native *native, usb::Usb *usb,
 
 void Threeboard::Run() {
   // Wait until the USB stack has been configured before continuing the runloop.
-  //  while (!usb_->HasConfigured())
-  //    ;
+  // TODO: uncomment this once the simulator supports USB configuration.
+  // while (!usb_->HasConfigured())
+  //  ;
+
+  // Main runloop.
   while (1) {
-    auto event = event_handler_->WaitForKeyboardEvent();
-    auto state = properties_[layer_].state;
-    (this->*state_machine[layer_][state][0])(event);
-    UpdateLedState();
+    // Atomically check for new keyboard events, and either handle them or
+    // sleep the CPU until the next interrupt.
+    native_->DisableInterrupts();
+    auto event = event_buffer_->GetPendingEventIfAvailable();
+    if (event == Keypress::INACTIVE) {
+      native_->EnableCpuSleep(); // sleep_enable();
+      native_->EnableInterrupts();
+      // Sleep the CPU until another interrupt fires.
+      native_->SleepCpu();
+      native_->DisableCpuSleep();
+    } else {
+      // Re-enable interrupts and handle the keyboard event.
+      native_->EnableInterrupts();
+      auto state = properties_[layer_].state;
+      (this->*state_machine[layer_][state][0])(event);
+      UpdateLedState();
+    }
   }
 }
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/event_handler.h"
+#include "src/event_buffer.h"
 #include "src/key_controller.h"
 #include "src/led_controller.h"
 #include "src/native/native.h"
@@ -11,7 +11,7 @@
 namespace threeboard {
 class Threeboard : public TimerInterruptHandlerDelegate {
 public:
-  Threeboard(native::Native *native, usb::Usb *usb, EventHandler *event_handler,
+  Threeboard(native::Native *native, usb::Usb *usb, EventBuffer *event_buffer,
              LedController *led_controller, KeyController *key_controller);
 
   // Main application runloop.
@@ -60,7 +60,7 @@ private:
   // All of the components composed into this class which we need to coordinate.
   native::Native *native_;
   usb::Usb *usb_;
-  EventHandler *event_handler_;
+  EventBuffer *event_buffer_;
   LedController *led_controller_;
   KeyController *key_controller_;
 
