@@ -1,3 +1,5 @@
+package(default_visibility = ["//visibility:public"])
+
 load(
     "@avr-bazel//:avr.bzl",
     "avr_binary",
@@ -17,6 +19,14 @@ avr_binary(
 )
 
 cc_library(
+    name = "simulator_delegate",
+    hdrs = ["simulator_delegate.h"],
+    deps = [
+        "//simulator/ui:key",
+    ],
+)
+
+cc_library(
     name = "simulator_lib",
     hdrs = ["simulator.h"],
     srcs = ["simulator.cpp"],
@@ -27,19 +37,14 @@ cc_library(
 )
 
 cc_library(
-    name = "sim_ui",
-    hdrs = ["sim_ui.h"],
-    srcs = ["sim_ui.cpp"],
-    linkopts = ["-lcurses"],
-)
-
-cc_library(
-    name = "sim_runner",
-    hdrs = ["sim_runner.h"],
-    srcs = ["sim_runner.cpp"],
+    name = "runner",
+    hdrs = ["runner.h"],
+    srcs = ["runner.cpp"],
     deps = [
         ":simulator_lib",
-	":sim_ui",
+	":simulator_delegate",
+	"//simulator/ui:key",
+	"//simulator/ui:ui",
     ],
 )
 
@@ -47,6 +52,6 @@ cc_binary(
     name = "simulator",
     srcs = ["main.cpp"],
     deps = [
-        ":sim_runner",
+        ":runner",
     ],
 )

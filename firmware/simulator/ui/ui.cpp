@@ -1,9 +1,11 @@
-#include "sim_ui.h"
+#include "ui.h"
 
 #include <curses.h>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+
+#include "simulator/ui/key.h"
 
 namespace threeboard {
 namespace simulator {
@@ -147,14 +149,12 @@ std::string GetCpuStateName(int state) {
 }
 } // namespace
 
-SimUI::SimUI(const StateUpdateCallback &state_update_callback,
-             const KeypressCallback &keypress_callback, const int &sim_state,
-             const uint64_t &sim_cycle)
-    : state_update_callback_(state_update_callback),
-      keypress_callback_(keypress_callback), sim_state_(sim_state),
+UI::UI(SimulatorDelegate *sim_delegate, const int &sim_state,
+       const uint64_t &sim_cycle)
+    : sim_delegate_(sim_delegate), sim_state_(sim_state),
       sim_cycle_(sim_cycle) {}
 
-SimUI::~SimUI() {
+UI::~UI() {
   if (is_running_) {
     is_running_ = false;
     render_thread_->join();
@@ -162,11 +162,12 @@ SimUI::~SimUI() {
   }
 }
 
-void SimUI::StartRenderLoopAsync() {
+void UI::StartRenderLoopAsync() {
   if (render_thread_) {
-    std::cout << "Attempted to start another SimUI render thread without "
-                 "stopping the previous one!"
-              << std::endl;
+    std::cout
+        << "Attempted to start another simulator UI render thread without "
+           "stopping the previous one!"
+        << std::endl;
     exit(0);
   }
   setlocale(LC_ALL, "en_US.UTF-8");
@@ -176,10 +177,10 @@ void SimUI::StartRenderLoopAsync() {
   timeout(0);
   curs_set(0);
   is_running_ = true;
-  render_thread_ = std::make_unique<std::thread>(&SimUI::RenderLoop, this);
+  render_thread_ = std::make_unique<std::thread>(&UI::RenderLoop, this);
 }
 
-void SimUI::ClearLedState() {
+void UI::ClearLedState() {
   ClearLed(r_);
   ClearLed(g_);
   ClearLed(b_);
@@ -192,22 +193,22 @@ void SimUI::ClearLedState() {
   }
 }
 
-void SimUI::SetR(bool enabled) { SetLedState(r_, enabled); }
-void SimUI::SetG(bool enabled) { SetLedState(g_, enabled); }
-void SimUI::SetB(bool enabled) { SetLedState(b_, enabled); }
-void SimUI::SetProg(bool enabled) { SetLedState(prog_, enabled); }
-void SimUI::SetErr(bool enabled) { SetLedState(err_, enabled); }
-void SimUI::SetStatus(bool enabled) { SetLedState(status_, enabled); }
-void SimUI::SetBank0(bool enabled, uint8_t idx) {
+void UI::SetR(bool enabled) { SetLedState(r_, enabled); }
+void UI::SetG(bool enabled) { SetLedState(g_, enabled); }
+void UI::SetB(bool enabled) { SetLedState(b_, enabled); }
+void UI::SetProg(bool enabled) { SetLedState(prog_, enabled); }
+void UI::SetErr(bool enabled) { SetLedState(err_, enabled); }
+void UI::SetStatus(bool enabled) { SetLedState(status_, enabled); }
+void UI::SetBank0(bool enabled, uint8_t idx) {
   SetLedState(bank0_[idx], enabled);
 }
-void SimUI::SetBank1(bool enabled, uint8_t idx) {
+void UI::SetBank1(bool enabled, uint8_t idx) {
   SetLedState(bank1_[idx], enabled);
 }
 
 // Update the internal state of the keys, and trigger any relevant keypress
 // callbacks.
-void SimUI::UpdateKeyState() {
+void UI::UpdateKeyState() {
   // Decrement existing keypresses until they exhaust their cooldown period.
   bool keyup_a, keyup_s, keyup_d = false;
   if (key_a_ > 0) {
@@ -229,38 +230,38 @@ void SimUI::UpdateKeyState() {
   while ((c = getch()) > 0) {
     if (c == 'a') {
       key_a_ = kKeyHoldTime;
-      keypress_callback_(Key::KEY_A, true);
+      sim_delegate_->HandleKeypress(Key::KEY_A, true);
     }
     if (c == 's') {
       key_s_ = kKeyHoldTime;
-      keypress_callback_(Key::KEY_S, true);
+      sim_delegate_->HandleKeypress(Key::KEY_S, true);
     }
     if (c == 'd') {
       key_d_ = kKeyHoldTime;
-      keypress_callback_(Key::KEY_D, true);
+      sim_delegate_->HandleKeypress(Key::KEY_D, true);
     }
     // A hack to bind the 'Q' key to "quit".
     if (c == 'q') {
-      keypress_callback_(Key::KEY_Q, true);
+      sim_delegate_->HandleKeypress(Key::KEY_Q, true);
     }
   }
 
   // Trigger any necessary keyup callbacks.
   if (key_a_ == 0 && keyup_a) {
-    keypress_callback_(Key::KEY_A, false);
+    sim_delegate_->HandleKeypress(Key::KEY_A, false);
   }
   if (key_s_ == 0 && keyup_s) {
-    keypress_callback_(Key::KEY_S, false);
+    sim_delegate_->HandleKeypress(Key::KEY_S, false);
   }
   if (key_d_ == 0 && keyup_d) {
-    keypress_callback_(Key::KEY_D, false);
+    sim_delegate_->HandleKeypress(Key::KEY_D, false);
   }
 }
 
-void SimUI::RenderLoop() {
+void UI::RenderLoop() {
   while (is_running_) {
     current_frame_++;
-    state_update_callback_();
+    sim_delegate_->PrepareRenderState();
     UpdateKeyState();
     DrawBorder();
     DrawLeds();
@@ -274,7 +275,7 @@ void SimUI::RenderLoop() {
 }
 
 // Draw the LEDs based on the state of the simulator as we know it.
-void SimUI::DrawLeds() {
+void UI::DrawLeds() {
   // Top row: R, G, B, PROG, ERR and STATUS.
   move(kRootY + 2, kRootX + 3);
   DrawLed(r_, S(4, ' '));
@@ -297,13 +298,13 @@ void SimUI::DrawLeds() {
   }
 }
 
-void SimUI::DrawKeys() {
+void UI::DrawKeys() {
   DrawKey(2, key_a_, 'A');
   DrawKey(12, key_s_, 'S');
   DrawKey(22, key_d_, 'D');
 }
 
-void SimUI::DrawStatusText() {
+void UI::DrawStatusText() {
   move(kRootY + 1, kRootX + 47);
   printw("threeboard v1 (x86 simulator)");
   move(kRootY + 2, kRootX + 47);
@@ -311,6 +312,8 @@ void SimUI::DrawStatusText() {
   move(kRootY + 3, kRootX + 47);
   printw("state: %s", GetCpuStateBreakdownString().c_str());
   move(kRootY + 4, kRootX + 47);
+  printw("debug: ready to connect (port %d)", sim_delegate_->GetGdbPort());
+  move(kRootY + 5, kRootX + 47);
   printw("usb state: DISCONNECTED");
 
   if (cycles_since_memo_update_++ == kSimulatorFps) {
@@ -318,7 +321,7 @@ void SimUI::DrawStatusText() {
   }
 }
 
-std::string SimUI::GetClockSpeedString() {
+std::string UI::GetClockSpeedString() {
   if (cycles_since_memo_update_ < kSimulatorFps) {
     return freq_str_memo_;
   }
@@ -333,7 +336,7 @@ std::string SimUI::GetClockSpeedString() {
   return freq_str_memo_;
 }
 
-std::string SimUI::GetCpuStateBreakdownString() {
+std::string UI::GetCpuStateBreakdownString() {
   auto state = sim_state_;
   if (cpu_mode_distribution_.find(state) == cpu_mode_distribution_.end()) {
     cpu_mode_distribution_[state] = 0;

@@ -5,6 +5,8 @@
 #include <thread>
 #include <unordered_map>
 
+#include "simulator/simulator_delegate.h"
+
 namespace threeboard {
 namespace simulator {
 
@@ -13,21 +15,10 @@ namespace simulator {
 // the relevant simulator fields via the setter methods. A callback can be
 // provided (StateUpdateCallback) which is called before each render frame, to
 // allow the owner to set the current state of the simulator in the UI.
-class SimUI {
+class UI {
 public:
-  enum class Key {
-    KEY_A, // 'X' key on threeboard.
-    KEY_S, // 'Y' key on threeboard.
-    KEY_D, // 'Z' key on threeboard.
-    KEY_Q, // 'Q' for quit.
-  };
-
-  using StateUpdateCallback = std::function<void()>;
-  using KeypressCallback = std::function<void(Key, bool)>;
-
-  SimUI(const StateUpdateCallback &, const KeypressCallback &, const int &,
-        const uint64_t &);
-  ~SimUI();
+  UI(SimulatorDelegate *, const int &, const uint64_t &);
+  ~UI();
 
   void StartRenderLoopAsync();
   void ClearLedState();
@@ -50,8 +41,7 @@ private:
   std::string GetClockSpeedString();
   std::string GetCpuStateBreakdownString();
 
-  StateUpdateCallback state_update_callback_;
-  KeypressCallback keypress_callback_;
+  SimulatorDelegate *sim_delegate_;
 
   // Reference variables to frequently-updated properties of the simulator.
   const int &sim_state_;
@@ -62,7 +52,7 @@ private:
   uint64_t prev_sim_cycle_;
 
   // Memoize some stats so we don't have to constantly recalculate and so that
-  // their values don't update so fast they flicker.
+  // their values don't update so fast they flicker and become unreadable.
   uint8_t cycles_since_memo_update_;
   std::string freq_str_memo_ = "Loading...";
   std::string state_str_memo_ = "Loading...";

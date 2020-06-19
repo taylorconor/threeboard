@@ -4,6 +4,7 @@
 #include "simavr/sim_avr.h"
 #include "simavr/sim_core_decl.h"
 #include "simavr/sim_elf.h"
+#include "simavr/sim_gdb.h"
 #include <immintrin.h>
 #include <iostream>
 #include <unistd.h>
@@ -113,7 +114,13 @@ void Simulator::SetPinB(uint8_t pin, bool enabled) {
 }
 
 const int &Simulator::GetState() const { return avr_->state; }
+
 const uint64_t &Simulator::GetCycleCount() const { return avr_->cycle; }
+
+const void Simulator::ActivateGdb(uint16_t port) const {
+  avr_->gdb_port = port;
+  avr_gdb_init(avr_.get());
+}
 
 void Simulator::RunDetached() {
   int state = cpu_Running;

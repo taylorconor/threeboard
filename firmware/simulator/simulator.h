@@ -35,6 +35,8 @@ public:
   // Returns the simulator cycle count.
   const uint64_t &GetCycleCount() const;
 
+  const void ActivateGdb(uint16_t port) const;
+
 private:
   void RunDetached();
   void InternalWriteCallback(avr_io_addr_t, uint8_t);

@@ -60,7 +60,6 @@ avr_library(
     deps = [
         "//src/delegates:keypress_handler_delegate",
         "//src/native",
-	"//src:led_controller",
     ],
 )
 
