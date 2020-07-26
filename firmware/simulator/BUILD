@@ -13,17 +13,14 @@ avr_binary(
         "//src:bootstrap",
     ],
     copts = select({
-        "@bazel_tools//src/conditions:darwin": ["-DDARWIN", "-DTHREEBOARD_SIM"],
-	"//conditions:default": ["-DLINUX", "-DTHREEBOARD_SIM"],
-    }),
+        "@bazel_tools//src/conditions:darwin": ["-DDARWIN"],
+	"//conditions:default": ["-DLINUX"],
+    }) + ["-DTHREEBOARD_SIM", "-g"],
 )
 
 cc_library(
     name = "simulator_delegate",
     hdrs = ["simulator_delegate.h"],
-    deps = [
-        "//simulator/ui:key",
-    ],
 )
 
 cc_library(
@@ -43,7 +40,6 @@ cc_library(
     deps = [
         ":simulator_lib",
 	":simulator_delegate",
-	"//simulator/ui:key",
 	"//simulator/ui:ui",
     ],
 )

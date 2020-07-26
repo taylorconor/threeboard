@@ -35,7 +35,8 @@ public:
   // Returns the simulator cycle count.
   const uint64_t &GetCycleCount() const;
 
-  const void ActivateGdb(uint16_t port) const;
+  const void EnableGdb(uint16_t port) const;
+  const void DisableGdb() const;
 
 private:
   void RunDetached();

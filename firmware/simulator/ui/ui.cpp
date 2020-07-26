@@ -5,8 +5,6 @@
 #include <iostream>
 #include <sstream>
 
-#include "simulator/ui/key.h"
-
 namespace threeboard {
 namespace simulator {
 namespace {
@@ -14,7 +12,7 @@ namespace {
 
 constexpr uint8_t kKeyHoldTime = 20;
 constexpr uint8_t kRootX = 1;
-constexpr uint8_t kRootY = 1;
+constexpr uint8_t kRootY = 0;
 constexpr uint8_t kLedPermenance = 50;
 constexpr uint8_t kSimulatorFps = 200;
 
@@ -150,9 +148,9 @@ std::string GetCpuStateName(int state) {
 } // namespace
 
 UI::UI(SimulatorDelegate *sim_delegate, const int &sim_state,
-       const uint64_t &sim_cycle)
-    : sim_delegate_(sim_delegate), sim_state_(sim_state),
-      sim_cycle_(sim_cycle) {}
+       const uint64_t &sim_cycle, const bool &gdb_enabled)
+    : sim_delegate_(sim_delegate), sim_state_(sim_state), sim_cycle_(sim_cycle),
+      gdb_enabled_(gdb_enabled) {}
 
 UI::~UI() {
   if (is_running_) {
@@ -230,31 +228,23 @@ void UI::UpdateKeyState() {
   while ((c = getch()) > 0) {
     if (c == 'a') {
       key_a_ = kKeyHoldTime;
-      sim_delegate_->HandleKeypress(Key::KEY_A, true);
-    }
-    if (c == 's') {
+    } else if (c == 's') {
       key_s_ = kKeyHoldTime;
-      sim_delegate_->HandleKeypress(Key::KEY_S, true);
-    }
-    if (c == 'd') {
+    } else if (c == 'd') {
       key_d_ = kKeyHoldTime;
-      sim_delegate_->HandleKeypress(Key::KEY_D, true);
     }
-    // A hack to bind the 'Q' key to "quit".
-    if (c == 'q') {
-      sim_delegate_->HandleKeypress(Key::KEY_Q, true);
-    }
+    sim_delegate_->HandleKeypress(c, true);
   }
 
   // Trigger any necessary keyup callbacks.
   if (key_a_ == 0 && keyup_a) {
-    sim_delegate_->HandleKeypress(Key::KEY_A, false);
+    sim_delegate_->HandleKeypress('a', false);
   }
   if (key_s_ == 0 && keyup_s) {
-    sim_delegate_->HandleKeypress(Key::KEY_S, false);
+    sim_delegate_->HandleKeypress('s', false);
   }
   if (key_d_ == 0 && keyup_d) {
-    sim_delegate_->HandleKeypress(Key::KEY_D, false);
+    sim_delegate_->HandleKeypress('d', false);
   }
 }
 
@@ -267,6 +257,7 @@ void UI::RenderLoop() {
     DrawLeds();
     DrawKeys();
     DrawStatusText();
+    move(kRootY + 20, kRootX);
     refresh();
     // 200 FPS.
     std::this_thread::sleep_for(
@@ -310,10 +301,17 @@ void UI::DrawStatusText() {
   move(kRootY + 2, kRootX + 47);
   printw("freq: %s", GetClockSpeedString().c_str());
   move(kRootY + 3, kRootX + 47);
-  printw("state: %s", GetCpuStateBreakdownString().c_str());
-  move(kRootY + 4, kRootX + 47);
-  printw("debug: ready to connect (port %d)", sim_delegate_->GetGdbPort());
-  move(kRootY + 5, kRootX + 47);
+  UpdateCpuStateBreakdownList();
+  printw("state:");
+  int i = 0;
+  for (; i < state_str_memo_.size(); ++i) {
+    move(kRootY + 4 + i, kRootX + 47);
+    printw("  %s", state_str_memo_[i].c_str());
+  }
+  move(kRootY + 4 + i, kRootX + 47);
+  printw("gdb: %s (port %d)", (gdb_enabled_ ? "enabled" : "disabled"),
+         sim_delegate_->GetGdbPort());
+  move(kRootY + 5 + i, kRootX + 47);
   printw("usb state: DISCONNECTED");
 
   if (cycles_since_memo_update_++ == kSimulatorFps) {
@@ -336,7 +334,7 @@ std::string UI::GetClockSpeedString() {
   return freq_str_memo_;
 }
 
-std::string UI::GetCpuStateBreakdownString() {
+void UI::UpdateCpuStateBreakdownList() {
   auto state = sim_state_;
   if (cpu_mode_distribution_.find(state) == cpu_mode_distribution_.end()) {
     cpu_mode_distribution_[state] = 0;
@@ -345,22 +343,17 @@ std::string UI::GetCpuStateBreakdownString() {
   }
 
   if (cycles_since_memo_update_ < kSimulatorFps) {
-    return state_str_memo_;
+    return;
   }
 
-  std::string state_str;
+  state_str_memo_.clear();
   for (const auto &[key, value] : cpu_mode_distribution_) {
     std::stringstream ss;
     ss << std::fixed << std::setprecision(2);
     double mode_ratio = ((double)(value * 100) / current_frame_);
     ss << GetCpuStateName(key) << " (" << mode_ratio << "%)";
-    if (state_str.length() > 0) {
-      state_str += ", ";
-    }
-    state_str += ss.str();
+    state_str_memo_.push_back(ss.str());
   }
-  state_str_memo_ = state_str;
-  return state_str;
 }
 
 } // namespace simulator

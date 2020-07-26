@@ -117,9 +117,16 @@ const int &Simulator::GetState() const { return avr_->state; }
 
 const uint64_t &Simulator::GetCycleCount() const { return avr_->cycle; }
 
-const void Simulator::ActivateGdb(uint16_t port) const {
+const void Simulator::EnableGdb(uint16_t port) const {
   avr_->gdb_port = port;
+  avr_->state = cpu_Stopped;
   avr_gdb_init(avr_.get());
+}
+
+const void Simulator::DisableGdb() const {
+  avr_deinit_gdb(avr_.get());
+  avr_->state = cpu_Running;
+  avr_->gdb_port = 0;
 }
 
 void Simulator::RunDetached() {

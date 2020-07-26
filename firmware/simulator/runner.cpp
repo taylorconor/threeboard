@@ -24,7 +24,7 @@ void Runner::RunSimulator() {
   simulator_->Reset();
   simulator_->RunAsync();
   ui_ = std::make_unique<UI>(this, simulator_->GetState(),
-                             simulator_->GetCycleCount());
+                             simulator_->GetCycleCount(), gdb_enabled_);
   ui_->StartRenderLoopAsync();
   std::unique_lock<std::mutex> lock(mutex_);
   cond_var_.wait(lock);
@@ -90,29 +90,32 @@ void Runner::PrepareRenderState() {
   return;
 }
 
-void Runner::HandleKeypress(Key key, bool state) {
-  if (key == Key::KEY_Q) {
+void Runner::HandleKeypress(char key, bool state) {
+  // Simulator command keys.
+  if (key == 'q') {
     cond_var_.notify_all();
-    return;
+  } else if (key == 'g') {
+    if (gdb_enabled_) {
+      simulator_->DisableGdb();
+    } else {
+      simulator_->EnableGdb(GetGdbPort());
+    }
+    gdb_enabled_ = !gdb_enabled_;
   }
 
   // The key pins are all active low.
-  if (key == Key::KEY_A) {
+  else if (key == 'a') {
     // Switch 1 - maps to PB2.
     simulator_->SetPinB(2, !state);
-  } else if (key == Key::KEY_S) {
+  } else if (key == 's') {
     // Switch 2 - maps to PB3.
     simulator_->SetPinB(3, !state);
-  } else if (key == Key::KEY_D) {
+  } else if (key == 'd') {
     // Switch 3 - maps to PB1.
     simulator_->SetPinB(1, !state);
   }
 }
 
-void Runner::EnableGdb() {}
-
-void Runner::DisableGdb() {}
-
-uint16_t Runner::GetGdbPort() { return 0; }
+uint16_t Runner::GetGdbPort() { return kGdbPort; }
 } // namespace simulator
 } // namespace threeboard

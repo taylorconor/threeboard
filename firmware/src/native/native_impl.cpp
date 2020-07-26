@@ -50,7 +50,8 @@ void Timer3Init() {
   // Set the compare value. We want the interrupt to fire once every 5ms, since
   // the debounce code scans key states in 5ms increments. (5ms/0.0000625ms)/8 =
   // 10000.
-  OCR3A = 10000;
+  // TODO: why does the clock stop after ~15 seconds when setting this to 10000?
+  OCR3A = 9999;
 
   TIMSK3 |= (1 << OCIE3A);
 }
