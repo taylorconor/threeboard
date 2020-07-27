@@ -7,6 +7,8 @@ namespace threeboard {
 
 class EventBuffer : public KeypressHandlerDelegate {
 public:
+  virtual ~EventBuffer() {}
+
   // Immediately returns the pending keypress event if it's available, otherwise
   // it returns INACTIVE.
   // This function is NOT interrupt safe; The caller must take responsibility
@@ -22,6 +24,5 @@ public:
 
 private:
   Keypress pending_keypress_ = Keypress::INACTIVE;
-  //void *test = nullptr;
 };
 } // namespace threeboard

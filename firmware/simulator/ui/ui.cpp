@@ -16,7 +16,7 @@ constexpr uint8_t kRootY = 0;
 constexpr uint8_t kLedPermenance = 50;
 constexpr uint8_t kSimulatorFps = 200;
 
-constexpr uint8_t kLightGrey = 1;
+constexpr uint8_t kWhite = 1;
 constexpr uint8_t kMedGrey = 2;
 constexpr uint8_t kDarkGrey = 3;
 constexpr uint8_t kBrightRed = 4;
@@ -25,7 +25,7 @@ void printwln(const std::string &str) { printw((str + '\n').c_str()); }
 
 void InitialiseColours() {
   start_color();
-  init_pair(kLightGrey, COLOR_WHITE, COLOR_BLACK);
+  init_pair(kWhite, COLOR_WHITE, COLOR_BLACK);
   init_color(16, 400, 400, 400);
   init_pair(kMedGrey, 16, COLOR_BLACK);
   init_color(17, 100, 100, 100);
@@ -38,7 +38,7 @@ void InitialiseColours() {
 void DrawBorder() {
   // Base border.
   move(kRootY, kRootX);
-  attron(COLOR_PAIR(kLightGrey));
+  attron(COLOR_PAIR(kWhite));
   printwln("  " + S(41, '_'));
   printwln("  /" + S(41, ' ') + '\\');
   for (int i = 0; i < 12; i++) {
@@ -57,7 +57,7 @@ void DrawBorder() {
       printw(((char)('0' + j) + S(4, ' ')).c_str());
     }
   }
-  attroff(COLOR_PAIR(kLightGrey));
+  attroff(COLOR_PAIR(kWhite));
 }
 
 // Draw a single LED in the provided state under the current cursor;
@@ -72,7 +72,7 @@ void DrawLed(uint8_t &enabled, const std::string &extra) {
 }
 
 void DrawKey(int x_offset, bool pressed, char letter) {
-  int colour = pressed ? COLOR_PAIR(kMedGrey) : COLOR_PAIR(kLightGrey);
+  int colour = pressed ? COLOR_PAIR(kMedGrey) : COLOR_PAIR(kWhite);
   attron(colour);
   if (pressed) {
     move(kRootY + 9, kRootX + x_offset + 2);

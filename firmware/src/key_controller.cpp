@@ -28,6 +28,8 @@ constexpr bool was_pressed(const uint8_t state, const uint8_t offset) {
 KeyController::KeyController(native::Native *native,
                              KeypressHandlerDelegate *keypress_handler)
     : native_(native), keypress_handler_(keypress_handler) {
+  // Initial state of the key mask is empty.
+  key_mask_ = 0;
   // Set pins B1-B3 as input pins.
   native_->DisableDDRB(0b00001110);
   // Enable internal pullup resistors for B1-B3.

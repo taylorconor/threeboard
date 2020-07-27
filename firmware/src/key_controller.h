@@ -20,7 +20,7 @@ private:
   KeypressHandlerDelegate *keypress_handler_;
   // The current and previous state of the keyboard. Used to store combos until
   // ready to pass to the keypress handler.
-  uint8_t key_mask_ = 0;
+  uint8_t key_mask_;
 
   bool HasActiveKeypress();
 };

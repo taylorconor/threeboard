@@ -18,9 +18,6 @@ public:
   void RunSimulator();
 
 private:
-  //  void UpdateSimState();
-  //  void HandleKeypress(UI::Key key, bool state);
-
   void PrepareRenderState() final;
   void HandleKeypress(char key, bool state) final;
   uint16_t GetGdbPort() final;

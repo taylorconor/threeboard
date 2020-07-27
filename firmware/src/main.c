@@ -1,10 +1,11 @@
 #include "bootstrap.h"
-#include "native/mcu.h"
 
 // When building the ELF binary for use in the simavr simulator, the simulator
 // needs some extra information about the host MCU added to the ELF file, which
 // is done using this header.
 #ifdef THREEBOARD_SIM
+#include "native/mcu.h"
+
 // TODO: make this include relative to simavr, not external/third_party.
 #include "external/third_party/usr/local/include/simavr/avr/avr_mcu_section.h"
 AVR_MCU(F_CPU, MCU_NAME);

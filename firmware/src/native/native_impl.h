@@ -18,7 +18,7 @@ namespace native {
 class NativeImpl : public Native {
 public:
   static Native *Get();
-  ~NativeImpl() {}
+  virtual ~NativeImpl() {}
 
   TimerInterruptHandlerDelegate *
   GetTimerInterruptHandlerDelegate() const final override;
