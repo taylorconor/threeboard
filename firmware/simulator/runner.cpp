@@ -5,8 +5,10 @@
 namespace threeboard {
 namespace simulator {
 namespace {
+
 using namespace std::placeholders;
 
+// TODO: this can be made configurable later if needed.
 constexpr uint16_t kGdbPort = 1234;
 
 // Used to test a single pin in a register.
@@ -117,5 +119,6 @@ void Runner::HandleKeypress(char key, bool state) {
 }
 
 uint16_t Runner::GetGdbPort() { return kGdbPort; }
+
 } // namespace simulator
 } // namespace threeboard
