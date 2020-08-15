@@ -26,29 +26,14 @@
   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-  POSSIBILITY OF SUCH DAMAGE. 
+  POSSIBILITY OF SUCH DAMAGE.
 */
+
+#pragma once
 
 /* $Id: iom32u4.h 2479 2015-07-22 05:32:39Z pitchumani $ */
 
 /* avr/iom32u4.h - definitions for ATmega32U4. */
-
-/* This file should only be included from <avr/io.h>, never directly. */
-
-#ifndef _AVR_IO_H_
-#  error "Include <avr/io.h> instead of this file."
-#endif
-
-#ifndef _AVR_IOXXX_H_
-#  define _AVR_IOXXX_H_ "iom32u4.h"
-#else
-#  error "Attempt to include more than one <avr/ioXXX.h> file."
-#endif 
-
-
-#ifndef _AVR_IOM32U4_H_
-#define _AVR_IOM32U4_H_ 1
-
 
 /* Registers and associated bit numbers */
 
@@ -450,7 +435,9 @@
 #define PRTIM2 6
 #define PRTWI 7
 
-#define __AVR_HAVE_PRR0	((1<<PRADC)|(1<<PRUSART0)|(1<<PRSPI)|(1<<PRTIM1)|(1<<PRTIM0)|(1<<PRTIM2)|(1<<PRTWI))
+#define __AVR_HAVE_PRR0                                                        \
+  ((1 << PRADC) | (1 << PRUSART0) | (1 << PRSPI) | (1 << PRTIM1) |             \
+   (1 << PRTIM0) | (1 << PRTIM2) | (1 << PRTWI))
 #define __AVR_HAVE_PRR0_PRADC
 #define __AVR_HAVE_PRR0_PRUSART0
 #define __AVR_HAVE_PRR0_PRSPI
@@ -464,7 +451,7 @@
 #define PRTIM3 3
 #define PRUSB 7
 
-#define __AVR_HAVE_PRR1	((1<<PRUSART1)|(1<<PRTIM3)|(1<<PRUSB))
+#define __AVR_HAVE_PRR1 ((1 << PRUSART1) | (1 << PRTIM3) | (1 << PRUSB))
 #define __AVR_HAVE_PRR1_PRUSART1
 #define __AVR_HAVE_PRR1_PRTIM3
 #define __AVR_HAVE_PRR1_PRUSB
@@ -642,9 +629,9 @@
 #define ICNC1 7
 
 #define TCCR1C _SFR_MEM8(0x82)
-#define FOC1C 5 
-#define FOC1B 6 
-#define FOC1A 7 
+#define FOC1C 5
+#define FOC1B 6
+#define FOC1A 7
 
 /* Reserved [0x83] */
 
@@ -967,8 +954,8 @@
 #define TC46 6
 #define TC47 7
 
-#define TCNT4H _SFR_MEM8(0xBF)  /* Alias for naming consistency. */
-#define TC4H _SFR_MEM8(0xBF)    /* Per XML device file. */
+#define TCNT4H _SFR_MEM8(0xBF) /* Alias for naming consistency. */
+#define TC4H _SFR_MEM8(0xBF)   /* Per XML device file. */
 #define TC48 0
 #define TC49 1
 #define TC410 2
@@ -1150,21 +1137,21 @@
 
 /* Reserved [0xD5..0xD6] */
 
-#define UHWCON  _SFR_MEM8(0xD7)
-#define UVREGE  0
+#define UHWCON _SFR_MEM8(0xD7)
+#define UVREGE 0
 
-#define USBCON  _SFR_MEM8(0xD8)
-#define VBUSTE  0
+#define USBCON _SFR_MEM8(0xD8)
+#define VBUSTE 0
 #define OTGPADE 4
-#define FRZCLK  5
-#define USBE    7
+#define FRZCLK 5
+#define USBE 7
 
-#define USBSTA  _SFR_MEM8(0xD9)
-#define VBUS    0
-#define SPEED   3
+#define USBSTA _SFR_MEM8(0xD9)
+#define VBUS 0
+#define SPEED 3
 
-#define USBINT  _SFR_MEM8(0xDA)
-#define VBUSTI  0
+#define USBINT _SFR_MEM8(0xDA)
+#define VBUSTI 0
 
 /* Reserved [0xDB..0xDF] */
 
@@ -1321,192 +1308,184 @@
 #define EPINT5 5
 #define EPINT6 6
 
-
-
-
 /* Interrupt Vectors */
 /* Interrupt Vector 0 is the reset vector. */
 
-#define INT0_vect_num       1
-#define INT0_vect           _VECTOR(1)  /* External Interrupt Request 0 */
+#define INT0_vect_num 1
+#define INT0_vect _VECTOR(1) /* External Interrupt Request 0 */
 
-#define INT1_vect_num       2
-#define INT1_vect           _VECTOR(2)  /* External Interrupt Request 1 */
+#define INT1_vect_num 2
+#define INT1_vect _VECTOR(2) /* External Interrupt Request 1 */
 
-#define INT2_vect_num       3
-#define INT2_vect           _VECTOR(3)  /* External Interrupt Request 2 */
+#define INT2_vect_num 3
+#define INT2_vect _VECTOR(3) /* External Interrupt Request 2 */
 
-#define INT3_vect_num       4
-#define INT3_vect           _VECTOR(4)  /* External Interrupt Request 3 */
+#define INT3_vect_num 4
+#define INT3_vect _VECTOR(4) /* External Interrupt Request 3 */
 
-#define INT6_vect_num       7
-#define INT6_vect           _VECTOR(7)  /* External Interrupt Request 6 */
+#define INT6_vect_num 7
+#define INT6_vect _VECTOR(7) /* External Interrupt Request 6 */
 
-#define PCINT0_vect_num     9
-#define PCINT0_vect         _VECTOR(9)  /* Pin Change Interrupt Request 0 */
+#define PCINT0_vect_num 9
+#define PCINT0_vect _VECTOR(9) /* Pin Change Interrupt Request 0 */
 
-#define USB_GEN_vect_num    10
-#define USB_GEN_vect        _VECTOR(10)  /* USB General Interrupt Request */
+#define USB_GEN_vect_num 10
+#define USB_GEN_vect _VECTOR(10) /* USB General Interrupt Request */
 
-#define USB_COM_vect_num    11
-#define USB_COM_vect        _VECTOR(11)  /* USB Endpoint/Pipe Interrupt Communication Request */
+#define USB_COM_vect_num 11
+#define USB_COM_vect                                                           \
+  _VECTOR(11) /* USB Endpoint/Pipe Interrupt Communication Request */
 
-#define WDT_vect_num        12
-#define WDT_vect            _VECTOR(12)  /* Watchdog Time-out Interrupt */
+#define WDT_vect_num 12
+#define WDT_vect _VECTOR(12) /* Watchdog Time-out Interrupt */
 
-#define TIMER1_CAPT_vect_num  16
-#define TIMER1_CAPT_vect    _VECTOR(16)  /* Timer/Counter1 Capture Event */
+#define TIMER1_CAPT_vect_num 16
+#define TIMER1_CAPT_vect _VECTOR(16) /* Timer/Counter1 Capture Event */
 
-#define TIMER1_COMPA_vect_num  17
-#define TIMER1_COMPA_vect   _VECTOR(17)  /* Timer/Counter1 Compare Match A */
+#define TIMER1_COMPA_vect_num 17
+#define TIMER1_COMPA_vect _VECTOR(17) /* Timer/Counter1 Compare Match A */
 
-#define TIMER1_COMPB_vect_num   18
-#define TIMER1_COMPB_vect   _VECTOR(18)  /* Timer/Counter1 Compare Match B */
+#define TIMER1_COMPB_vect_num 18
+#define TIMER1_COMPB_vect _VECTOR(18) /* Timer/Counter1 Compare Match B */
 
-#define TIMER1_COMPC_vect_num   19
-#define TIMER1_COMPC_vect   _VECTOR(19)  /* Timer/Counter1 Compare Match C */
+#define TIMER1_COMPC_vect_num 19
+#define TIMER1_COMPC_vect _VECTOR(19) /* Timer/Counter1 Compare Match C */
 
 #define TIMER1_OVF_vect_num 20
-#define TIMER1_OVF_vect     _VECTOR(20)  /* Timer/Counter1 Overflow */
+#define TIMER1_OVF_vect _VECTOR(20) /* Timer/Counter1 Overflow */
 
-#define TIMER0_COMPA_vect_num   21
-#define TIMER0_COMPA_vect   _VECTOR(21)  /* Timer/Counter0 Compare Match A */
+#define TIMER0_COMPA_vect_num 21
+#define TIMER0_COMPA_vect _VECTOR(21) /* Timer/Counter0 Compare Match A */
 
-#define TIMER0_COMPB_vect_num   22
-#define TIMER0_COMPB_vect   _VECTOR(22)  /* Timer/Counter0 Compare Match B */
+#define TIMER0_COMPB_vect_num 22
+#define TIMER0_COMPB_vect _VECTOR(22) /* Timer/Counter0 Compare Match B */
 
 #define TIMER0_OVF_vect_num 23
-#define TIMER0_OVF_vect     _VECTOR(23)  /* Timer/Counter0 Overflow */
+#define TIMER0_OVF_vect _VECTOR(23) /* Timer/Counter0 Overflow */
 
-#define SPI_STC_vect_num    24
-#define SPI_STC_vect        _VECTOR(24)  /* SPI Serial Transfer Complete */
+#define SPI_STC_vect_num 24
+#define SPI_STC_vect _VECTOR(24) /* SPI Serial Transfer Complete */
 
-#define USART1_RX_vect_num  25
-#define USART1_RX_vect      _VECTOR(25)  /* USART1, Rx Complete */
+#define USART1_RX_vect_num 25
+#define USART1_RX_vect _VECTOR(25) /* USART1, Rx Complete */
 
 #define USART1_UDRE_vect_num 26
-#define USART1_UDRE_vect    _VECTOR(26)  /* USART1 Data register Empty */
+#define USART1_UDRE_vect _VECTOR(26) /* USART1 Data register Empty */
 
-#define USART1_TX_vect_num  27
-#define USART1_TX_vect      _VECTOR(27)  /* USART1, Tx Complete */
+#define USART1_TX_vect_num 27
+#define USART1_TX_vect _VECTOR(27) /* USART1, Tx Complete */
 
 #define ANALOG_COMP_vect_num 28
-#define ANALOG_COMP_vect    _VECTOR(28)  /* Analog Comparator */
+#define ANALOG_COMP_vect _VECTOR(28) /* Analog Comparator */
 
-#define ADC_vect_num        29
-#define ADC_vect            _VECTOR(29)  /* ADC Conversion Complete */
+#define ADC_vect_num 29
+#define ADC_vect _VECTOR(29) /* ADC Conversion Complete */
 
-#define EE_READY_vect_num   30
-#define EE_READY_vect       _VECTOR(30)  /* EEPROM Ready */
+#define EE_READY_vect_num 30
+#define EE_READY_vect _VECTOR(30) /* EEPROM Ready */
 
 #define TIMER3_CAPT_vect_num 31
-#define TIMER3_CAPT_vect    _VECTOR(31)  /* Timer/Counter3 Capture Event */
+#define TIMER3_CAPT_vect _VECTOR(31) /* Timer/Counter3 Capture Event */
 
 #define TIMER3_COMPA_vect_num 32
-#define TIMER3_COMPA_vect   _VECTOR(32)  /* Timer/Counter3 Compare Match A */
+#define TIMER3_COMPA_vect _VECTOR(32) /* Timer/Counter3 Compare Match A */
 
 #define TIMER3_COMPB_vect_num 33
-#define TIMER3_COMPB_vect   _VECTOR(33)  /* Timer/Counter3 Compare Match B */
+#define TIMER3_COMPB_vect _VECTOR(33) /* Timer/Counter3 Compare Match B */
 
 #define TIMER3_COMPC_vect_num 34
-#define TIMER3_COMPC_vect   _VECTOR(34)  /* Timer/Counter3 Compare Match C */
+#define TIMER3_COMPC_vect _VECTOR(34) /* Timer/Counter3 Compare Match C */
 
 #define TIMER3_OVF_vect_num 35
-#define TIMER3_OVF_vect     _VECTOR(35)  /* Timer/Counter3 Overflow */
+#define TIMER3_OVF_vect _VECTOR(35) /* Timer/Counter3 Overflow */
 
-#define TWI_vect_num        36
-#define TWI_vect            _VECTOR(36)  /* 2-wire Serial Interface         */
+#define TWI_vect_num 36
+#define TWI_vect _VECTOR(36) /* 2-wire Serial Interface         */
 
-#define SPM_READY_vect_num  37
-#define SPM_READY_vect      _VECTOR(37)  /* Store Program Memory Read */
+#define SPM_READY_vect_num 37
+#define SPM_READY_vect _VECTOR(37) /* Store Program Memory Read */
 
 #define TIMER4_COMPA_vect_num 38
-#define TIMER4_COMPA_vect   _VECTOR(38)  /* Timer/Counter4 Compare Match A */
+#define TIMER4_COMPA_vect _VECTOR(38) /* Timer/Counter4 Compare Match A */
 
 #define TIMER4_COMPB_vect_num 39
-#define TIMER4_COMPB_vect   _VECTOR(39)  /* Timer/Counter4 Compare Match B */
+#define TIMER4_COMPB_vect _VECTOR(39) /* Timer/Counter4 Compare Match B */
 
 #define TIMER4_COMPD_vect_num 40
-#define TIMER4_COMPD_vect   _VECTOR(40)  /* Timer/Counter4 Compare Match D */
+#define TIMER4_COMPD_vect _VECTOR(40) /* Timer/Counter4 Compare Match D */
 
 #define TIMER4_OVF_vect_num 41
-#define TIMER4_OVF_vect     _VECTOR(41)  /* Timer/Counter4 Overflow */
+#define TIMER4_OVF_vect _VECTOR(41) /* Timer/Counter4 Overflow */
 
 #define TIMER4_FPF_vect_num 42
-#define TIMER4_FPF_vect     _VECTOR(42)  /* Timer/Counter4 Fault Protection Interrupt */
+#define TIMER4_FPF_vect                                                        \
+  _VECTOR(42) /* Timer/Counter4 Fault Protection Interrupt */
 
 #define _VECTORS_SIZE (43 * 4)
 
-
-
 /* Constants */
 #define SPM_PAGESIZE (128)
-#define RAMSTART     (0x100)
-#define RAMSIZE      (0xA00)
-#define RAMEND       (RAMSTART + RAMSIZE - 1)  /* Last On-Chip SRAM Location */
-#define XRAMSTART    (0x2200)
-#define XRAMSIZE     (0x10000)
-#define XRAMEND      (XRAMSIZE - 1)
-#define E2END        (0x3FF)
-#define E2PAGESIZE   (4) 
-#define FLASHEND     (0x7FFF)
-
-
+#define RAMSTART (0x100)
+#define RAMSIZE (0xA00)
+#define RAMEND (RAMSTART + RAMSIZE - 1) /* Last On-Chip SRAM Location */
+#define XRAMSTART (0x2200)
+#define XRAMSIZE (0x10000)
+#define XRAMEND (XRAMSIZE - 1)
+#define E2END (0x3FF)
+#define E2PAGESIZE (4)
+#define FLASHEND (0x7FFF)
 
 /* Fuses */
 #define FUSE_MEMORY_SIZE 3
 
 /* Low Fuse Byte */
-#define FUSE_CKSEL0 (unsigned char)~_BV(0)  /* Select Clock Source */
-#define FUSE_CKSEL1 (unsigned char)~_BV(1)  /* Select Clock Source */
-#define FUSE_CKSEL2 (unsigned char)~_BV(2)  /* Select Clock Source */
-#define FUSE_CKSEL3 (unsigned char)~_BV(3)  /* Select Clock Source */
-#define FUSE_SUT0   (unsigned char)~_BV(4)  /* Select start-up time */
-#define FUSE_SUT1   (unsigned char)~_BV(5)  /* Select start-up time */
-#define FUSE_CKOUT  (unsigned char)~_BV(6)  /* Oscillator options */
-#define FUSE_CKDIV8 (unsigned char)~_BV(7)  /* Divide clock by 8 */
-#define LFUSE_DEFAULT (FUSE_CKSEL1 & FUSE_CKSEL2 & FUSE_CKSEL3 & FUSE_SUT1 & FUSE_CKDIV8)
+#define FUSE_CKSEL0 (unsigned char)~_BV(0) /* Select Clock Source */
+#define FUSE_CKSEL1 (unsigned char)~_BV(1) /* Select Clock Source */
+#define FUSE_CKSEL2 (unsigned char)~_BV(2) /* Select Clock Source */
+#define FUSE_CKSEL3 (unsigned char)~_BV(3) /* Select Clock Source */
+#define FUSE_SUT0 (unsigned char)~_BV(4)   /* Select start-up time */
+#define FUSE_SUT1 (unsigned char)~_BV(5)   /* Select start-up time */
+#define FUSE_CKOUT (unsigned char)~_BV(6)  /* Oscillator options */
+#define FUSE_CKDIV8 (unsigned char)~_BV(7) /* Divide clock by 8 */
+#define LFUSE_DEFAULT                                                          \
+  (FUSE_CKSEL1 & FUSE_CKSEL2 & FUSE_CKSEL3 & FUSE_SUT1 & FUSE_CKDIV8)
 
 /* High Fuse Byte */
-#define FUSE_BOOTRST (unsigned char)~_BV(0)  /* Select Reset Vector */
-#define FUSE_BOOTSZ0 (unsigned char)~_BV(1)  /* Select Boot Size */
-#define FUSE_BOOTSZ1 (unsigned char)~_BV(2)  /* Select Boot Size */
-#define FUSE_EESAVE  (unsigned char)~_BV(3)  /* EEPROM memory is preserved through chip erase */
-#define FUSE_WDTON   (unsigned char)~_BV(4)  /* Watchdog timer always on */
-#define FUSE_SPIEN   (unsigned char)~_BV(5)  /* Enable Serial programming and Data Downloading */
-#define FUSE_JTAGEN  (unsigned char)~_BV(6)  /* Enable JTAG */
-#define FUSE_OCDEN   (unsigned char)~_BV(7)  /* Enable OCD */
+#define FUSE_BOOTRST (unsigned char)~_BV(0) /* Select Reset Vector */
+#define FUSE_BOOTSZ0 (unsigned char)~_BV(1) /* Select Boot Size */
+#define FUSE_BOOTSZ1 (unsigned char)~_BV(2) /* Select Boot Size */
+#define FUSE_EESAVE                                                            \
+  (unsigned char)~_BV(3) /* EEPROM memory is preserved through chip erase */
+#define FUSE_WDTON (unsigned char)~_BV(4) /* Watchdog timer always on */
+#define FUSE_SPIEN                                                             \
+  (unsigned char)~_BV(5) /* Enable Serial programming and Data Downloading */
+#define FUSE_JTAGEN (unsigned char)~_BV(6) /* Enable JTAG */
+#define FUSE_OCDEN (unsigned char)~_BV(7)  /* Enable OCD */
 #define HFUSE_DEFAULT (FUSE_BOOTSZ0 & FUSE_SPIEN)
 
 /* Extended Fuse Byte */
-#define FUSE_BODLEVEL0 (unsigned char)~_BV(0)  /* Brown-out Detector trigger level */
-#define FUSE_BODLEVEL1 (unsigned char)~_BV(1)  /* Brown-out Detector trigger level */
-#define FUSE_BODLEVEL2 (unsigned char)~_BV(2)  /* Brown-out Detector trigger level */
-#define FUSE_HWBE      (unsigned char)~_BV(3)  /* Hardware Boot Enable */
+#define FUSE_BODLEVEL0                                                         \
+  (unsigned char)~_BV(0) /* Brown-out Detector trigger level */
+#define FUSE_BODLEVEL1                                                         \
+  (unsigned char)~_BV(1) /* Brown-out Detector trigger level */
+#define FUSE_BODLEVEL2                                                         \
+  (unsigned char)~_BV(2)                 /* Brown-out Detector trigger level */
+#define FUSE_HWBE (unsigned char)~_BV(3) /* Hardware Boot Enable */
 #define EFUSE_DEFAULT (0xFF)
-
-
 
 /* Lock Bits */
 #define __LOCK_BITS_EXIST
 #define __BOOT_LOCK_BITS_0_EXIST
-#define __BOOT_LOCK_BITS_1_EXIST 
-
-
+#define __BOOT_LOCK_BITS_1_EXIST
 
 /* Signature */
 #define SIGNATURE_0 0x1E
 #define SIGNATURE_1 0x95
 #define SIGNATURE_2 0x87
 
-
-
-#define SLEEP_MODE_IDLE (0x00<<1)
-#define SLEEP_MODE_ADC (0x01<<1)
-#define SLEEP_MODE_PWR_DOWN (0x02<<1)
-#define SLEEP_MODE_PWR_SAVE (0x03<<1)
-#define SLEEP_MODE_STANDBY (0x06<<1)
-#define SLEEP_MODE_EXT_STANDBY (0x07<<1)
-
-
-#endif  /* _AVR_IOM32U4_H_ */
+#define SLEEP_MODE_IDLE (0x00 << 1)
+#define SLEEP_MODE_ADC (0x01 << 1)
+#define SLEEP_MODE_PWR_DOWN (0x02 << 1)
+#define SLEEP_MODE_PWR_SAVE (0x03 << 1)
+#define SLEEP_MODE_STANDBY (0x06 << 1)
+#define SLEEP_MODE_EXT_STANDBY (0x07 << 1)

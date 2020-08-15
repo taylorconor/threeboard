@@ -82,7 +82,7 @@ avr_pure_library(
     hdrs = ["bootstrap.h"],
     deps = [
         ":threeboard_lib",
-	"//src/native:i2c",
+        "//src/native:i2c",
         "//src/native:native_impl",
         "//src/usb:usb_impl",
     ],
@@ -92,8 +92,8 @@ avr_binary(
     name = "threeboard_bin",
     srcs = ["main.c"],
     deps = [
-      ":bootstrap",
-      "//src/native:mcu",
+        ":bootstrap",
+        "//src/native:mcu",
     ],
 )
 

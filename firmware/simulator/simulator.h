@@ -5,6 +5,7 @@
 #include <thread>
 
 #include "simavr/sim_avr.h"
+#include "simulator/core/sim_32u4.h"
 
 namespace threeboard {
 namespace simulator {
@@ -35,8 +36,8 @@ public:
   // Returns the simulator cycle count.
   const uint64_t &GetCycleCount() const;
 
-  const void EnableGdb(uint16_t port) const;
-  const void DisableGdb() const;
+  void EnableGdb(uint16_t port) const;
+  void DisableGdb() const;
 
 private:
   void RunDetached();
@@ -58,6 +59,7 @@ private:
   std::unique_ptr<WriteCallback> write_callback_;
   std::unique_ptr<ReadCallback> read_callback_;
   std::unique_ptr<avr_t> avr_;
+  mcu_t *mcu_;
   std::thread sim_thread_;
 };
 } // namespace simulator

@@ -9,12 +9,6 @@
 #include <iostream>
 #include <unistd.h>
 
-#define PINB 0x23
-#define PORTB 0x25
-#define PORTC 0x28
-#define PORTD 0x2B
-#define PORTF 0x31
-
 namespace threeboard {
 namespace simulator {
 namespace {
@@ -74,6 +68,7 @@ void Simulator::RunAsync() {
   avr_init(avr);
   avr_load_firmware(avr, &f);
   avr_ = std::unique_ptr<avr_t>(avr);
+  mcu_ = (mcu_t *)avr_.get();
 
   write_callback_ = std::make_unique<WriteCallback>(
       std::bind(&Simulator::InternalWriteCallback, this, _1, _2));
@@ -117,13 +112,13 @@ const int &Simulator::GetState() const { return avr_->state; }
 
 const uint64_t &Simulator::GetCycleCount() const { return avr_->cycle; }
 
-const void Simulator::EnableGdb(uint16_t port) const {
+void Simulator::EnableGdb(uint16_t port) const {
   avr_->gdb_port = port;
   avr_->state = cpu_Stopped;
   avr_gdb_init(avr_.get());
 }
 
-const void Simulator::DisableGdb() const {
+void Simulator::DisableGdb() const {
   avr_deinit_gdb(avr_.get());
   avr_->state = cpu_Running;
   avr_->gdb_port = 0;

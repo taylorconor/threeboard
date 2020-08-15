@@ -18,7 +18,7 @@ It also contains extensive documentation, both within the firmware and in a set 
 If you'd like to build your own threeboard, check out the [threeboard build instructions](taylorconor.com).
 
 <!-- TODO: update this image to an animation when it's ready. -->
-<img src="documentation/images/bottom.png" align="left"/>
+<img src="documentation/images/bottom.png" align="right"/>
 
 If you don't want to build a physical threeboard, you can still try it out using the simulator. The threeboard project includes a terminal-based graphical threeboard simulator, built on top of the [simavr](https://github.com/buserror/simavr) AVR simulator, which runs same firmware file that gets flashed to physical hardware. Only macOS and Linux are supported by simavr. The simulator also allows remote GDB debugging, so you can step through the threeboard firmware as it's being simulated to learn about it or investigate bugs! See [`src/simulator`](taylorconor.com) for documentation about how to build and run the simulator.
 

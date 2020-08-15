@@ -28,6 +28,6 @@ public:
   virtual void HandleKeypress(const Keypress) = 0;
 
 protected:
-  virtual ~KeypressHandlerDelegate() {};
+  virtual ~KeypressHandlerDelegate(){};
 };
 } // namespace threeboard

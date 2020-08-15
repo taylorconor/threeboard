@@ -8,14 +8,17 @@ load(
 avr_binary(
     name = "threeboard_sim_binary",
     srcs = ["//src:main.c"],
-    deps = [
-        "@third_party//:simavr_avr_hdrs",
-        "//src:bootstrap",
-    ],
     copts = select({
         "@bazel_tools//src/conditions:darwin": ["-DDARWIN"],
-	"//conditions:default": ["-DLINUX"],
-    }) + ["-DTHREEBOARD_SIM", "-g"],
+        "//conditions:default": ["-DLINUX"],
+    }) + [
+        "-DTHREEBOARD_SIM",
+        "-g",
+    ],
+    deps = [
+        "//src:bootstrap",
+        "@third_party//:simavr_avr_hdrs",
+    ],
 )
 
 cc_library(
@@ -25,22 +28,23 @@ cc_library(
 
 cc_library(
     name = "simulator_lib",
-    hdrs = ["simulator.h"],
     srcs = ["simulator.cpp"],
-    deps = [
-        "@third_party//:simavr"
-    ],
+    hdrs = ["simulator.h"],
     data = [":threeboard_sim_binary"],
+    deps = [
+        "//simulator/core:sim_32u4",
+        "@third_party//:simavr",
+    ],
 )
 
 cc_library(
     name = "runner",
-    hdrs = ["runner.h"],
     srcs = ["runner.cpp"],
+    hdrs = ["runner.h"],
     deps = [
+        ":simulator_delegate",
         ":simulator_lib",
-	":simulator_delegate",
-	"//simulator/ui:ui",
+        "//simulator/ui",
     ],
 )
 
