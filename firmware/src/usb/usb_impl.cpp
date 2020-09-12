@@ -34,12 +34,13 @@ void UsbImpl::Setup() {
     ;
   // Enable USB and the VBUS pad.
   native_->SetUSBCON((1 << native::USBE) | (1 << native::OTGPADE));
-  // Connect internal pull-up attach resistor.
-  native_->SetUDCON(native_->GetUDCON() & ~(1 << native::DETACH));
   // Configure USB general interrupts (handled by the USB_GEN_vect routine). We
   // want to interrupt on start of frame (SOFE), and also on end of reset
   // (EORSTE).
   native_->SetUDIEN((1 << native::EORSTE) | (1 << native::SOFE));
+  // Connect internal pull-up attach resistor. This must be the final step in
+  // the setup process because it indicates that the device is now ready.
+  native_->SetUDCON(native_->GetUDCON() & ~(1 << native::DETACH));
 }
 
 bool UsbImpl::HasConfigured() { return hid_state_.configuration; }

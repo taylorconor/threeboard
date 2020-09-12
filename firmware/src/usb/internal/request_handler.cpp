@@ -34,6 +34,7 @@ bool FindMatchingContainer(native::Native *native, const SetupPacket &packet,
       return true;
     }
   }
+  // TODO: is this necessary? remove if not.
   /*
   // Now find the descriptor in the list with a matching wIndex.
   for (; i < GetDescriptorListSize(); i++, ptr++) {
@@ -159,8 +160,8 @@ void RequestHandler::HandleGetIdle(const HidState &hid_state) {
   HandshakeTransmitterInterrupt(native_);
 }
 
-// Set the idle config of the device. We don't take any action from this, but we
-// need to be able to get and set it.
+// Set the idle config of the device. It determines how frequently to send
+// HidState on SOFI.
 void RequestHandler::HandleSetIdle(const SetupPacket &packet,
                                    HidState *hid_state) {
   HandshakeTransmitterInterrupt(native_);

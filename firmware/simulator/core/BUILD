@@ -7,5 +7,8 @@ cc_library(
         "sim_32u4.h",
         "sim_core_declare.h",
     ],
-    deps = ["@third_party//:simavr"],
+    deps = [
+        "@third_party//:simavr",
+	"//src/native:constants",
+    ],
 )

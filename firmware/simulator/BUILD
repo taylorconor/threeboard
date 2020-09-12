@@ -33,6 +33,7 @@ cc_library(
     data = [":threeboard_sim_binary"],
     deps = [
         "//simulator/core:sim_32u4",
+	    "//simulator/usb:host",
         "@third_party//:simavr",
     ],
 )

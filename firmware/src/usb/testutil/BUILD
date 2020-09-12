@@ -7,7 +7,7 @@ cc_library(
     hdrs = ["testutil.h"],
     deps = [
         "//src/native:native_mock",
-        "//src/usb/internal:protocol",
+        "//src/usb/shared:protocol",
     ],
 )
 
@@ -19,6 +19,6 @@ cc_library(
     deps = [
         "//src/native:native_mock",
         "//src/usb:usb_impl",
-        "//src/usb/internal:protocol",
+        "//src/usb/shared:protocol",
     ],
 )

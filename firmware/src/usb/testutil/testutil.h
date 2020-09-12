@@ -1,7 +1,7 @@
 #pragma once
 
 #include "src/native/native_mock.h"
-#include "src/usb/internal/protocol.h"
+#include "src/usb/shared/protocol.h"
 
 namespace threeboard {
 namespace usb {

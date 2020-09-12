@@ -18,9 +18,9 @@ avr_library(
         ":usb",
         "//src/delegates:usb_interrupt_handler_delegate",
         "//src/native",
-        "//src/usb/internal:constants",
         "//src/usb/internal:descriptors",
         "//src/usb/internal:request_handler",
+        "//src/usb/shared:constants",
     ],
 )
 

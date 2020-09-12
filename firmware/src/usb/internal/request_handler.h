@@ -1,9 +1,9 @@
 #pragma once
 
 #include "src/native/native.h"
-#include "src/usb/internal/constants.h"
 #include "src/usb/internal/hid_state.h"
-#include "src/usb/internal/protocol.h"
+#include "src/usb/shared/constants.h"
+#include "src/usb/shared/protocol.h"
 
 namespace threeboard {
 namespace usb {

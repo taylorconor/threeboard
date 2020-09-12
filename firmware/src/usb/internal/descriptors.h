@@ -1,8 +1,8 @@
 #pragma once
 
 #include "src/native/native.h"
-#include "src/usb/internal/constants.h"
-#include "src/usb/internal/protocol.h"
+#include "src/usb/shared/constants.h"
+#include "src/usb/shared/protocol.h"
 #include "src/util/util.h"
 
 namespace threeboard {
@@ -88,7 +88,7 @@ struct CombinedDescriptor {
 // The CombinedDescriptor is a collection of all additional (i.e. non-device)
 // USB descriptors needed for this USB implementation. It's defined like this to
 // force the compiler to allocate a contiguous piece of program memory to store
-// the entire combined descrior in.
+// the entire combined descriptor in.
 static constexpr CombinedDescriptor PROGMEM combined_descriptor = {
     .configuration_descriptor =
         {

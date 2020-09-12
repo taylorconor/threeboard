@@ -6,19 +6,21 @@
 
 #include "simavr/sim_avr.h"
 #include "simulator/core/sim_32u4.h"
+#include "simulator/usb/host.h"
 
 namespace threeboard {
 namespace simulator {
+namespace detail {
+
+using IrqCallback = std::function<void()>;
+
+} // namespace detail
 
 class Simulator {
 public:
-  using WriteCallback = std::function<void(avr_io_addr_t, uint8_t)>;
-  using ReadCallback = std::function<uint8_t(avr_io_addr_t)>;
-
   ~Simulator();
 
   void RunAsync();
-
   void Reset();
 
   // Retrieve ports containing output pins.
@@ -30,10 +32,9 @@ public:
   // Set ports containing input pins.
   void SetPinB(uint8_t, bool);
 
-  // Returns a reference to the simulator state.
+  // Methods to get references to frequently updated values so they don't need
+  // to be polled.
   const int &GetState() const;
-
-  // Returns the simulator cycle count.
   const uint64_t &GetCycleCount() const;
 
   void EnableGdb(uint16_t port) const;
@@ -41,26 +42,17 @@ public:
 
 private:
   void RunDetached();
-  void InternalWriteCallback(avr_io_addr_t, uint8_t);
-  uint8_t InternalReadCallback(avr_io_addr_t);
-
-  // Ports containing output pins.
-  uint8_t portb_;
-  uint8_t portc_;
-  uint8_t portd_;
-  uint8_t portf_;
-
-  // Ports containing input pins.
-  uint8_t pinb_ = 0xFF;
 
   std::atomic<bool> is_running_;
   std::atomic<bool> should_reset_;
 
-  std::unique_ptr<WriteCallback> write_callback_;
-  std::unique_ptr<ReadCallback> read_callback_;
+  // Ports containing input pins.
+  uint8_t pinb_ = 0xFF;
+
   std::unique_ptr<avr_t> avr_;
   mcu_t *mcu_;
   std::thread sim_thread_;
+  std::unique_ptr<Host> usb_host_;
 };
 } // namespace simulator
 } // namespace threeboard
