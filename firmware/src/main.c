@@ -6,8 +6,8 @@
 #ifdef THREEBOARD_SIM
 #include "native/mcu.h"
 
-// TODO: make this include relative to simavr, not external/third_party.
-#include "external/third_party/usr/local/include/simavr/avr/avr_mcu_section.h"
+// TODO: make this include relative to simavr, not external/third_party. Right now it's like this because of limitations in simavr_avr_hdrs which I don't have the time / the will to fix at the moment.
+#include "external/third_party/local/include/simavr/avr/avr_mcu_section.h"
 AVR_MCU(F_CPU, MCU_NAME);
 #endif
 

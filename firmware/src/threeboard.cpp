@@ -38,8 +38,8 @@ Threeboard::Threeboard(native::Native *native, usb::Usb *usb,
 void Threeboard::Run() {
   // Wait until the USB stack has been configured before continuing the runloop.
   // TODO: uncomment this once the simulator supports USB configuration.
-  // while (!usb_->HasConfigured())
-  //  ;
+  while (!usb_->HasConfigured())
+    ;
 
   // Main runloop.
   while (1) {

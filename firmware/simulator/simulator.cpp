@@ -1,118 +1,130 @@
 #include "simulator.h"
 
 #include <iostream>
-#include <unistd.h>
-
-#include "simavr/avr_ioport.h"
-#include "simavr/sim_avr.h"
-#include "simavr/sim_core_decl.h"
-#include "simavr/sim_elf.h"
-#include "simavr/sim_gdb.h"
 
 namespace threeboard {
 namespace simulator {
 namespace {
 
-// Relative firmware path. Bazel will guarantee this is built since it's listed
-// as a dependency.
-const std::string kFirmwareFile = "simulator/threeboard_sim_binary.elf";
+using namespace std::placeholders;
+
+// TODO: this can be made configurable later if needed.
+constexpr uint16_t kGdbPort = 1234;
+
+// Used to test a single pin in a register.
+bool IsEnabled(uint8_t reg, uint8_t pin) { return reg & (1 << pin); }
 
 } // namespace
 
-Simulator::~Simulator() {
-  if (is_running_) {
-    is_running_ = false;
-    if (avr_) {
-      avr_terminate(avr_.get());
+Simulator::Simulator()
+    : gdb_enabled_(false), firmware_(std::make_unique<Firmware>()) {}
+
+void Simulator::Run() {
+  if (ui_ != nullptr) {
+    std::cout << "Attempted to run a running simulator instance!" << std::endl;
+    exit(0);
+  }
+  firmware_->Reset();
+  firmware_->RunAsync();
+  ui_ = std::make_unique<UI>(this, firmware_->GetState(),
+                             firmware_->GetCycleCount(), gdb_enabled_);
+  usb_host_ = std::make_unique<Host>(firmware_->GetAvr(), this);
+  ui_->StartRenderLoopAsync();
+  std::unique_lock<std::mutex> lock(mutex_);
+  sim_run_var_.wait(lock);
+  ui_ = nullptr;
+}
+
+void Simulator::PrepareRenderState() {
+  uint8_t portb = firmware_->GetPortB();
+  uint8_t portc = firmware_->GetPortC();
+  uint8_t portd = firmware_->GetPortD();
+  uint8_t portf = firmware_->GetPortF();
+
+  // Clear the LED state before the next frame is calculated.
+  ui_->ClearLedState();
+
+  // The ERR/STATUS LED pair for threeboard v1 is wired as follows:
+  // status0: PB6, ERR
+  // status1: PC6, STATUS
+  if (IsEnabled(portb, 6) && !IsEnabled(portc, 6)) {
+    ui_->SetErr(true);
+  } else if (IsEnabled(portc, 6) && !IsEnabled(portb, 6)) {
+    ui_->SetStatus(true);
+  }
+
+  // The wiring of the LED matrix for threeboard v1 is detailed below. Scanning
+  // is row-major, meaning only one row is active at a time. The column pins
+  // can be effectively considered as active low.
+  // row0: PD7, B0_{4,5,6,7}
+  // row1: PB4, B0_{0,1,2,3}
+  // row2: PD6, B1_{4,5,6,7}
+  // row3: PD4, B1_{0,1,2,3}
+  // row4: PB5, (R, G, B, PROG)
+  // col0: PF0, (R, B0_3, B0_7, B1_3, B1_7)
+  // col1: PF1, (G, B0_2, B0_6, B1_2, B1_6)
+  // col2: PF4, (B, B0_1, B0_5, B1_1, B1_5)
+  // col3: PF5, (PROG, B0_0, B0_4, B1_0, B1_4)
+  if (IsEnabled(portd, 7)) {
+    ui_->SetBank0(!IsEnabled(portf, 0), 7);
+    ui_->SetBank0(!IsEnabled(portf, 1), 6);
+    ui_->SetBank0(!IsEnabled(portf, 4), 5);
+    ui_->SetBank0(!IsEnabled(portf, 5), 4);
+  } else if (IsEnabled(portb, 4)) {
+    ui_->SetBank0(!IsEnabled(portf, 0), 3);
+    ui_->SetBank0(!IsEnabled(portf, 1), 2);
+    ui_->SetBank0(!IsEnabled(portf, 4), 1);
+    ui_->SetBank0(!IsEnabled(portf, 5), 0);
+  } else if (IsEnabled(portd, 6)) {
+    ui_->SetBank1(!IsEnabled(portf, 0), 7);
+    ui_->SetBank1(!IsEnabled(portf, 1), 6);
+    ui_->SetBank1(!IsEnabled(portf, 4), 5);
+    ui_->SetBank1(!IsEnabled(portf, 5), 4);
+  } else if (IsEnabled(portd, 4)) {
+    ui_->SetBank1(!IsEnabled(portf, 0), 3);
+    ui_->SetBank1(!IsEnabled(portf, 1), 2);
+    ui_->SetBank1(!IsEnabled(portf, 4), 1);
+    ui_->SetBank1(!IsEnabled(portf, 5), 0);
+  } else if (IsEnabled(portb, 5)) {
+    ui_->SetR(!IsEnabled(portf, 0));
+    ui_->SetG(!IsEnabled(portf, 1));
+    ui_->SetB(!IsEnabled(portf, 4));
+    ui_->SetProg(!IsEnabled(portf, 5));
+  }
+}
+
+void Simulator::HandlePhysicalKeypress(char key, bool state) {
+  // Simulator command keys.
+  if (key == 'q') {
+    sim_run_var_.notify_all();
+  } else if (key == 'g') {
+    if (gdb_enabled_) {
+      firmware_->DisableGdb();
+    } else {
+      firmware_->EnableGdb(GetGdbPort());
     }
-    if (sim_thread_.joinable()) {
-      sim_thread_.join();
-    }
-    std::cout << "Simulator shut down successfully." << std::endl;
+    gdb_enabled_ = !gdb_enabled_;
+  }
+
+  // The key pins are all active low.
+  else if (key == 'a') {
+    // Switch 1 - maps to PB2.
+    firmware_->SetPinB(2, !state);
+  } else if (key == 's') {
+    // Switch 2 - maps to PB3.
+    firmware_->SetPinB(3, !state);
+  } else if (key == 'd') {
+    // Switch 3 - maps to PB1.
+    firmware_->SetPinB(1, !state);
   }
 }
 
-void Simulator::RunAsync() {
-  // Initialise firmware from ELF file.
-  elf_firmware_t f;
-  if (elf_read_firmware(kFirmwareFile.c_str(), &f)) {
-    std::cout << "Failed to read ELF firmware '" << kFirmwareFile << "'"
-              << std::endl;
-    exit(1);
-  }
-  std::cout << "Loaded firmware '" << kFirmwareFile << "'" << std::endl;
-
-  avr_t *avr = avr_make_mcu_by_name(f.mmcu);
-  if (!avr) {
-    std::cout << "Unknown MMCU: '" << f.mmcu << "'" << std::endl;
-    exit(1);
-  }
-
-  avr_init(avr);
-  avr_load_firmware(avr, &f);
-  avr_ = std::unique_ptr<avr_t>(avr);
-  mcu_ = (mcu_t *)avr_.get();
-
-  usb_host_ = std::make_unique<Host>(avr_.get());
-
-  // Start a new thread to run the AVR firmware and manage clock timing.
-  is_running_ = true;
-  sim_thread_ = std::thread(&Simulator::RunDetached, this);
+void Simulator::HandleVirtualKeypress(uint8_t mod_code, uint8_t key_code) {
+  std::cout << "Received virtual keypress: mod=" << (int)mod_code
+            << ", key=" << (int)key_code << std::endl;
 }
 
-void Simulator::Reset() { should_reset_ = true; }
+uint16_t Simulator::GetGdbPort() { return kGdbPort; }
 
-// TODO: assert here if is_running_ is false?
-uint8_t Simulator::GetPortB() const { return avr_->data[PORTB]; }
-uint8_t Simulator::GetPortC() const { return avr_->data[PORTC]; }
-uint8_t Simulator::GetPortD() const { return avr_->data[PORTD]; }
-uint8_t Simulator::GetPortF() const { return avr_->data[PORTF]; }
-
-void Simulator::SetPinB(uint8_t pin, bool enabled) {
-  pinb_ &= ~(1 << pin);
-  if (enabled) {
-    pinb_ |= 1 << pin;
-  }
-  avr_->data[PINB] = pinb_;
-}
-
-const int &Simulator::GetState() const { return avr_->state; }
-
-const uint64_t &Simulator::GetCycleCount() const { return avr_->cycle; }
-
-void Simulator::EnableGdb(uint16_t port) const {
-  avr_->gdb_port = port;
-  avr_->state = cpu_Stopped;
-  avr_gdb_init(avr_.get());
-}
-
-void Simulator::DisableGdb() const {
-  avr_deinit_gdb(avr_.get());
-  avr_->state = cpu_Running;
-  avr_->gdb_port = 0;
-}
-
-void Simulator::RunDetached() {
-  int state = cpu_Running;
-  while (is_running_ && state != cpu_Done && state != cpu_Crashed) {
-    if (should_reset_) {
-      avr_reset(avr_.get());
-      should_reset_ = false;
-    }
-
-    // Since the threeboard is entirely interrupt driven (the main runloop does
-    // poll the keyboard state, but sleeps the CPU between interrupts), simavr
-    // will attempt to match the simulator frequency to the target 16 MHz
-    // frequency. It's a difficult problem so it's not perfect (and simavr
-    // doesn't attempt to make it perfect), but in my experience you can
-    // expect 17.5±1.5MHz.
-    avr_run(avr_.get());
-  }
-  is_running_ = false;
-  if (state == cpu_Done || state == cpu_Crashed) {
-    std::cout << "Simulator finished with state "
-              << (state == cpu_Done ? "DONE" : "CRASHED") << std::endl;
-  }
-}
 } // namespace simulator
 } // namespace threeboard

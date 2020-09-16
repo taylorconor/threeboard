@@ -8,7 +8,7 @@ cc_library(
         "sim_core_declare.h",
     ],
     deps = [
+        "//src/native:constants",
         "@third_party//:simavr",
-	"//src/native:constants",
     ],
 )

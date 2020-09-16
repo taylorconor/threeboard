@@ -28,9 +28,9 @@ avr_library(
     deps = [
         ":descriptors",
         ":hid_state",
+        "//src/native",
         "//src/usb/shared:constants",
         "//src/usb/shared:protocol",
-        "//src/native",
         "//src/util",
     ],
 )

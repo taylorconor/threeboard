@@ -5,6 +5,7 @@
 #include <thread>
 
 #include "simavr/sim_avr.h"
+#include "simulator/simulator_delegate.h"
 #include "src/usb/shared/protocol.h"
 
 namespace threeboard {
@@ -16,9 +17,7 @@ namespace simulator {
 // interact with the simulated threeboard over USB.
 class Host {
 public:
-  using UsbAttachCallback = std::function<void(uint32_t)>;
-
-  Host(avr_t *avr);
+  Host(avr_t *avr, SimulatorDelegate *simulator_delegate);
 
   bool Start();
   bool IsRunning();
@@ -30,9 +29,10 @@ private:
   void InternalUsbAttachCallback(uint32_t status);
 
   avr_t *avr_;
+  SimulatorDelegate *simulator_delegate_;
   std::atomic<bool> is_running_;
   std::unique_ptr<std::thread> device_control_thread_;
-  std::unique_ptr<UsbAttachCallback> usb_attach_callback_;
+  std::unique_ptr<std::function<void(uint32_t)>> usb_attach_callback_;
 };
 } // namespace simulator
 } // namespace threeboard

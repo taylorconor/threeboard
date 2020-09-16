@@ -12,18 +12,20 @@ namespace simulator {
 namespace {
 
 using namespace std::placeholders;
+using UsbAttachCallback = std::function<void(uint32_t)>;
 using usb::RequestType;
 
 // C-style trampoline function to bounce the avr_irq_register_notify callback to
 // the provided UsbAttachCallback callback.
 void UsbAttachCallbackTrampoline(avr_irq_t *irq, uint32_t value, void *param) {
-  Host::UsbAttachCallback *callback = (Host::UsbAttachCallback *)param;
+  UsbAttachCallback *callback = (UsbAttachCallback *)param;
   (*callback)(value);
 }
 } // namespace
 
-Host::Host(avr_t *avr) : avr_(avr) {
-  avr_->log = 4;
+Host::Host(avr_t *avr, SimulatorDelegate *simulator_delegate)
+    : avr_(avr), simulator_delegate_(simulator_delegate), is_running_(false) {
+  // avr_->log = 4;
 
   // Configure a callback on USB attach, so we'll know when we try to start the
   // host if the device is ready or not.
@@ -40,23 +42,21 @@ bool Host::IsRunning() { return is_running_; }
 void Host::DeviceControlLoop() {
   // Before properly beginning the device control loop, we need to issue a USB
   // reset to ensure that the threeboard and simavr are configured correctly.
+  // TODO: get AVR_IOCTL_USB_RESET_AND_SOFI into master!
   avr_ioctl(avr_, AVR_IOCTL_USB_RESET, NULL);
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
   // Begin the device control loop and continue until the host is no longer
   // needed. This loop is responsible for configuring the keyboard with the
-  // initial setup packets, and then polling it for keypress updates every 1ms.
+  // initial setup packets, and then polling it for keypress updates.
   // We can skip many of the unnecessary requests that a normal host would make,
   // since we know exactly what kind of device we're dealing with and its
   // capabilities.
   while (is_running_) {
-    auto processing_start = std::chrono::system_clock::now();
-
     // If the device has not configured yet (i.e. it has not yet set its
-    // endpoint number UENUM to the keyboard endpoint), configure its keyboard
-    // endpoint here.
-    // TODO: re-enable when ready.
-    if (0 && avr_->data[UENUM] != usb::kKeyboardEndpoint) {
+    // endpoint number, stored in UENUM, to the keyboard endpoint), configure
+    // its keyboard endpoint here.
+    if (avr_->data[UENUM] != usb::kKeyboardEndpoint) {
       usb::SetupPacket packet;
       packet.bmRequestType = RequestType(RequestType::Direction::HOST_TO_DEVICE,
                                          RequestType::Type::CLASS,
@@ -67,11 +67,24 @@ void Host::DeviceControlLoop() {
       avr_io_usb packet_buffer = {
           .pipe = 0, .sz = sizeof(usb::SetupPacket), .buf = (uint8_t *)&packet};
       avr_ioctl(avr_, AVR_IOCTL_USB_SETUP, &packet_buffer);
+    } else {
+      uint8_t read_buffer[8];
+      avr_io_usb packet_buffer = {.pipe = usb::kKeyboardEndpoint,
+                                  .sz = 8,
+                                  .buf = (uint8_t *)&read_buffer};
+      int ret = avr_ioctl(avr_, AVR_IOCTL_USB_READ, &packet_buffer);
+      if (ret == 0) {
+        // Keypress changes are sent for two reasons: first when the key is
+        // pressed down, and then when the key is released. Right now it doesn't
+        // matter when we register the keypress in the simulator so we do it on
+        // key down.
+        if (read_buffer[0] != 0 || read_buffer[2] != 0) {
+          simulator_delegate_->HandleVirtualKeypress(read_buffer[0],
+                                                     read_buffer[2]);
+        }
+      }
     }
-
-    auto processing_end = std::chrono::system_clock::now();
-    std::this_thread::sleep_for(std::chrono::milliseconds(1) -
-                                (processing_end - processing_start));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
 }
 

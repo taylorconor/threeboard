@@ -29,6 +29,6 @@ git_repository(
 new_local_repository(
     name = "third_party",
     build_file = "third_party/BUILD.third_party",
-    path = "/",
+    path = "/usr/",
     workspace_file = "third_party/WORKSPACE.third_party",
 )

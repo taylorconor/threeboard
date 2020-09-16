@@ -27,25 +27,25 @@ cc_library(
 )
 
 cc_library(
-    name = "simulator_lib",
-    srcs = ["simulator.cpp"],
-    hdrs = ["simulator.h"],
+    name = "firmware_lib",
+    srcs = ["firmware.cpp"],
+    hdrs = ["firmware.h"],
     data = [":threeboard_sim_binary"],
     deps = [
         "//simulator/core:sim_32u4",
-	    "//simulator/usb:host",
         "@third_party//:simavr",
     ],
 )
 
 cc_library(
-    name = "runner",
-    srcs = ["runner.cpp"],
-    hdrs = ["runner.h"],
+    name = "simulator_lib",
+    srcs = ["simulator.cpp"],
+    hdrs = ["simulator.h"],
     deps = [
+        ":firmware_lib",
         ":simulator_delegate",
-        ":simulator_lib",
         "//simulator/ui",
+        "//simulator/usb:host",
     ],
 )
 
@@ -53,6 +53,6 @@ cc_binary(
     name = "simulator",
     srcs = ["main.cpp"],
     deps = [
-        ":runner",
+        ":simulator_lib",
     ],
 )

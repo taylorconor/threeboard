@@ -4,6 +4,7 @@
 #include <functional>
 #include <thread>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "simulator/simulator_delegate.h"
@@ -51,15 +52,17 @@ private:
 
   // Keep track of the simulator cycle count from the previous render pass so we
   // can calculate CPU frequency.
-  uint64_t prev_sim_cycle_;
+  uint64_t prev_sim_cycle_ = 0;
 
   // Memoize some stats so we don't have to constantly recalculate and so that
   // their values don't update so fast they flicker and become unreadable.
-  uint8_t cycles_since_memo_update_;
+  uint8_t cycles_since_memo_update_ = 0;
   std::string freq_str_memo_ = "Loading...";
-  std::vector<std::string> state_str_memo_ = {"Loading..."};
+  std::vector<std::pair<std::string, bool>> state_str_memo_ = {
+      {"Loading...", false}};
 
   std::unordered_map<uint8_t, uint64_t> cpu_mode_distribution_;
+  std::unordered_set<int> cpu_states_since_last_flush_;
 
   uint8_t key_a_ = 0;
   uint8_t key_s_ = 0;

@@ -189,7 +189,8 @@ int8_t UsbImpl::SendKeypress() {
     if (!hid_state_.configuration) {
       return -1;
     }
-    // Only continue polling RWAL for 50 frames (50ms on our full-speed bus)
+    // Only continue polling RWAL for 50 frames (50ms on our full-speed bus).
+    // TODO: what happens when this overflows? i think there's a subtle bug here
     if (native_->GetUDFNUML() >= timeout) {
       return -1;
     }

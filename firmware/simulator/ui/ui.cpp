@@ -208,7 +208,7 @@ void UI::SetBank1(bool enabled, uint8_t idx) {
 // callbacks.
 void UI::UpdateKeyState() {
   // Decrement existing keypresses until they exhaust their cooldown period.
-  bool keyup_a, keyup_s, keyup_d = false;
+  bool keyup_a = false, keyup_s = false, keyup_d = false;
   if (key_a_ > 0) {
     key_a_--;
     keyup_a = true;
@@ -233,18 +233,18 @@ void UI::UpdateKeyState() {
     } else if (c == 'd') {
       key_d_ = kKeyHoldTime;
     }
-    sim_delegate_->HandleKeypress(c, true);
+    sim_delegate_->HandlePhysicalKeypress(c, true);
   }
 
   // Trigger any necessary keyup callbacks.
   if (key_a_ == 0 && keyup_a) {
-    sim_delegate_->HandleKeypress('a', false);
+    sim_delegate_->HandlePhysicalKeypress('a', false);
   }
   if (key_s_ == 0 && keyup_s) {
-    sim_delegate_->HandleKeypress('s', false);
+    sim_delegate_->HandlePhysicalKeypress('s', false);
   }
   if (key_d_ == 0 && keyup_d) {
-    sim_delegate_->HandleKeypress('d', false);
+    sim_delegate_->HandlePhysicalKeypress('d', false);
   }
 }
 
@@ -306,7 +306,11 @@ void UI::DrawStatusText() {
   int i = 0;
   for (; i < state_str_memo_.size(); ++i) {
     move(kRootY + 4 + i, kRootX + 47);
-    printw("  %s", state_str_memo_[i].c_str());
+    int colour =
+        state_str_memo_[i].second ? COLOR_PAIR(kWhite) : COLOR_PAIR(kMedGrey);
+    attron(colour);
+    printw("  %s", state_str_memo_[i].first.c_str());
+    attroff(colour);
   }
   move(kRootY + 4 + i, kRootX + 47);
   printw("gdb: %s (port %d)", (gdb_enabled_ ? "enabled" : "disabled"),
@@ -336,6 +340,7 @@ std::string UI::GetClockSpeedString() {
 
 void UI::UpdateCpuStateBreakdownList() {
   auto state = sim_state_;
+  cpu_states_since_last_flush_.insert(state);
   if (cpu_mode_distribution_.find(state) == cpu_mode_distribution_.end()) {
     cpu_mode_distribution_[state] = 0;
   } else {
@@ -352,8 +357,11 @@ void UI::UpdateCpuStateBreakdownList() {
     ss << std::fixed << std::setprecision(2);
     double mode_ratio = ((double)(value * 100) / current_frame_);
     ss << GetCpuStateName(key) << " (" << mode_ratio << "%)";
-    state_str_memo_.push_back(ss.str());
+    bool is_active = cpu_states_since_last_flush_.find(key) !=
+                     cpu_states_since_last_flush_.end();
+    state_str_memo_.push_back({ss.str(), is_active});
   }
+  cpu_states_since_last_flush_.clear();
 }
 
 } // namespace simulator

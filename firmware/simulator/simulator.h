@@ -1,58 +1,35 @@
 #pragma once
 
-#include <atomic>
-#include <functional>
-#include <thread>
+#include "firmware.h"
 
-#include "simavr/sim_avr.h"
-#include "simulator/core/sim_32u4.h"
+#include <condition_variable>
+#include <memory>
+#include <mutex>
+
+#include "simulator/simulator_delegate.h"
+#include "simulator/ui/ui.h"
 #include "simulator/usb/host.h"
 
 namespace threeboard {
 namespace simulator {
-namespace detail {
-
-using IrqCallback = std::function<void()>;
-
-} // namespace detail
-
-class Simulator {
+class Simulator : public SimulatorDelegate {
 public:
-  ~Simulator();
+  Simulator();
 
-  void RunAsync();
-  void Reset();
-
-  // Retrieve ports containing output pins.
-  uint8_t GetPortB() const;
-  uint8_t GetPortC() const;
-  uint8_t GetPortD() const;
-  uint8_t GetPortF() const;
-
-  // Set ports containing input pins.
-  void SetPinB(uint8_t, bool);
-
-  // Methods to get references to frequently updated values so they don't need
-  // to be polled.
-  const int &GetState() const;
-  const uint64_t &GetCycleCount() const;
-
-  void EnableGdb(uint16_t port) const;
-  void DisableGdb() const;
+  void Run();
 
 private:
-  void RunDetached();
+  void PrepareRenderState() final;
+  void HandlePhysicalKeypress(char key, bool state) final;
+  void HandleVirtualKeypress(uint8_t mod_code, uint8_t key_code) final;
+  uint16_t GetGdbPort() final;
 
-  std::atomic<bool> is_running_;
-  std::atomic<bool> should_reset_;
-
-  // Ports containing input pins.
-  uint8_t pinb_ = 0xFF;
-
-  std::unique_ptr<avr_t> avr_;
-  mcu_t *mcu_;
-  std::thread sim_thread_;
+  std::unique_ptr<UI> ui_;
+  std::unique_ptr<Firmware> firmware_;
   std::unique_ptr<Host> usb_host_;
+  std::mutex mutex_;
+  std::condition_variable sim_run_var_;
+  bool gdb_enabled_;
 };
 } // namespace simulator
 } // namespace threeboard

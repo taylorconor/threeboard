@@ -10,8 +10,8 @@ namespace usb {
 
 class RequestHandler {
 public:
-  RequestHandler(native::Native *native);
-  //  virtual ~RequestHandler() {}
+  explicit RequestHandler(native::Native *native);
+  virtual ~RequestHandler() {}
 
   // Device handlers.
   virtual void HandleGetStatus();
