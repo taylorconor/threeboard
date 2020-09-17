@@ -1,11 +1,10 @@
 #pragma once
 
-#include "firmware.h"
-
 #include <condition_variable>
 #include <memory>
 #include <mutex>
 
+#include "simulator/firmware.h"
 #include "simulator/simulator_delegate.h"
 #include "simulator/ui/ui.h"
 #include "simulator/usb/host.h"

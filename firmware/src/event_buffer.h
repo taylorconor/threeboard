@@ -7,7 +7,7 @@ namespace threeboard {
 
 class EventBuffer : public KeypressHandlerDelegate {
 public:
-  virtual ~EventBuffer() {}
+  ~EventBuffer() override = default;
 
   // Immediately returns the pending keypress event if it's available, otherwise
   // it returns INACTIVE.
@@ -20,7 +20,7 @@ public:
   // ISR executions as short as possible, it offloads the event to a buffer
   // variable (pending_keypress_) which is picked up in the main program's
   // runloop.
-  void HandleKeypress(const Keypress) override;
+  void HandleKeypress(const Keypress &) override;
 
 private:
   Keypress pending_keypress_ = Keypress::INACTIVE;

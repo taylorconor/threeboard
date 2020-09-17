@@ -7,15 +7,16 @@ namespace threeboard {
 namespace usb {
 namespace {
 
-static constexpr uint8_t GetDescriptorListSize() {
+constexpr uint8_t GetDescriptorListSize() {
   return sizeof(descriptor_list) / sizeof(DescriptorContainer);
 }
 
-static void AwaitTransmitterReady(native::Native *native) {
+void AwaitTransmitterReady(native::Native *native) {
   while (!(native->GetUEINTX() & (1 << native::TXINI)))
     ;
 }
-static void HandshakeTransmitterInterrupt(native::Native *native) {
+
+void HandshakeTransmitterInterrupt(native::Native *native) {
   native->SetUEINTX(~(1 << native::TXINI));
 }
 
@@ -147,8 +148,8 @@ void RequestHandler::HandleGetReport(const HidState &hid_state) {
   AwaitTransmitterReady(native_);
   native_->SetUEDATX(hid_state.modifier_keys);
   native_->SetUEDATX(0);
-  for (uint8_t i = 0; i < 6; i++) {
-    native_->SetUEDATX(hid_state.keyboard_keys[i]);
+  for (auto &keyboard_key : hid_state.keyboard_keys) {
+    native_->SetUEDATX(keyboard_key);
   }
   HandshakeTransmitterInterrupt(native_);
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 namespace threeboard {
 namespace simulator {
 
@@ -11,7 +13,7 @@ public:
   virtual uint16_t GetGdbPort() = 0;
 
 protected:
-  virtual ~SimulatorDelegate() {}
+  virtual ~SimulatorDelegate() = default;
 };
 } // namespace simulator
 } // namespace threeboard

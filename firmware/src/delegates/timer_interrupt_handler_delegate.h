@@ -8,6 +8,6 @@ public:
   virtual void HandleTimer3Interrupt() = 0;
 
 protected:
-  virtual ~TimerInterruptHandlerDelegate() {}
+  virtual ~TimerInterruptHandlerDelegate() = default;
 };
 } // namespace threeboard

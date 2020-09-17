@@ -102,7 +102,7 @@ class DescriptorId {
 public:
   // We need explicit default constructor here to allow Descriptor to remain an
   // aggregate, but it serves no other purpose.
-  constexpr DescriptorId(){};
+  constexpr DescriptorId() = default;
 
   // Descriptor type in the high byte, descriptor index in the low byte.
   constexpr DescriptorId(const DescriptorType &type, uint8_t index)
@@ -118,7 +118,7 @@ public:
     return this->value_ == other.value_;
   }
 
-  constexpr uint16_t GetValue() { return value_; }
+  constexpr uint16_t GetValue() const { return value_; }
 
 private:
   uint16_t value_ = 0;

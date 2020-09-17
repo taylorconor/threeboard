@@ -1,13 +1,13 @@
 #pragma once
 
+#include "simulator/simulator_delegate.h"
+
 #include <atomic>
 #include <functional>
 #include <thread>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-
-#include "simulator/simulator_delegate.h"
 
 namespace threeboard {
 namespace simulator {

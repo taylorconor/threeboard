@@ -8,6 +8,7 @@
 namespace threeboard {
 namespace simulator {
 namespace {
+
 #define S(n, c) std::string(n, c)
 
 constexpr uint8_t kKeyHoldTime = 20;
@@ -150,7 +151,7 @@ std::string GetCpuStateName(int state) {
 UI::UI(SimulatorDelegate *sim_delegate, const int &sim_state,
        const uint64_t &sim_cycle, const bool &gdb_enabled)
     : sim_delegate_(sim_delegate), sim_state_(sim_state), sim_cycle_(sim_cycle),
-      gdb_enabled_(gdb_enabled) {}
+      gdb_enabled_(gdb_enabled), is_running_(false) {}
 
 UI::~UI() {
   if (is_running_) {
@@ -359,7 +360,7 @@ void UI::UpdateCpuStateBreakdownList() {
     ss << GetCpuStateName(key) << " (" << mode_ratio << "%)";
     bool is_active = cpu_states_since_last_flush_.find(key) !=
                      cpu_states_since_last_flush_.end();
-    state_str_memo_.push_back({ss.str(), is_active});
+    state_str_memo_.emplace_back(ss.str(), is_active);
   }
   cpu_states_since_last_flush_.clear();
 }

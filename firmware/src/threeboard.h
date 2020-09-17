@@ -24,8 +24,8 @@ public:
   void HandleTimer3Interrupt() override;
 
   // Methods for handling events in the state machine.
-  void HandleDefaultInput(const Keypress);
-  void HandleDefaultFlush(const Keypress);
+  void HandleDefaultInput(const Keypress &);
+  void HandleDefaultFlush(const Keypress &);
 
 private:
   // All possible layers in the threeboard.
@@ -55,7 +55,7 @@ private:
   // The state machine maps a handler function to a specific state within a
   // layer. Handler functions are not generally state-specific, so they can be
   // reused.
-  typedef void (Threeboard::*handler_function)(const Keypress);
+  typedef void (Threeboard::*handler_function)(const Keypress &);
   static const handler_function state_machine[4][2][1];
 
   // All of the components composed into this class which we need to coordinate.

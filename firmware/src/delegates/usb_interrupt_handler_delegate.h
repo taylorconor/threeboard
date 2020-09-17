@@ -8,6 +8,6 @@ public:
   virtual void HandleEndpointInterrupt() = 0;
 
 protected:
-  virtual ~UsbInterruptHandlerDelegate() {}
+  virtual ~UsbInterruptHandlerDelegate() = default;
 };
 } // namespace threeboard

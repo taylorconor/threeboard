@@ -18,7 +18,7 @@ using usb::RequestType;
 // C-style trampoline function to bounce the avr_irq_register_notify callback to
 // the provided UsbAttachCallback callback.
 void UsbAttachCallbackTrampoline(avr_irq_t *irq, uint32_t value, void *param) {
-  UsbAttachCallback *callback = (UsbAttachCallback *)param;
+  auto *callback = (UsbAttachCallback *)param;
   (*callback)(value);
 }
 } // namespace
@@ -43,7 +43,7 @@ void Host::DeviceControlLoop() {
   // Before properly beginning the device control loop, we need to issue a USB
   // reset to ensure that the threeboard and simavr are configured correctly.
   // TODO: get AVR_IOCTL_USB_RESET_AND_SOFI into master!
-  avr_ioctl(avr_, AVR_IOCTL_USB_RESET, NULL);
+  avr_ioctl(avr_, AVR_IOCTL_USB_RESET, nullptr);
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
   // Begin the device control loop and continue until the host is no longer

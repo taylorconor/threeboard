@@ -8,7 +8,7 @@ Keypress EventBuffer::GetPendingEventIfAvailable() {
   return keypress;
 }
 
-void EventBuffer::HandleKeypress(const Keypress keypress) {
+void EventBuffer::HandleKeypress(const Keypress &keypress) {
   pending_keypress_ = keypress;
 }
 

@@ -25,9 +25,10 @@ enum class Keypress : uint8_t {
 // by the KeyController.
 class KeypressHandlerDelegate {
 public:
-  virtual void HandleKeypress(const Keypress) = 0;
+  virtual void HandleKeypress(const Keypress &) = 0;
 
 protected:
-  virtual ~KeypressHandlerDelegate(){};
+  virtual ~KeypressHandlerDelegate() = default;
+  ;
 };
 } // namespace threeboard

@@ -16,7 +16,8 @@ const std::string kFirmwareFile = "simulator/threeboard_sim_binary.elf";
 
 } // namespace
 
-Firmware::Firmware() : is_running_(false), mcu_(nullptr) {}
+Firmware::Firmware()
+    : is_running_(false), mcu_(nullptr), should_reset_(false) {}
 
 Firmware::~Firmware() {
   if (is_running_) {
@@ -91,8 +92,7 @@ void Firmware::DisableGdb() const {
 }
 
 void Firmware::RunDetached() {
-  int state = cpu_Running;
-  while (is_running_ && state != cpu_Done && state != cpu_Crashed) {
+  while (is_running_ && avr_->state != cpu_Done && avr_->state != cpu_Crashed) {
     if (should_reset_) {
       avr_reset(avr_.get());
       should_reset_ = false;
@@ -107,9 +107,9 @@ void Firmware::RunDetached() {
     avr_run(avr_.get());
   }
   is_running_ = false;
-  if (state == cpu_Done || state == cpu_Crashed) {
+  if (avr_->state == cpu_Done || avr_->state == cpu_Crashed) {
     std::cout << "Simulator finished with state "
-              << (state == cpu_Done ? "DONE" : "CRASHED") << std::endl;
+              << (avr_->state == cpu_Done ? "DONE" : "CRASHED") << std::endl;
   }
 }
 } // namespace simulator

@@ -8,15 +8,21 @@
 
 namespace threeboard {
 namespace usb {
+
+// This USB implementation is influenced by the LUFA project
+// (https://github.com/abcminiuser/lufa), and by the Atreus firmware
+// (https://github.com/technomancy/atreus-firmware).
+// It explicitly does not support the ENDPOINT_HALT feature, since it's rarely
+// used and shouldn't affect functionality at all.
 class UsbImpl : public Usb, public UsbInterruptHandlerDelegate {
 public:
   UsbImpl(native::Native *);
-  void Setup() final override;
-  bool HasConfigured() final override;
-  void SendKeypress(const uint8_t key, const uint8_t mod) final override;
+  void Setup() final;
+  bool HasConfigured() final;
+  void SendKeypress(uint8_t key, uint8_t mod) final;
 
-  void HandleGeneralInterrupt() final override;
-  void HandleEndpointInterrupt() final override;
+  void HandleGeneralInterrupt() final;
+  void HandleEndpointInterrupt() final;
 
   // Test only.
   void SetRequestHandler(RequestHandler *);
@@ -27,11 +33,6 @@ private:
   RequestHandler *request_handler_;
 
   int8_t SendKeypress();
-
-  void AwaitTransmitterReady();
-  void AwaitReceiverReady();
-  void HandshakeTransmitterInterrupt();
-  void HandshakeReceiverInterrupt();
   void SendHidState();
 };
 } // namespace usb

@@ -1,8 +1,7 @@
 #pragma once
 
-#include "native.h"
-
 #include "src/delegates/usb_interrupt_handler_delegate.h"
+#include "src/native/native.h"
 
 // Provide an implementation of __cxa_guard* functions to allow the AVR compiler
 // to link against guards for static variable initialisation (which are not
@@ -18,75 +17,71 @@ namespace native {
 class NativeImpl : public Native {
 public:
   static Native *Get();
-  virtual ~NativeImpl() {}
+  ~NativeImpl() override = default;
 
-  TimerInterruptHandlerDelegate *
-  GetTimerInterruptHandlerDelegate() const final override;
-  void SetTimerInterruptHandlerDelegate(
-      TimerInterruptHandlerDelegate *) final override;
-  UsbInterruptHandlerDelegate *
-  GetUsbInterruptHandlerDelegate() const final override;
-  void
-  SetUsbInterruptHandlerDelegate(UsbInterruptHandlerDelegate *) final override;
+  TimerInterruptHandlerDelegate *GetTimerInterruptHandlerDelegate() const final;
+  void SetTimerInterruptHandlerDelegate(TimerInterruptHandlerDelegate *) final;
+  UsbInterruptHandlerDelegate *GetUsbInterruptHandlerDelegate() const final;
+  void SetUsbInterruptHandlerDelegate(UsbInterruptHandlerDelegate *) final;
 
-  void EnableInterrupts() final override;
-  void DisableInterrupts() final override;
-  void EnableCpuSleep() final override;
-  void SleepCpu() final override;
-  void DisableCpuSleep() final override;
+  void EnableInterrupts() final;
+  void DisableInterrupts() final;
+  void EnableCpuSleep() final;
+  void SleepCpu() final;
+  void DisableCpuSleep() final;
 
-  void EnableTimer1() final override;
-  void EnableTimer3() final override;
+  void EnableTimer1() final;
+  void EnableTimer3() final;
 
-  uint16_t ReadPgmWord(const uint8_t *) const final override;
-  uint8_t ReadPgmByte(const uint8_t *) const final override;
+  uint16_t ReadPgmWord(const uint8_t *) const final;
+  uint8_t ReadPgmByte(const uint8_t *) const final;
 
-  void EnableDDRB(const uint8_t) final override;
-  void DisableDDRB(const uint8_t) final override;
-  void EnableDDRC(const uint8_t) final override;
-  void EnableDDRD(const uint8_t) final override;
-  void EnableDDRF(const uint8_t) final override;
+  void EnableDDRB(uint8_t) final;
+  void DisableDDRB(uint8_t) final;
+  void EnableDDRC(uint8_t) final;
+  void EnableDDRD(uint8_t) final;
+  void EnableDDRF(uint8_t) final;
 
-  void EnablePORTB(const uint8_t) final override;
-  void DisablePORTB(const uint8_t) final override;
-  void EnablePORTC(const uint8_t) final override;
-  void DisablePORTC(const uint8_t) final override;
-  void EnablePORTD(const uint8_t) final override;
-  void DisablePORTD(const uint8_t) final override;
-  void EnablePORTF(const uint8_t) final override;
-  void DisablePORTF(const uint8_t) final override;
+  void EnablePORTB(uint8_t) final;
+  void DisablePORTB(uint8_t) final;
+  void EnablePORTC(uint8_t) final;
+  void DisablePORTC(uint8_t) final;
+  void EnablePORTD(uint8_t) final;
+  void DisablePORTD(uint8_t) final;
+  void EnablePORTF(uint8_t) final;
+  void DisablePORTF(uint8_t) final;
 
-  uint8_t GetPINB() const final override;
+  uint8_t GetPINB() const final;
 
-  void SetUEDATX(const uint8_t) final override;
-  uint8_t GetUEDATX() final override;
-  void SetUEINTX(const uint8_t) final override;
-  uint8_t GetUEINTX() const final override;
-  void SetUDINT(const uint8_t) final override;
-  uint8_t GetUDINT() const final override;
-  uint8_t GetRXOUTI() const final override;
-  uint8_t GetEORSTI() const final override;
-  uint8_t GetEPEN() const final override;
-  void SetUECONX(const uint8_t) final override;
-  uint8_t GetUECFG0X() const final override;
-  void SetUECFG1X(const uint8_t) final override;
-  uint8_t GetUDMFN() const final override;
-  uint8_t GetSREG() const final override;
-  void SetSREG(const uint8_t) final override;
-  uint8_t GetUDFNUML() const final override;
-  void SetUHWCON(const uint8_t) final override;
-  void SetUSBCON(const uint8_t) final override;
-  void SetPLLCSR(const uint8_t) final override;
-  uint8_t GetPLLCSR() const final override;
-  void SetUENUM(const uint8_t) final override;
-  void SetUDCON(const uint8_t) final override;
-  void SetUDIEN(const uint8_t) final override;
-  uint8_t GetUDCON() const final override;
-  void SetUECFG0X(const uint8_t) final override;
-  void SetUEIENX(const uint8_t) final override;
-  uint8_t GetUDADDR() const final override;
-  void SetUDADDR(const uint8_t) final override;
-  void SetUERST(const uint8_t) final override;
+  void SetUEDATX(uint8_t) final;
+  uint8_t GetUEDATX() final;
+  void SetUEINTX(uint8_t) final;
+  uint8_t GetUEINTX() const final;
+  void SetUDINT(uint8_t) final;
+  uint8_t GetUDINT() const final;
+  uint8_t GetRXOUTI() const final;
+  uint8_t GetEORSTI() const final;
+  uint8_t GetEPEN() const final;
+  void SetUECONX(uint8_t) final;
+  uint8_t GetUECFG0X() const final;
+  void SetUECFG1X(uint8_t) final;
+  uint8_t GetUDMFN() const final;
+  uint8_t GetSREG() const final;
+  void SetSREG(uint8_t) final;
+  uint8_t GetUDFNUML() const final;
+  void SetUHWCON(uint8_t) final;
+  void SetUSBCON(uint8_t) final;
+  void SetPLLCSR(uint8_t) final;
+  uint8_t GetPLLCSR() const final;
+  void SetUENUM(uint8_t) final;
+  void SetUDCON(uint8_t) final;
+  void SetUDIEN(uint8_t) final;
+  uint8_t GetUDCON() const final;
+  void SetUECFG0X(uint8_t) final;
+  void SetUEIENX(uint8_t) final;
+  uint8_t GetUDADDR() const final;
+  void SetUDADDR(uint8_t) final;
+  void SetUERST(uint8_t) final;
 
 private:
   NativeImpl() = default;

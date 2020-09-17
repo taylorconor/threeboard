@@ -44,53 +44,53 @@ public:
   virtual uint16_t ReadPgmWord(const uint8_t *) const = 0;
   virtual uint8_t ReadPgmByte(const uint8_t *) const = 0;
 
-  virtual void EnableDDRB(const uint8_t) = 0;
-  virtual void DisableDDRB(const uint8_t) = 0;
-  virtual void EnableDDRC(const uint8_t) = 0;
-  virtual void EnableDDRD(const uint8_t) = 0;
-  virtual void EnableDDRF(const uint8_t) = 0;
+  virtual void EnableDDRB(uint8_t) = 0;
+  virtual void DisableDDRB(uint8_t) = 0;
+  virtual void EnableDDRC(uint8_t) = 0;
+  virtual void EnableDDRD(uint8_t) = 0;
+  virtual void EnableDDRF(uint8_t) = 0;
 
-  virtual void EnablePORTB(const uint8_t) = 0;
-  virtual void DisablePORTB(const uint8_t) = 0;
-  virtual void EnablePORTC(const uint8_t) = 0;
-  virtual void DisablePORTC(const uint8_t) = 0;
-  virtual void EnablePORTD(const uint8_t) = 0;
-  virtual void DisablePORTD(const uint8_t) = 0;
-  virtual void EnablePORTF(const uint8_t) = 0;
-  virtual void DisablePORTF(const uint8_t) = 0;
+  virtual void EnablePORTB(uint8_t) = 0;
+  virtual void DisablePORTB(uint8_t) = 0;
+  virtual void EnablePORTC(uint8_t) = 0;
+  virtual void DisablePORTC(uint8_t) = 0;
+  virtual void EnablePORTD(uint8_t) = 0;
+  virtual void DisablePORTD(uint8_t) = 0;
+  virtual void EnablePORTF(uint8_t) = 0;
+  virtual void DisablePORTF(uint8_t) = 0;
 
   virtual uint8_t GetPINB() const = 0;
 
   // TODO: order these
-  virtual void SetUEDATX(const uint8_t) = 0;
+  virtual void SetUEDATX(uint8_t) = 0;
   virtual uint8_t GetUEDATX() = 0;
-  virtual void SetUEINTX(const uint8_t) = 0;
+  virtual void SetUEINTX(uint8_t) = 0;
   virtual uint8_t GetUEINTX() const = 0;
-  virtual void SetUDINT(const uint8_t) = 0;
+  virtual void SetUDINT(uint8_t) = 0;
   virtual uint8_t GetUDINT() const = 0;
   virtual uint8_t GetRXOUTI() const = 0;
   virtual uint8_t GetEORSTI() const = 0;
   virtual uint8_t GetEPEN() const = 0;
-  virtual void SetUECONX(const uint8_t) = 0;
+  virtual void SetUECONX(uint8_t) = 0;
   virtual uint8_t GetUECFG0X() const = 0;
-  virtual void SetUECFG1X(const uint8_t) = 0;
+  virtual void SetUECFG1X(uint8_t) = 0;
   virtual uint8_t GetUDMFN() const = 0;
   virtual uint8_t GetSREG() const = 0;
-  virtual void SetSREG(const uint8_t) = 0;
+  virtual void SetSREG(uint8_t) = 0;
   virtual uint8_t GetUDFNUML() const = 0;
-  virtual void SetUHWCON(const uint8_t) = 0;
-  virtual void SetUSBCON(const uint8_t) = 0;
-  virtual void SetPLLCSR(const uint8_t) = 0;
+  virtual void SetUHWCON(uint8_t) = 0;
+  virtual void SetUSBCON(uint8_t) = 0;
+  virtual void SetPLLCSR(uint8_t) = 0;
   virtual uint8_t GetPLLCSR() const = 0;
-  virtual void SetUENUM(const uint8_t) = 0;
-  virtual void SetUDCON(const uint8_t) = 0;
-  virtual void SetUDIEN(const uint8_t) = 0;
+  virtual void SetUENUM(uint8_t) = 0;
+  virtual void SetUDCON(uint8_t) = 0;
+  virtual void SetUDIEN(uint8_t) = 0;
   virtual uint8_t GetUDCON() const = 0;
-  virtual void SetUECFG0X(const uint8_t) = 0;
-  virtual void SetUEIENX(const uint8_t) = 0;
+  virtual void SetUECFG0X(uint8_t) = 0;
+  virtual void SetUEIENX(uint8_t) = 0;
   virtual uint8_t GetUDADDR() const = 0;
-  virtual void SetUDADDR(const uint8_t) = 0;
-  virtual void SetUERST(const uint8_t) = 0;
+  virtual void SetUDADDR(uint8_t) = 0;
+  virtual void SetUERST(uint8_t) = 0;
 };
 
 } // namespace native

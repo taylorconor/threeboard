@@ -42,7 +42,7 @@ void Threeboard::Run() {
     ;
 
   // Main runloop.
-  while (1) {
+  while (true) {
     // Atomically check for new keyboard events, and either handle them or
     // sleep the CPU until the next interrupt.
     native_->DisableInterrupts();
@@ -94,7 +94,7 @@ void Threeboard::SwitchToNextLayer() {
   layer_ = (Layer)(((uint8_t)layer_ + 1) % 4);
 }
 
-void Threeboard::HandleDefaultInput(const Keypress keypress) {
+void Threeboard::HandleDefaultInput(const Keypress &keypress) {
 
   if (keypress == Keypress::X) {
     properties_[layer_].bank0++;
@@ -111,7 +111,7 @@ void Threeboard::HandleDefaultInput(const Keypress keypress) {
   }
 }
 
-void Threeboard::HandleDefaultFlush(const Keypress keypress) {}
+void Threeboard::HandleDefaultFlush(const Keypress &keypress) {}
 
 void Threeboard::HandleTimer1Interrupt() { led_controller_->ScanNextLine(); }
 

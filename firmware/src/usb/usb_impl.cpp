@@ -1,9 +1,3 @@
-// This USB implementation is influenced by the LUFA project
-// (https://github.com/abcminiuser/lufa), and by the Atreus firmware
-// (https://github.com/technomancy/atreus-firmware).
-// It explicitly does not support the ENDPOINT_HALT feature, since it's rarely
-// used and shouldn't affect functionality at all.
-
 #include "usb_impl.h"
 
 #include "src/util/util.h"
@@ -176,7 +170,7 @@ int8_t UsbImpl::SendKeypress() {
   uint8_t intr_state = native_->GetSREG();
   native_->DisableInterrupts();
   uint8_t timeout = native_->GetUDFNUML() + 50;
-  while (1) {
+  while (true) {
     native_->SetUENUM(kKeyboardEndpoint);
     native_->EnableInterrupts();
     // Check if we're allowed to push data into the FIFO. If we are, we can
@@ -201,25 +195,6 @@ int8_t UsbImpl::SendKeypress() {
   SendHidState();
   native_->SetSREG(intr_state);
   return 0;
-}
-
-// Misc functions to wait for ready and send/receive packets
-__force_inline void UsbImpl::AwaitTransmitterReady() {
-  while (!(native_->GetUEINTX() & (1 << native::TXINI)))
-    ;
-}
-
-__force_inline void UsbImpl::AwaitReceiverReady() {
-  while (!(native_->GetUEINTX() & (1 << native::RXOUTI)))
-    ;
-}
-
-__force_inline void UsbImpl::HandshakeTransmitterInterrupt() {
-  native_->SetUEINTX(~(1 << native::TXINI));
-}
-
-__force_inline void UsbImpl::HandshakeReceiverInterrupt() {
-  native_->SetUEINTX(~(1 << native::RXOUTI));
 }
 
 // Send the state of the HID device to the bus.
