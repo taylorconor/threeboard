@@ -27,11 +27,17 @@ cc_library(
 )
 
 cc_library(
+    name = "firmware_state_delegate",
+    hdrs = ["firmware_state_delegate.h"],
+)
+
+cc_library(
     name = "firmware_lib",
     srcs = ["firmware.cpp"],
     hdrs = ["firmware.h"],
     data = [":threeboard_sim_binary"],
     deps = [
+        ":firmware_state_delegate",
         "//simulator/core:sim_32u4",
         "@third_party//:simavr",
     ],

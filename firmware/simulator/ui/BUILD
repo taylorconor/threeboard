@@ -6,6 +6,7 @@ cc_library(
     hdrs = ["ui.h"],
     linkopts = ["-lcurses"],
     deps = [
+        "//simulator:firmware_state_delegate",
         "//simulator:simulator_delegate",
     ],
 )

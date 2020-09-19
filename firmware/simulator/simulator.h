@@ -28,7 +28,6 @@ private:
   std::unique_ptr<Host> usb_host_;
   std::mutex mutex_;
   std::condition_variable sim_run_var_;
-  bool gdb_enabled_;
 };
 } // namespace simulator
 } // namespace threeboard

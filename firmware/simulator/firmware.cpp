@@ -75,9 +75,11 @@ void Firmware::SetPinB(uint8_t pin, bool enabled) {
   }
 }
 
-const int &Firmware::GetState() const { return avr_->state; }
+int Firmware::GetCpuState() const { return avr_->state; }
 
-const uint64_t &Firmware::GetCycleCount() const { return avr_->cycle; }
+uint64_t Firmware::GetCpuCycleCount() const { return avr_->cycle; }
+
+bool Firmware::IsGdbEnabled() const { return avr_->gdb_port != 0; }
 
 void Firmware::EnableGdb(uint16_t port) const {
   avr_->gdb_port = port;

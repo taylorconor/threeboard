@@ -16,8 +16,7 @@ bool IsEnabled(uint8_t reg, uint8_t pin) { return reg & (1 << pin); }
 
 } // namespace
 
-Simulator::Simulator()
-    : gdb_enabled_(false), firmware_(std::make_unique<Firmware>()) {}
+Simulator::Simulator() : firmware_(std::make_unique<Firmware>()) {}
 
 void Simulator::Run() {
   if (ui_ != nullptr) {
@@ -26,8 +25,7 @@ void Simulator::Run() {
   }
   firmware_->Reset();
   firmware_->RunAsync();
-  ui_ = std::make_unique<UI>(this, firmware_->GetState(),
-                             firmware_->GetCycleCount(), gdb_enabled_);
+  ui_ = std::make_unique<UI>(this, firmware_.get());
   usb_host_ = std::make_unique<Host>(firmware_->GetAvr(), this);
   ui_->StartRenderLoopAsync();
   std::unique_lock<std::mutex> lock(mutex_);
@@ -98,12 +96,11 @@ void Simulator::HandlePhysicalKeypress(char key, bool state) {
   if (key == 'q') {
     sim_run_var_.notify_all();
   } else if (key == 'g') {
-    if (gdb_enabled_) {
+    if (firmware_->IsGdbEnabled()) {
       firmware_->DisableGdb();
     } else {
       firmware_->EnableGdb(GetGdbPort());
     }
-    gdb_enabled_ = !gdb_enabled_;
   }
 
   // The key pins are all active low.

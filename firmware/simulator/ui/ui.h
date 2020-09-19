@@ -1,5 +1,6 @@
 #pragma once
 
+#include "simulator/firmware_state_delegate.h"
 #include "simulator/simulator_delegate.h"
 
 #include <atomic>
@@ -19,7 +20,7 @@ namespace simulator {
 // allow the owner to set the current state of the simulator in the UI.
 class UI {
 public:
-  UI(SimulatorDelegate *, const int &, const uint64_t &, const bool &);
+  UI(SimulatorDelegate *, FirmwareStateDelegate *);
   ~UI();
 
   void StartRenderLoopAsync();
@@ -44,11 +45,7 @@ private:
   void UpdateCpuStateBreakdownList();
 
   SimulatorDelegate *sim_delegate_;
-
-  // Reference variables to frequently-updated properties of the simulator.
-  const int &sim_state_;
-  const uint64_t &sim_cycle_;
-  const bool &gdb_enabled_;
+  FirmwareStateDelegate *firmware_state_delegate_;
 
   // Keep track of the simulator cycle count from the previous render pass so we
   // can calculate CPU frequency.

@@ -6,11 +6,12 @@
 
 #include "simavr/sim_avr.h"
 #include "simulator/core/sim_32u4.h"
+#include "simulator/firmware_state_delegate.h"
 
 namespace threeboard {
 namespace simulator {
 
-class Firmware {
+class Firmware : public FirmwareStateDelegate {
 public:
   Firmware();
   ~Firmware();
@@ -29,10 +30,9 @@ public:
   // Set ports containing input pins.
   void SetPinB(uint8_t, bool);
 
-  // Methods to get references to frequently updated values so they don't need
-  // to be polled.
-  const int &GetState() const;
-  const uint64_t &GetCycleCount() const;
+  int GetCpuState() const final;
+  uint64_t GetCpuCycleCount() const final;
+  bool IsGdbEnabled() const final;
 
   void EnableGdb(uint16_t port) const;
   void DisableGdb() const;

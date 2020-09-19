@@ -148,10 +148,10 @@ std::string GetCpuStateName(int state) {
 }
 } // namespace
 
-UI::UI(SimulatorDelegate *sim_delegate, const int &sim_state,
-       const uint64_t &sim_cycle, const bool &gdb_enabled)
-    : sim_delegate_(sim_delegate), sim_state_(sim_state), sim_cycle_(sim_cycle),
-      gdb_enabled_(gdb_enabled), is_running_(false) {}
+UI::UI(SimulatorDelegate *sim_delegate,
+       FirmwareStateDelegate *firmware_state_delegate)
+    : sim_delegate_(sim_delegate),
+      firmware_state_delegate_(firmware_state_delegate), is_running_(false) {}
 
 UI::~UI() {
   if (is_running_) {
@@ -314,7 +314,8 @@ void UI::DrawStatusText() {
     attroff(colour);
   }
   move(kRootY + 4 + i, kRootX + 47);
-  printw("gdb: %s (port %d)", (gdb_enabled_ ? "enabled" : "disabled"),
+  printw("gdb: %s (port %d)",
+         (firmware_state_delegate_->IsGdbEnabled() ? "enabled" : "disabled"),
          sim_delegate_->GetGdbPort());
   move(kRootY + 5 + i, kRootX + 47);
   printw("usb state: DISCONNECTED");
@@ -329,18 +330,18 @@ std::string UI::GetClockSpeedString() {
     return freq_str_memo_;
   }
 
-  uint64_t current_cycle = sim_cycle_;
+  uint64_t current_cycle = firmware_state_delegate_->GetCpuCycleCount();
   uint64_t diff = current_cycle - prev_sim_cycle_;
   if (prev_sim_cycle_ > current_cycle) {
     diff = current_cycle + ((uint64_t)-1 - prev_sim_cycle_);
   }
-  prev_sim_cycle_ = sim_cycle_;
+  prev_sim_cycle_ = firmware_state_delegate_->GetCpuCycleCount();
   freq_str_memo_ = ParseCpuFreq(diff);
   return freq_str_memo_;
 }
 
 void UI::UpdateCpuStateBreakdownList() {
-  auto state = sim_state_;
+  auto state = firmware_state_delegate_->GetCpuState();
   cpu_states_since_last_flush_.insert(state);
   if (cpu_mode_distribution_.find(state) == cpu_mode_distribution_.end()) {
     cpu_mode_distribution_[state] = 0;
