@@ -1,7 +1,4 @@
-load(
-    "@avr-bazel//:avr.bzl",
-    "avr_library",
-)
+load("@avr-bazel//:avr.bzl", "avr_library")
 
 package(default_visibility = ["//visibility:public"])
 

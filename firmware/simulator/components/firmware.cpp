@@ -12,7 +12,8 @@ namespace {
 
 // Relative firmware path. Bazel will guarantee this is built since it's listed
 // as a dependency.
-const std::string kFirmwareFile = "simulator/threeboard_sim_binary.elf";
+const std::string kFirmwareFile =
+    "simulator/components/threeboard_sim_binary.elf";
 
 } // namespace
 

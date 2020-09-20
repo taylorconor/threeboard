@@ -5,8 +5,8 @@
 #include <thread>
 
 #include "simavr/sim_avr.h"
+#include "simulator/components/firmware_state_delegate.h"
 #include "simulator/core/sim_32u4.h"
-#include "simulator/firmware_state_delegate.h"
 
 namespace threeboard {
 namespace simulator {

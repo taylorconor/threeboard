@@ -4,10 +4,10 @@
 #include <memory>
 #include <mutex>
 
-#include "simulator/firmware.h"
+#include "simulator/components/firmware.h"
+#include "simulator/components/usb_host.h"
 #include "simulator/simulator_delegate.h"
 #include "simulator/ui/ui.h"
-#include "simulator/usb/host.h"
 
 namespace threeboard {
 namespace simulator {

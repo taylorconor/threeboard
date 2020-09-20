@@ -1,7 +1,5 @@
-load(
-    "@avr-bazel//:avr.bzl",
-    "avr_library",
-)
+load("@avr-bazel//:avr.bzl", "avr_library")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_visibility = ["//src/usb:__subpackages__"])
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "simulator/firmware_state_delegate.h"
+#include "simulator/components/firmware_state_delegate.h"
 #include "simulator/simulator_delegate.h"
 
 #include <atomic>

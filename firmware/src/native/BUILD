@@ -1,8 +1,5 @@
-load(
-    "@avr-bazel//:avr.bzl",
-    "avr_library",
-    "avr_pure_library",
-)
+load("@avr-bazel//:avr.bzl", "avr_library", "avr_pure_library")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
 

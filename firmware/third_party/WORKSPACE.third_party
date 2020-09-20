@@ -1,18 +1,11 @@
-load(
-    "@bazel_tools//tools/build_defs/repo:git.bzl",
-    "git_repository",
-)
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
-#custom AVR - specific rules
+# custom AVR-specific rules
 git_repository(
     name = "avr-bazel",
     commit = "b7f50ee9d2835d7ce42990dd2732af89cbcb0915",
     remote = "https://github.com/taylorconor/avr-bazel",
 )
 
-load(
-    "@avr-bazel//:avr.bzl",
-    "avr_tools_repository",
-)
+load("@avr-bazel//:avr.bzl", "avr_tools_repository")
 avr_tools_repository()
-

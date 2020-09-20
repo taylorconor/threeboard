@@ -1,12 +1,7 @@
-package(default_visibility = ["//visibility:public"])
+load("@avr-bazel//:avr.bzl", "avr_binary", "avr_hex", "avr_library", "avr_pure_library")
+load("@rules_cc//cc:defs.bzl", "cc_test")
 
-load(
-    "@avr-bazel//:avr.bzl",
-    "avr_binary",
-    "avr_hex",
-    "avr_library",
-    "avr_pure_library",
-)
+package(default_visibility = ["//visibility:public"])
 
 avr_library(
     name = "led_controller",
