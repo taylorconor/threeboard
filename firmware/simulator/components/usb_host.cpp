@@ -23,23 +23,33 @@ void UsbAttachCallbackTrampoline(avr_irq_t *irq, uint32_t value, void *param) {
 }
 } // namespace
 
-Host::Host(avr_t *avr, SimulatorDelegate *simulator_delegate)
-    : avr_(avr), simulator_delegate_(simulator_delegate), is_running_(false) {
+UsbHost::UsbHost(avr_t *avr, SimulatorDelegate *simulator_delegate)
+    : avr_(avr), simulator_delegate_(simulator_delegate), is_running_(false),
+      is_attached_(false) {
   // avr_->log = 4;
 
   // Configure a callback on USB attach, so we'll know when we try to start the
   // host if the device is ready or not.
   usb_attach_callback_ = std::make_unique<UsbAttachCallback>(
-      std::bind(&Host::InternalUsbAttachCallback, this, _1));
+      std::bind(&UsbHost::InternalUsbAttachCallback, this, _1));
   avr_irq_register_notify(
       avr_io_getirq(avr_, AVR_IOCTL_USB_GETIRQ(), USB_IRQ_ATTACH),
       &UsbAttachCallbackTrampoline, (void *)usb_attach_callback_.get());
 }
 
-bool Host::IsRunning() { return is_running_; }
+UsbHost::~UsbHost() {
+  if (is_running_) {
+    is_running_ = false;
+    device_control_thread_->join();
+  }
+}
+
+bool UsbHost::IsAttached() { return is_attached_; }
 
 // This function is run exclusively within the device_control_thread_ thread.
-void Host::DeviceControlLoop() {
+void UsbHost::DeviceControlLoop() {
+  is_running_ = true;
+
   // Before properly beginning the device control loop, we need to issue a USB
   // reset to ensure that the threeboard and simavr are configured correctly.
   // TODO: get AVR_IOCTL_USB_RESET_AND_SOFI into master!
@@ -52,7 +62,7 @@ void Host::DeviceControlLoop() {
   // We can skip many of the unnecessary requests that a normal host would make,
   // since we know exactly what kind of device we're dealing with and its
   // capabilities.
-  while (is_running_) {
+  while (is_running_ && is_attached_) {
     // If the device has not configured yet (i.e. it has not yet set its
     // endpoint number, stored in UENUM, to the keyboard endpoint), configure
     // its keyboard endpoint here.
@@ -88,9 +98,13 @@ void Host::DeviceControlLoop() {
   }
 }
 
-void Host::InternalUsbAttachCallback(uint32_t status) {
+void UsbHost::InternalUsbAttachCallback(uint32_t status) {
   // Verify that attaching was successful.
   if (status == 0) {
+    if (is_attached_) {
+      is_attached_ = false;
+    }
+
     // TODO: perhaps we should surface an error here if no attach callback is
     // called quickly after with a valid status.
     return;
@@ -98,10 +112,10 @@ void Host::InternalUsbAttachCallback(uint32_t status) {
 
   // Once we attach we can begin the device control thread and start the USB
   // protocol.
-  if (!is_running_) {
-    is_running_ = true;
+  if (!is_attached_) {
+    is_attached_ = true;
     device_control_thread_ =
-        std::make_unique<std::thread>(&Host::DeviceControlLoop, this);
+        std::make_unique<std::thread>(&UsbHost::DeviceControlLoop, this);
   }
 }
 } // namespace simulator

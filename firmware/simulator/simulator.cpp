@@ -16,28 +16,34 @@ bool IsEnabled(uint8_t reg, uint8_t pin) { return reg & (1 << pin); }
 
 } // namespace
 
-Simulator::Simulator() : firmware_(std::make_unique<Firmware>()) {}
+Simulator::Simulator()
+    : is_running_(false), firmware_(std::make_unique<Firmware>()) {}
+
+Simulator::~Simulator() { assert(!is_running_); }
 
 void Simulator::Run() {
   if (ui_ != nullptr) {
     std::cout << "Attempted to run a running simulator instance!" << std::endl;
     exit(0);
   }
+
   firmware_->Reset();
   firmware_->RunAsync();
   ui_ = std::make_unique<UI>(this, firmware_.get());
-  usb_host_ = std::make_unique<Host>(firmware_->GetAvr(), this);
-  ui_->StartRenderLoopAsync();
+  usb_host_ = std::make_unique<UsbHost>(firmware_->GetAvr(), this);
+  ui_->StartAsyncRenderLoop();
+  is_running_ = true;
   std::unique_lock<std::mutex> lock(mutex_);
-  sim_run_var_.wait(lock);
-  ui_ = nullptr;
+  while (is_running_) {
+    sim_run_var_.wait(lock);
+  }
 }
 
 void Simulator::PrepareRenderState() {
-  uint8_t portb = firmware_->GetPortB();
-  uint8_t portc = firmware_->GetPortC();
-  uint8_t portd = firmware_->GetPortD();
-  uint8_t portf = firmware_->GetPortF();
+  const uint8_t portb = firmware_->GetPortB();
+  const uint8_t portc = firmware_->GetPortC();
+  const uint8_t portd = firmware_->GetPortD();
+  const uint8_t portf = firmware_->GetPortF();
 
   // Clear the LED state before the next frame is calculated.
   ui_->ClearLedState();
@@ -94,6 +100,7 @@ void Simulator::PrepareRenderState() {
 void Simulator::HandlePhysicalKeypress(char key, bool state) {
   // Simulator command keys.
   if (key == 'q') {
+    is_running_ = false;
     sim_run_var_.notify_all();
   } else if (key == 'g') {
     if (firmware_->IsGdbEnabled()) {

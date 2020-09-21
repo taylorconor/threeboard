@@ -23,7 +23,7 @@ public:
   UI(SimulatorDelegate *, FirmwareStateDelegate *);
   ~UI();
 
-  void StartRenderLoopAsync();
+  void StartAsyncRenderLoop();
   void ClearLedState();
 
   void SetR(bool);

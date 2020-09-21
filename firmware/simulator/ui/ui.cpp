@@ -14,7 +14,7 @@ namespace {
 constexpr uint8_t kKeyHoldTime = 20;
 constexpr uint8_t kRootX = 1;
 constexpr uint8_t kRootY = 0;
-constexpr uint8_t kLedPermenance = 50;
+constexpr uint8_t kLedPermanence = 50;
 constexpr uint8_t kSimulatorFps = 200;
 
 constexpr uint8_t kWhite = 1;
@@ -67,7 +67,7 @@ void DrawLed(uint8_t &enabled, const std::string &extra) {
   attron(colour);
   printw(("●" + extra).c_str());
   attroff(colour);
-  if (enabled < kLedPermenance && enabled > 0) {
+  if (enabled < kLedPermanence && enabled > 0) {
     enabled--;
   }
 }
@@ -103,7 +103,7 @@ void DrawKey(int x_offset, bool pressed, char letter) {
 
 void SetLedState(uint8_t &led, bool enabled) {
   if (enabled) {
-    led = kLedPermenance;
+    led = kLedPermanence;
   }
 }
 
@@ -159,9 +159,9 @@ UI::~UI() {
     render_thread_->join();
     endwin();
   }
-}
+} // namespace simulator
 
-void UI::StartRenderLoopAsync() {
+void UI::StartAsyncRenderLoop() {
   if (render_thread_) {
     std::cout
         << "Attempted to start another simulator UI render thread without "
@@ -252,15 +252,27 @@ void UI::UpdateKeyState() {
 void UI::RenderLoop() {
   while (is_running_) {
     current_frame_++;
-    sim_delegate_->PrepareRenderState();
+
+    // Trigger any applicable keypresses from the user into the firmware.
     UpdateKeyState();
+
+    // Tell the simulator that we're about to redraw and need the most recent
+    // state set from the firmware and onto the UI.
+    sim_delegate_->PrepareRenderState();
+
+    // Draw each UI component.
     DrawBorder();
     DrawLeds();
     DrawKeys();
     DrawStatusText();
+
+    // Move the cursor to a place where stdio output won't overwrite any of the
+    // simulator UI.
+    // TODO: is there a way of disabling or suppressing non-curses io?
     move(kRootY + 20, kRootX);
     refresh();
-    // 200 FPS.
+
+    // Maintain kSimulatorFps FPS.
     std::this_thread::sleep_for(
         std::chrono::milliseconds(1000 / kSimulatorFps));
   }
@@ -318,7 +330,8 @@ void UI::DrawStatusText() {
          (firmware_state_delegate_->IsGdbEnabled() ? "enabled" : "disabled"),
          sim_delegate_->GetGdbPort());
   move(kRootY + 5 + i, kRootX + 47);
-  printw("usb state: DISCONNECTED");
+  printw("usb state: %s",
+         (firmware_state_delegate_->IsGdbEnabled() ? "enabled" : "disabled"));
 
   if (cycles_since_memo_update_++ == kSimulatorFps) {
     cycles_since_memo_update_ = 0;

@@ -15,13 +15,12 @@ namespace simulator {
 // by acting as the USB host. It does the bare minimum to trick the threeboard
 // into thinking it's connected to an actual USB host, and provides methods to
 // interact with the simulated threeboard over USB.
-class Host {
+class UsbHost {
 public:
-  Host(avr_t *avr, SimulatorDelegate *simulator_delegate);
+  UsbHost(avr_t *avr, SimulatorDelegate *simulator_delegate);
+  ~UsbHost();
 
-  bool Start();
-  bool IsRunning();
-  void HandleRegisterWrite(avr_io_addr_t addr, uint8_t val);
+  bool IsAttached();
 
 private:
   void DeviceControlLoop();
@@ -30,7 +29,9 @@ private:
 
   avr_t *avr_;
   SimulatorDelegate *simulator_delegate_;
+
   std::atomic<bool> is_running_;
+  std::atomic<bool> is_attached_;
   std::unique_ptr<std::thread> device_control_thread_;
   std::unique_ptr<std::function<void(uint32_t)>> usb_attach_callback_;
 };

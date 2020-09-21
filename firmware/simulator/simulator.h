@@ -14,6 +14,7 @@ namespace simulator {
 class Simulator : public SimulatorDelegate {
 public:
   Simulator();
+  ~Simulator() override;
 
   void Run();
 
@@ -23,9 +24,10 @@ private:
   void HandleVirtualKeypress(uint8_t mod_code, uint8_t key_code) final;
   uint16_t GetGdbPort() final;
 
-  std::unique_ptr<UI> ui_;
+  std::atomic<bool> is_running_;
   std::unique_ptr<Firmware> firmware_;
-  std::unique_ptr<Host> usb_host_;
+  std::unique_ptr<UsbHost> usb_host_;
+  std::unique_ptr<UI> ui_;
   std::mutex mutex_;
   std::condition_variable sim_run_var_;
 };
