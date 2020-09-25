@@ -1,4 +1,9 @@
-package(default_visibility = ["//visibility:public"])
+package(default_visibility = ["//simulator/simavr:__subpackages__"])
+
+cc_library(
+    name = "sim_core_declare",
+    hdrs = ["sim_core_declare.h"],
+)
 
 cc_library(
     name = "sim_32u4",
@@ -8,6 +13,7 @@ cc_library(
         "sim_core_declare.h",
     ],
     deps = [
+        ":sim_core_declare",
         "//src/native:constants",
         "@third_party//:simavr",
     ],

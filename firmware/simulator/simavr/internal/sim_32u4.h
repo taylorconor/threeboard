@@ -34,8 +34,8 @@
 #include "simavr/avr_usb.h"
 #include "simavr/avr_watchdog.h"
 #include "simavr/sim_avr.h"
-#include "simulator/core/iom32u4.h"
-#include "simulator/core/sim_core_declare.h"
+#include "simulator/simavr/internal/iom32u4.h"
+#include "simulator/simavr/internal/sim_core_declare.h"
 
 #define SIM_VECTOR_SIZE 4
 #define SIM_MMCU "atmega32u4"

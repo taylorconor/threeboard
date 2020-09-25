@@ -6,6 +6,7 @@
 
 #include "simulator/components/firmware.h"
 #include "simulator/components/usb_host.h"
+#include "simulator/simavr/simavr.h"
 #include "simulator/simulator_delegate.h"
 #include "simulator/ui/ui.h"
 
@@ -13,7 +14,7 @@ namespace threeboard {
 namespace simulator {
 class Simulator : public SimulatorDelegate {
 public:
-  Simulator();
+  explicit Simulator(Simavr *simavr);
   ~Simulator() override;
 
   void Run();
@@ -24,6 +25,7 @@ private:
   void HandleVirtualKeypress(uint8_t mod_code, uint8_t key_code) final;
   uint16_t GetGdbPort() final;
 
+  Simavr *simavr_;
   std::atomic<bool> is_running_;
   std::unique_ptr<Firmware> firmware_;
   std::unique_ptr<UsbHost> usb_host_;

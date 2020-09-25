@@ -4,22 +4,19 @@
 #include <functional>
 #include <thread>
 
-#include "simavr/sim_avr.h"
 #include "simulator/components/firmware_state_delegate.h"
-#include "simulator/core/sim_32u4.h"
+#include "simulator/simavr/simavr.h"
 
 namespace threeboard {
 namespace simulator {
 
 class Firmware : public FirmwareStateDelegate {
 public:
-  Firmware();
-  ~Firmware();
+  explicit Firmware(Simavr *simavr);
+  ~Firmware() override;
 
   void RunAsync();
   void Reset();
-
-  avr_t *GetAvr() const;
 
   // Retrieve ports containing output pins.
   uint8_t GetPortB() const;
@@ -40,12 +37,10 @@ public:
 private:
   void RunDetached();
 
+  Simavr *simavr_;
+  std::thread sim_thread_;
   std::atomic<bool> is_running_;
   std::atomic<bool> should_reset_;
-
-  std::unique_ptr<avr_t> avr_;
-  mcu_t *mcu_;
-  std::thread sim_thread_;
 };
 } // namespace simulator
 } // namespace threeboard

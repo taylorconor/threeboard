@@ -15,6 +15,7 @@ cc_library(
         ":simulator_delegate",
         "//simulator/components:firmware_lib",
         "//simulator/components:usb_host",
+        "//simulator/simavr",
         "//simulator/ui",
     ],
 )
@@ -24,5 +25,6 @@ cc_binary(
     srcs = ["main.cpp"],
     deps = [
         ":simulator_lib",
+        "//simulator/simavr:simavr_impl",
     ],
 )

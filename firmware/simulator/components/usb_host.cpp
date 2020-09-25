@@ -3,38 +3,24 @@
 #include <iostream>
 #include <unistd.h>
 
-#include "simavr/avr_usb.h"
-#include "simulator/core/sim_32u4.h"
 #include "src/usb/shared/constants.h"
 
 namespace threeboard {
 namespace simulator {
-namespace {
 
 using namespace std::placeholders;
-using UsbAttachCallback = std::function<void(uint32_t)>;
 using usb::RequestType;
 
-// C-style trampoline function to bounce the avr_irq_register_notify callback to
-// the provided UsbAttachCallback callback.
-void UsbAttachCallbackTrampoline(avr_irq_t *irq, uint32_t value, void *param) {
-  auto *callback = (UsbAttachCallback *)param;
-  (*callback)(value);
-}
-} // namespace
-
-UsbHost::UsbHost(avr_t *avr, SimulatorDelegate *simulator_delegate)
-    : avr_(avr), simulator_delegate_(simulator_delegate), is_running_(false),
-      is_attached_(false) {
+UsbHost::UsbHost(Simavr *simavr, SimulatorDelegate *simulator_delegate)
+    : simavr_(simavr), simulator_delegate_(simulator_delegate),
+      is_running_(false), is_attached_(false) {
   // avr_->log = 4;
 
-  // Configure a callback on USB attach, so we'll know when we try to start the
+  // Register a callback on USB attach, so we'll know when we try to start the
   // host if the device is ready or not.
   usb_attach_callback_ = std::make_unique<UsbAttachCallback>(
       std::bind(&UsbHost::InternalUsbAttachCallback, this, _1));
-  avr_irq_register_notify(
-      avr_io_getirq(avr_, AVR_IOCTL_USB_GETIRQ(), USB_IRQ_ATTACH),
-      &UsbAttachCallbackTrampoline, (void *)usb_attach_callback_.get());
+  simavr_->RegisterUsbAttachCallback(usb_attach_callback_.get());
 }
 
 UsbHost::~UsbHost() {
@@ -53,7 +39,7 @@ void UsbHost::DeviceControlLoop() {
   // Before properly beginning the device control loop, we need to issue a USB
   // reset to ensure that the threeboard and simavr are configured correctly.
   // TODO: get AVR_IOCTL_USB_RESET_AND_SOFI into master!
-  avr_ioctl(avr_, AVR_IOCTL_USB_RESET, nullptr);
+  simavr_->InvokeIoctl(USB_RESET, nullptr);
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
   // Begin the device control loop and continue until the host is no longer
@@ -66,7 +52,7 @@ void UsbHost::DeviceControlLoop() {
     // If the device has not configured yet (i.e. it has not yet set its
     // endpoint number, stored in UENUM, to the keyboard endpoint), configure
     // its keyboard endpoint here.
-    if (avr_->data[UENUM] != usb::kKeyboardEndpoint) {
+    if (simavr_->GetData(UENUM) != usb::kKeyboardEndpoint) {
       usb::SetupPacket packet;
       packet.bmRequestType = RequestType(RequestType::Direction::HOST_TO_DEVICE,
                                          RequestType::Type::CLASS,
@@ -74,15 +60,16 @@ void UsbHost::DeviceControlLoop() {
       packet.bRequest = usb::Request::SET_CONFIGURATION;
       packet.wValue = usb::kKeyboardConfigurationValue;
       // TODO: handle error
-      avr_io_usb packet_buffer = {
-          .pipe = 0, .sz = sizeof(usb::SetupPacket), .buf = (uint8_t *)&packet};
-      avr_ioctl(avr_, AVR_IOCTL_USB_SETUP, &packet_buffer);
+      UsbPacketBuffer packet_buffer = {.endpoint = 0,
+                                       .size = sizeof(usb::SetupPacket),
+                                       .buffer = (uint8_t *)&packet};
+      simavr_->InvokeIoctl(USB_SETUP, &packet_buffer);
     } else {
       uint8_t read_buffer[8];
-      avr_io_usb packet_buffer = {.pipe = usb::kKeyboardEndpoint,
-                                  .sz = 8,
-                                  .buf = (uint8_t *)&read_buffer};
-      int ret = avr_ioctl(avr_, AVR_IOCTL_USB_READ, &packet_buffer);
+      UsbPacketBuffer packet_buffer = {.endpoint = usb::kKeyboardEndpoint,
+                                       .size = 8,
+                                       .buffer = (uint8_t *)&read_buffer};
+      int ret = simavr_->InvokeIoctl(USB_READ, &packet_buffer);
       if (ret == 0) {
         // Keypress changes are sent for two reasons: first when the key is
         // pressed down, and then when the key is released. Right now it doesn't
@@ -94,7 +81,7 @@ void UsbHost::DeviceControlLoop() {
         }
       }
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(25));
   }
 }
 

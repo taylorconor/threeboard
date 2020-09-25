@@ -16,10 +16,14 @@ bool IsEnabled(uint8_t reg, uint8_t pin) { return reg & (1 << pin); }
 
 } // namespace
 
-Simulator::Simulator()
-    : is_running_(false), firmware_(std::make_unique<Firmware>()) {}
+Simulator::Simulator(Simavr *simavr)
+    : simavr_(simavr), is_running_(false),
+      firmware_(std::make_unique<Firmware>(simavr_)) {}
 
-Simulator::~Simulator() { assert(!is_running_); }
+Simulator::~Simulator() {
+  is_running_ = false;
+  sim_run_var_.notify_all();
+}
 
 void Simulator::Run() {
   if (ui_ != nullptr) {
@@ -30,7 +34,7 @@ void Simulator::Run() {
   firmware_->Reset();
   firmware_->RunAsync();
   ui_ = std::make_unique<UI>(this, firmware_.get());
-  usb_host_ = std::make_unique<UsbHost>(firmware_->GetAvr(), this);
+  usb_host_ = std::make_unique<UsbHost>(simavr_, this);
   ui_->StartAsyncRenderLoop();
   is_running_ = true;
   std::unique_lock<std::mutex> lock(mutex_);
