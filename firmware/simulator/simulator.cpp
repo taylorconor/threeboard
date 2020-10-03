@@ -134,10 +134,12 @@ void Simulator::HandleVirtualKeypress(uint8_t mod_code, uint8_t key_code) {
 }
 
 void Simulator::HandleUartLogLine(const std::string &log_line) {
-  std::cout << "Received log line: " << log_line << std::endl;
+  ui_->DisplayLogLine(0, log_line);
 }
 
 uint16_t Simulator::GetGdbPort() { return kGdbPort; }
+
+bool Simulator::IsUsbAttached() { return usb_host_->IsAttached(); }
 
 } // namespace simulator
 } // namespace threeboard

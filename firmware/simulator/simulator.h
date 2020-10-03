@@ -26,6 +26,7 @@ private:
   void HandleVirtualKeypress(uint8_t mod_code, uint8_t key_code) final;
   void HandleUartLogLine(const std::string &log_line) final;
   uint16_t GetGdbPort() final;
+  bool IsUsbAttached() final;
 
   Simavr *simavr_;
   std::atomic<bool> is_running_;

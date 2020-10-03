@@ -82,6 +82,15 @@ public:
   MOCK_METHOD(uint8_t, GetUDADDR, (), (const override));
   MOCK_METHOD(void, SetUDADDR, (const uint8_t), (override));
   MOCK_METHOD(void, SetUERST, (const uint8_t), (override));
+  MOCK_METHOD(uint8_t &, GetUCSR1A, (), (const volatile override));
+  MOCK_METHOD(void, SetUCSR1A, (uint8_t), (override));
+  MOCK_METHOD(uint8_t &, GetUCSR1B, (), (const volatile override));
+  MOCK_METHOD(void, SetUCSR1B, (uint8_t), (override));
+  MOCK_METHOD(uint8_t &, GetUCSR1C, (), (const volatile override));
+  MOCK_METHOD(void, SetUCSR1C, (uint8_t), (override));
+  MOCK_METHOD(void, SetUDR1, (uint8_t), (override));
+  MOCK_METHOD(void, SetUBRR1H, (uint8_t), (override));
+  MOCK_METHOD(void, SetUBRR1L, (uint8_t), (override));
 };
 
 using NativeMock = ::testing::StrictMock<NativeMockDefault>;

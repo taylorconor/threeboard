@@ -78,7 +78,7 @@ avr_library(
     ],
 )
 
-avr_library(
+avr_pure_library(
     name = "bootstrap",
     srcs = ["bootstrap.cpp"],
     hdrs = ["bootstrap.h"],

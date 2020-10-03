@@ -118,7 +118,7 @@ std::string ParseCpuFreq(uint64_t ticks_per_sec) {
     return std::to_string(ticks_per_sec) + " Hz";
   }
   if (ticks_per_sec < 1000000) {
-    return std::to_string(ticks_per_sec) + " KHz";
+    return std::to_string(ticks_per_sec / 1000) + " KHz";
   }
   std::string str = std::to_string(ticks_per_sec);
   return str.substr(0, 2) + "." + str.substr(2, 2) + " MHz";
@@ -150,7 +150,7 @@ std::string GetCpuStateName(int state) {
 
 UI::UI(SimulatorDelegate *sim_delegate,
        FirmwareStateDelegate *firmware_state_delegate)
-    : sim_delegate_(sim_delegate),
+    : simulator_delegate_(sim_delegate),
       firmware_state_delegate_(firmware_state_delegate), is_running_(false) {}
 
 UI::~UI() {
@@ -191,6 +191,9 @@ void UI::ClearLedState() {
     ClearLed(bank1_[i]);
   }
 }
+
+void UI::DisplayKeyboardCharacter(char c) {}
+void UI::DisplayLogLine(uint64_t cycle, const std::string &log_line) {}
 
 void UI::SetR(bool enabled) { SetLedState(r_, enabled); }
 void UI::SetG(bool enabled) { SetLedState(g_, enabled); }
@@ -234,18 +237,18 @@ void UI::UpdateKeyState() {
     } else if (c == 'd') {
       key_d_ = kKeyHoldTime;
     }
-    sim_delegate_->HandlePhysicalKeypress(c, true);
+    simulator_delegate_->HandlePhysicalKeypress(c, true);
   }
 
   // Trigger any necessary keyup callbacks.
   if (key_a_ == 0 && keyup_a) {
-    sim_delegate_->HandlePhysicalKeypress('a', false);
+    simulator_delegate_->HandlePhysicalKeypress('a', false);
   }
   if (key_s_ == 0 && keyup_s) {
-    sim_delegate_->HandlePhysicalKeypress('s', false);
+    simulator_delegate_->HandlePhysicalKeypress('s', false);
   }
   if (key_d_ == 0 && keyup_d) {
-    sim_delegate_->HandlePhysicalKeypress('d', false);
+    simulator_delegate_->HandlePhysicalKeypress('d', false);
   }
 }
 
@@ -259,7 +262,7 @@ void UI::RenderLoop() {
     // Tell the simulator that we're about to redraw and need the most recent
     // state set from the firmware onto the UI. This is an optimisation to avoid
     // having the firmware update state more than it needs to.
-    sim_delegate_->PrepareRenderState();
+    simulator_delegate_->PrepareRenderState();
 
     // Draw each UI component.
     DrawBorder();
@@ -313,7 +316,7 @@ void UI::DrawStatusText() {
   move(kRootY + 1, kRootX + 47);
   printw("threeboard v1 (x86 simulator)");
   move(kRootY + 2, kRootX + 47);
-  printw("freq: %s", GetClockSpeedString().c_str());
+  printw("clock frequency: %s", GetClockSpeedString().c_str());
   move(kRootY + 3, kRootX + 47);
   UpdateCpuStateBreakdownList();
   printw("state:");
@@ -329,10 +332,10 @@ void UI::DrawStatusText() {
   move(kRootY + 4 + i, kRootX + 47);
   printw("gdb: %s (port %d)",
          (firmware_state_delegate_->IsGdbEnabled() ? "enabled" : "disabled"),
-         sim_delegate_->GetGdbPort());
+         simulator_delegate_->GetGdbPort());
   move(kRootY + 5 + i, kRootX + 47);
-  printw("usb state: %s",
-         (firmware_state_delegate_->IsGdbEnabled() ? "enabled" : "disabled"));
+  printw("usb: %s",
+         (simulator_delegate_->IsUsbAttached() ? "attached" : "detached"));
 
   if (cycles_since_memo_update_++ == kSimulatorFps) {
     cycles_since_memo_update_ = 0;
@@ -347,7 +350,7 @@ std::string UI::GetClockSpeedString() {
   uint64_t current_cycle = firmware_state_delegate_->GetCpuCycleCount();
   uint64_t diff = current_cycle - prev_sim_cycle_;
   if (prev_sim_cycle_ > current_cycle) {
-    diff = current_cycle + ((uint64_t)-1 - prev_sim_cycle_);
+    diff = current_cycle + (~0 - prev_sim_cycle_);
   }
   prev_sim_cycle_ = firmware_state_delegate_->GetCpuCycleCount();
   freq_str_memo_ = ParseCpuFreq(diff);

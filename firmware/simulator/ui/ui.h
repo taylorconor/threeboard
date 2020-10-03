@@ -26,6 +26,9 @@ public:
   void StartAsyncRenderLoop();
   void ClearLedState();
 
+  void DisplayKeyboardCharacter(char);
+  void DisplayLogLine(uint64_t cycle, const std::string &);
+
   void SetR(bool);
   void SetG(bool);
   void SetB(bool);
@@ -44,7 +47,7 @@ private:
   std::string GetClockSpeedString();
   void UpdateCpuStateBreakdownList();
 
-  SimulatorDelegate *sim_delegate_;
+  SimulatorDelegate *simulator_delegate_;
   FirmwareStateDelegate *firmware_state_delegate_;
 
   // Keep track of the simulator cycle count from the previous render pass so we
