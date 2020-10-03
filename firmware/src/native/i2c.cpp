@@ -5,6 +5,7 @@
 namespace threeboard {
 namespace native {
 namespace {
+
 constexpr uint8_t kControlByteRead = 0b10100001;
 constexpr uint8_t kControlByteWrite = 0b10100000;
 

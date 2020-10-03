@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "simavr/avr_ioport.h"
+#include "simavr/avr_uart.h"
 #include "simavr/avr_usb.h"
 #include "simavr/sim_elf.h"
 #include "simavr/sim_gdb.h"
@@ -12,9 +13,11 @@ namespace simulator {
 namespace {
 
 // C-style trampoline function to bounce the avr_irq_register_notify callback to
-// the provided UsbAttachCallback callback.
-void UsbAttachCallbackTrampoline(avr_irq_t *irq, uint32_t value, void *param) {
-  auto *callback = (UsbAttachCallback *)param;
+// the provided callback type defined in T, which is assumed to have been cast
+// to void* and provided in param.
+template <typename T>
+void CallbackTrampoline(avr_irq_t *irq, uint32_t value, void *param) {
+  auto *callback = (T *)param;
   (*callback)(value);
 }
 } // namespace
@@ -61,7 +64,13 @@ int SimavrImpl::InvokeIoctl(uint32_t ioctl, void *param) {
 void SimavrImpl::RegisterUsbAttachCallback(UsbAttachCallback *callback) {
   avr_irq_register_notify(
       avr_io_getirq(avr_.get(), AVR_IOCTL_USB_GETIRQ(), USB_IRQ_ATTACH),
-      &UsbAttachCallbackTrampoline, (void *)callback);
+      &CallbackTrampoline<UsbAttachCallback>, (void *)callback);
+}
+
+void SimavrImpl::RegisterUartOutputCallback(UartOutputCallback *callback) {
+  avr_irq_register_notify(
+      avr_io_getirq(avr_.get(), AVR_IOCTL_UART_GETIRQ('1'), UART_IRQ_OUTPUT),
+      &CallbackTrampoline<UartOutputCallback>, (void *)callback);
 }
 
 void SimavrImpl::SetData(uint8_t idx, uint8_t val) { avr_->data[idx] = val; }

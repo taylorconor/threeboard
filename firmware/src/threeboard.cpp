@@ -5,9 +5,8 @@ static_assert(false, "Unsupported compiler: threeboard requires avr-gcc >=9");
 #endif
 
 namespace threeboard {
-namespace {
+
 using LedState = LedController::LedState;
-}
 
 const Threeboard::handler_function Threeboard::state_machine[4][2][1] = {
     [Layer::DEFAULT] = {[State::INPUT] = {&Threeboard::HandleDefaultInput},

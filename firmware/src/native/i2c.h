@@ -4,6 +4,7 @@
 
 namespace threeboard {
 namespace native {
+
 class I2C {
 public:
   void Init();

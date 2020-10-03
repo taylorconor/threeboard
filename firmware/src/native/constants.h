@@ -84,5 +84,16 @@ constexpr uint8_t PINDIV = 4;
 // UDADDR
 constexpr uint8_t ADDEN = 7;
 
+// UCSR1A
+constexpr uint8_t UDRE1 = 5;
+constexpr uint8_t TXC1 = 6;
+
+// UCSR1B
+constexpr uint8_t TXEN1 = 3;
+
+// UCSR1C
+constexpr uint8_t UCSZ10 = 1;
+constexpr uint8_t UCSZ11 = 2;
+
 } // namespace native
 } // namespace threeboard

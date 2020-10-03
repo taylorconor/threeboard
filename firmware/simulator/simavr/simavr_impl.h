@@ -24,6 +24,7 @@ public:
 
   int InvokeIoctl(uint32_t ioctl, void *param) override;
   void RegisterUsbAttachCallback(UsbAttachCallback *callback) override;
+  void RegisterUartOutputCallback(UartOutputCallback *callback) override;
 
   void SetData(uint8_t idx, uint8_t val) override;
   void SetState(uint8_t val) override;

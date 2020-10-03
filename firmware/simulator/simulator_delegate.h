@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdint>
+#include <string>
 
 namespace threeboard {
 namespace simulator {
@@ -10,6 +10,7 @@ public:
   virtual void PrepareRenderState() = 0;
   virtual void HandlePhysicalKeypress(char key, bool state) = 0;
   virtual void HandleVirtualKeypress(uint8_t mod_code, uint8_t key_code) = 0;
+  virtual void HandleUartLogLine(const std::string &log_line) = 0;
   virtual uint16_t GetGdbPort() = 0;
 
 protected:

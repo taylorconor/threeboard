@@ -59,6 +59,13 @@ avr_library(
 )
 
 avr_library(
+    name = "logging",
+    srcs = ["logging.cpp"],
+    hdrs = ["logging.h"],
+    deps = ["//src/native"],
+)
+
+avr_library(
     name = "threeboard_lib",
     srcs = ["threeboard.cpp"],
     hdrs = ["threeboard.h"],
@@ -71,11 +78,12 @@ avr_library(
     ],
 )
 
-avr_pure_library(
+avr_library(
     name = "bootstrap",
     srcs = ["bootstrap.cpp"],
     hdrs = ["bootstrap.h"],
     deps = [
+        ":logging",
         ":threeboard_lib",
         "//src/native:i2c",
         "//src/native:native_impl",

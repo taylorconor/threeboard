@@ -10,6 +10,8 @@ avr_binary(
         "@bazel_tools//src/conditions:darwin": ["-DDARWIN"],
         "//conditions:default": ["-DLINUX"],
     }) + [
+        # This flag enables simavr-specific sections to be added to the
+        # firmware file for parsing by simavr.
         "-DTHREEBOARD_SIM",
         "-g",
     ],
@@ -46,5 +48,15 @@ cc_library(
         ":firmware_state_delegate",
         "//simulator/simavr",
         "@third_party//:simavr",
+    ],
+)
+
+cc_library(
+    name = "uart",
+    srcs = ["uart.cpp"],
+    hdrs = ["uart.h"],
+    deps = [
+        "//simulator:simulator_delegate",
+        "//simulator/simavr",
     ],
 )

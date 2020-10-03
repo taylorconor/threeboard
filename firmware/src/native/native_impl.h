@@ -83,6 +83,16 @@ public:
   void SetUDADDR(uint8_t) final;
   void SetUERST(uint8_t) final;
 
+  volatile uint8_t &GetUCSR1A() const final;
+  void SetUCSR1A(uint8_t) final;
+  volatile uint8_t &GetUCSR1B() const final;
+  void SetUCSR1B(uint8_t) final;
+  volatile uint8_t &GetUCSR1C() const final;
+  void SetUCSR1C(uint8_t) final;
+  void SetUDR1(uint8_t) final;
+  void SetUBRR1H(uint8_t) final;
+  void SetUBRR1L(uint8_t) final;
+
 private:
   NativeImpl() = default;
 

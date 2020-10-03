@@ -91,6 +91,16 @@ public:
   virtual uint8_t GetUDADDR() const = 0;
   virtual void SetUDADDR(uint8_t) = 0;
   virtual void SetUERST(uint8_t) = 0;
+
+  virtual volatile uint8_t &GetUCSR1A() const = 0;
+  virtual void SetUCSR1A(uint8_t) = 0;
+  virtual volatile uint8_t &GetUCSR1B() const = 0;
+  virtual void SetUCSR1B(uint8_t) = 0;
+  virtual volatile uint8_t &GetUCSR1C() const = 0;
+  virtual void SetUCSR1C(uint8_t) = 0;
+  virtual void SetUDR1(uint8_t) = 0;
+  virtual void SetUBRR1H(uint8_t) = 0;
+  virtual void SetUBRR1L(uint8_t) = 0;
 };
 
 } // namespace native

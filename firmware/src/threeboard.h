@@ -13,7 +13,7 @@ class Threeboard : public TimerInterruptHandlerDelegate {
 public:
   Threeboard(native::Native *native, usb::Usb *usb, EventBuffer *event_buffer,
              LedController *led_controller, KeyController *key_controller);
-  virtual ~Threeboard() {}
+  ~Threeboard() override = default;
 
   // Main application runloop.
   void Run();

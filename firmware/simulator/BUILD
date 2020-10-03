@@ -14,6 +14,7 @@ cc_library(
     deps = [
         ":simulator_delegate",
         "//simulator/components:firmware_lib",
+        "//simulator/components:uart",
         "//simulator/components:usb_host",
         "//simulator/simavr",
         "//simulator/ui",

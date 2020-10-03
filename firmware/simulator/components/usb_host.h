@@ -24,7 +24,6 @@ public:
 
 private:
   void DeviceControlLoop();
-
   void InternalUsbAttachCallback(uint32_t status);
 
   Simavr *simavr_;
@@ -33,7 +32,7 @@ private:
   std::atomic<bool> is_running_;
   std::atomic<bool> is_attached_;
   std::unique_ptr<std::thread> device_control_thread_;
-  std::unique_ptr<std::function<void(uint32_t)>> usb_attach_callback_;
+  std::unique_ptr<UsbAttachCallback> usb_attach_callback_;
 };
 } // namespace simulator
 } // namespace threeboard

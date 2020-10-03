@@ -257,7 +257,8 @@ void UI::RenderLoop() {
     UpdateKeyState();
 
     // Tell the simulator that we're about to redraw and need the most recent
-    // state set from the firmware and onto the UI.
+    // state set from the firmware onto the UI. This is an optimisation to avoid
+    // having the firmware update state more than it needs to.
     sim_delegate_->PrepareRenderState();
 
     // Draw each UI component.

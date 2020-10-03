@@ -1,5 +1,6 @@
 #include "bootstrap.h"
 
+#include "src/logging.h"
 #include "src/native/i2c.h"
 #include "src/native/native_impl.h"
 #include "src/threeboard.h"
@@ -27,7 +28,12 @@ void RunThreeboard() {
   LedController led_controller(native_impl);
   KeyController key_controller(native_impl, &event_buffer);
 
-  // The threeboard obejct composes in all of these controllers, handlers and
+  // native::I2C i2c;
+  // i2c.Init();
+
+  Logging::Init(native_impl);
+
+  // The threeboard object composes in all of these controllers, handlers and
   // implementation objects, and synchronises them in an infinite runloop.
   Threeboard threeboard(native_impl, &usb_impl, &event_buffer, &led_controller,
                         &key_controller);

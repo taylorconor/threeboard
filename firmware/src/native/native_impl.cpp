@@ -180,5 +180,15 @@ uint8_t NativeImpl::GetUDADDR() const { return UDADDR; }
 void NativeImpl::SetUDADDR(const uint8_t val) { UDADDR = val; }
 void NativeImpl::SetUERST(const uint8_t val) { UERST = val; }
 
+volatile uint8_t &NativeImpl::GetUCSR1A() const { return UCSR1A; }
+void NativeImpl::SetUCSR1A(uint8_t val) { UCSR1A = val; }
+volatile uint8_t &NativeImpl::GetUCSR1B() const { return UCSR1B; }
+void NativeImpl::SetUCSR1B(uint8_t val) { UCSR1B = val; }
+volatile uint8_t &NativeImpl::GetUCSR1C() const { return UCSR1C; }
+void NativeImpl::SetUCSR1C(uint8_t val) { UCSR1C = val; }
+void NativeImpl::SetUDR1(uint8_t val) { UDR1 = val; }
+void NativeImpl::SetUBRR1H(uint8_t val) { UBRR1H = val; }
+void NativeImpl::SetUBRR1L(uint8_t val) { UBRR1L = val; }
+
 } // namespace native
 } // namespace threeboard

@@ -18,7 +18,8 @@ bool IsEnabled(uint8_t reg, uint8_t pin) { return reg & (1 << pin); }
 
 Simulator::Simulator(Simavr *simavr)
     : simavr_(simavr), is_running_(false),
-      firmware_(std::make_unique<Firmware>(simavr_)) {}
+      firmware_(std::make_unique<Firmware>(simavr_)),
+      uart_(std::make_unique<Uart>(simavr_, this)) {}
 
 Simulator::~Simulator() {
   is_running_ = false;
@@ -130,6 +131,10 @@ void Simulator::HandlePhysicalKeypress(char key, bool state) {
 void Simulator::HandleVirtualKeypress(uint8_t mod_code, uint8_t key_code) {
   std::cout << "Received virtual keypress: mod=" << (int)mod_code
             << ", key=" << (int)key_code << std::endl;
+}
+
+void Simulator::HandleUartLogLine(const std::string &log_line) {
+  std::cout << "Received log line: " << log_line << std::endl;
 }
 
 uint16_t Simulator::GetGdbPort() { return kGdbPort; }
