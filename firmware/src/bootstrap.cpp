@@ -14,7 +14,6 @@ void RunThreeboard() {
   // place that NativeImpl is injected. To keep all other components testable,
   // they all use the Native interface.
   auto native_impl = native::NativeImpl::Get();
-  native_impl->EnableInterrupts();
 
   // Similar to how we construct native_impl above, this is the only place where
   // UsbImpl is injected, so as to enable other components to be testable with a

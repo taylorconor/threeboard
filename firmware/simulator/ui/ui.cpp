@@ -11,9 +11,11 @@ namespace {
 
 #define S(n, c) std::string(n, c)
 
-constexpr uint8_t kKeyHoldTime = 20;
-constexpr uint8_t kRootX = 1;
+constexpr uint8_t kRootX = 0;
 constexpr uint8_t kRootY = 0;
+constexpr uint8_t kLogBoxY = kRootY + 18;
+
+constexpr uint8_t kKeyHoldTime = 20;
 constexpr uint8_t kLedPermanence = 50;
 constexpr uint8_t kSimulatorFps = 200;
 
@@ -27,7 +29,7 @@ void printwln(const std::string &str) { printw((str + '\n').c_str()); }
 void InitialiseColours() {
   start_color();
   init_pair(kWhite, COLOR_WHITE, COLOR_BLACK);
-  init_color(16, 400, 400, 400);
+  init_color(16, 500, 500, 500);
   init_pair(kMedGrey, 16, COLOR_BLACK);
   init_color(17, 100, 100, 100);
   init_pair(kDarkGrey, 17, COLOR_BLACK);
@@ -38,14 +40,14 @@ void InitialiseColours() {
 // Draw the base border of the threeboard and erase the previous frame.
 void DrawBorder() {
   // Base border.
-  move(kRootY, kRootX);
+  move(kRootY, 0);
   attron(COLOR_PAIR(kWhite));
-  printwln("  " + S(41, '_'));
-  printwln("  /" + S(41, ' ') + '\\');
+  printwln(S(kRootX + 2, ' ') + S(41, '_'));
+  printwln(S(kRootX + 1, ' ') + "/" + S(41, ' ') + '\\');
   for (int i = 0; i < 12; i++) {
-    printwln(" |" + S(43, ' ') + "|");
+    printwln(S(kRootX, ' ') + "|" + S(43, ' ') + "|");
   }
-  printwln("  \\" + S(41, '_') + '/');
+  printwln(S(kRootX + 1, ' ') + "\\" + S(41, '_') + '/');
 
   // Draw the labels for the LEDs.
   move(kRootY + 3, kRootX + 3);
@@ -76,26 +78,26 @@ void DrawKey(int x_offset, bool pressed, char letter) {
   int colour = pressed ? COLOR_PAIR(kMedGrey) : COLOR_PAIR(kWhite);
   attron(colour);
   if (pressed) {
-    move(kRootY + 9, kRootX + x_offset + 2);
+    move(kRootY + 9, x_offset + 2);
     printw(S(4, '_').c_str());
-    move(kRootY + 10, kRootX + x_offset);
+    move(kRootY + 10, x_offset);
     printw("|\\____/|");
-    move(kRootY + 11, kRootX + x_offset);
+    move(kRootY + 11, x_offset);
     printw("||%c   ||", letter);
-    move(kRootY + 12, kRootX + x_offset);
+    move(kRootY + 12, x_offset);
     printw("||    ||");
-    move(kRootY + 13, kRootX + x_offset);
+    move(kRootY + 13, x_offset);
     printw("||____||");
   } else {
-    move(kRootY + 9, kRootX + x_offset + 1);
+    move(kRootY + 9, x_offset + 1);
     printw(S(6, '_').c_str());
-    move(kRootY + 10, kRootX + x_offset);
+    move(kRootY + 10, x_offset);
     printw("||%c   ||", letter);
-    move(kRootY + 11, kRootX + x_offset);
+    move(kRootY + 11, x_offset);
     printw("||    ||");
-    move(kRootY + 12, kRootX + x_offset);
+    move(kRootY + 12, x_offset);
     printw("||____||");
-    move(kRootY + 13, kRootX + x_offset);
+    move(kRootY + 13, x_offset);
     printw("|/____\\|");
   }
   attroff(colour);
@@ -149,9 +151,11 @@ std::string GetCpuStateName(int state) {
 } // namespace
 
 UI::UI(SimulatorDelegate *sim_delegate,
-       FirmwareStateDelegate *firmware_state_delegate)
+       FirmwareStateDelegate *firmware_state_delegate,
+       const std::string &log_file)
     : simulator_delegate_(sim_delegate),
-      firmware_state_delegate_(firmware_state_delegate), is_running_(false) {}
+      firmware_state_delegate_(firmware_state_delegate), is_running_(false),
+      log_file_(log_file) {}
 
 UI::~UI() {
   if (is_running_) {
@@ -170,7 +174,11 @@ void UI::StartAsyncRenderLoop() {
     exit(0);
   }
   setlocale(LC_ALL, "en_US.UTF-8");
-  initscr();
+  window_ = initscr();
+  int max_x, max_y;
+  getmaxyx(window_, max_y, max_x);
+  log_pad_ = newpad(max_y - kLogBoxY - 1, max_x);
+  scrollok(log_pad_, TRUE);
   InitialiseColours();
   noecho();
   timeout(0);
@@ -193,17 +201,30 @@ void UI::ClearLedState() {
 }
 
 void UI::DisplayKeyboardCharacter(char c) {}
-void UI::DisplayLogLine(uint64_t cycle, const std::string &log_line) {}
+
+void UI::DisplayLogLine(uint64_t cycle, const std::string &log_line) {
+  std::string cycle_str = std::to_string(cycle);
+  std::string log =
+      cycle_str + S(16 - cycle_str.length(), ' ') + log_line + "\n";
+  wprintw(log_pad_, log.c_str());
+}
 
 void UI::SetR(bool enabled) { SetLedState(r_, enabled); }
+
 void UI::SetG(bool enabled) { SetLedState(g_, enabled); }
+
 void UI::SetB(bool enabled) { SetLedState(b_, enabled); }
+
 void UI::SetProg(bool enabled) { SetLedState(prog_, enabled); }
+
 void UI::SetErr(bool enabled) { SetLedState(err_, enabled); }
+
 void UI::SetStatus(bool enabled) { SetLedState(status_, enabled); }
+
 void UI::SetBank0(bool enabled, uint8_t idx) {
   SetLedState(bank0_[idx], enabled);
 }
+
 void UI::SetBank1(bool enabled, uint8_t idx) {
   SetLedState(bank1_[idx], enabled);
 }
@@ -269,6 +290,7 @@ void UI::RenderLoop() {
     DrawLeds();
     DrawKeys();
     DrawStatusText();
+    DrawLogBox();
 
     // Move the cursor to a place where stdio output won't overwrite any of the
     // simulator UI.
@@ -307,9 +329,9 @@ void UI::DrawLeds() {
 }
 
 void UI::DrawKeys() {
-  DrawKey(2, key_a_, 'A');
-  DrawKey(12, key_s_, 'S');
-  DrawKey(22, key_d_, 'D');
+  DrawKey(kRootX + 2, key_a_, 'A');
+  DrawKey(kRootX + 12, key_s_, 'S');
+  DrawKey(kRootX + 22, key_d_, 'D');
 }
 
 void UI::DrawStatusText() {
@@ -340,6 +362,21 @@ void UI::DrawStatusText() {
   if (cycles_since_memo_update_++ == kSimulatorFps) {
     cycles_since_memo_update_ = 0;
   }
+}
+
+void UI::DrawLogBox() {
+  move(kLogBoxY, kRootX);
+  auto color = COLOR_PAIR(kMedGrey);
+  attron(color);
+  std::string filename_indicator = "- log file: " + log_file_ + " ";
+  printw(filename_indicator.c_str());
+
+  int window_max_x, window_max_y;
+  getmaxyx(window_, window_max_y, window_max_x);
+  printw(S(window_max_x - filename_indicator.length(), '-').c_str());
+  attroff(color);
+
+  prefresh(log_pad_, 0, 0, kLogBoxY + 1, 0, window_max_y, window_max_x - 1);
 }
 
 std::string UI::GetClockSpeedString() {

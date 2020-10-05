@@ -1,5 +1,7 @@
 #include "threeboard.h"
 
+#include "src/logging.h"
+
 #if (defined(AVR) && (!defined(__GNUC__) || __GNUC__ < 9))
 static_assert(false, "Unsupported compiler: threeboard requires avr-gcc >=9");
 #endif
@@ -35,6 +37,8 @@ Threeboard::Threeboard(native::Native *native, usb::Usb *usb,
 }
 
 void Threeboard::Run() {
+  native_->EnableInterrupts();
+
   // Wait until the USB stack has been configured before continuing the runloop.
   // TODO: uncomment this once the simulator supports USB configuration.
   while (!usb_->HasConfigured())
@@ -94,7 +98,6 @@ void Threeboard::SwitchToNextLayer() {
 }
 
 void Threeboard::HandleDefaultInput(const Keypress &keypress) {
-
   if (keypress == Keypress::X) {
     properties_[layer_].bank0++;
   } else if (keypress == Keypress::Y) {
@@ -112,8 +115,14 @@ void Threeboard::HandleDefaultInput(const Keypress &keypress) {
 
 void Threeboard::HandleDefaultFlush(const Keypress &keypress) {}
 
-void Threeboard::HandleTimer1Interrupt() { led_controller_->ScanNextLine(); }
+void Threeboard::HandleTimer1Interrupt() {
+  LOG_ONCE("Timer 1 setup complete");
+  led_controller_->ScanNextLine();
+}
 
-void Threeboard::HandleTimer3Interrupt() { key_controller_->PollKeyState(); }
+void Threeboard::HandleTimer3Interrupt() {
+  LOG_ONCE("Timer 3 setup complete");
+  key_controller_->PollKeyState();
+}
 
 } // namespace threeboard

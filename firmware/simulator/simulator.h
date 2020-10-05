@@ -1,6 +1,7 @@
 #pragma once
 
 #include <condition_variable>
+#include <fstream>
 #include <memory>
 #include <mutex>
 
@@ -36,6 +37,8 @@ private:
   std::unique_ptr<UI> ui_;
   std::mutex mutex_;
   std::condition_variable sim_run_var_;
+  std::string log_file_path_;
+  std::ofstream log_stream_;
 };
 } // namespace simulator
 } // namespace threeboard

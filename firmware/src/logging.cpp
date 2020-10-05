@@ -1,54 +1,39 @@
 #include "logging.h"
 
+#include <stdio.h>
+
+#include "src/util/util.h"
+
 namespace threeboard {
 namespace {
 
-// Transmit a string over USART1. The string is assumed to be null-terminated.
-void Transmit(native::Native *native, const char *log) {
-  for (int i = 0; log[i] != 0; ++i) {
-    // Wait for empty transmit buffer
-    while (!(native->GetUCSR1A() & (1 << native::UDRE1)))
-      ;
-    // Clear transmission flag.
-    native->SetUCSR1A(native->GetUCSR1A() | (1 << native::TXC1));
-    // Send a single byte of log data to the USART1 I/O data register.
-    native->SetUDR1(log[i]);
-  }
+// Transmit a single byte over USART1.
+__force_inline void Transmit(native::Native *native, char c) {
+  // Send a single byte of log data to the USART1 I/O data register.
+  native->SetUDR1(c);
 }
 } // namespace
 
 // static.
 // This is defined as static so that all usages of LOG don't need to provide
-// their own native instance to the logger. Instead, bootstrap.cc intialises the
-// logger with this statically after creating the native instance.
+// their own native instance to the logger. Instead, bootstrap.cpp intialises
+// the logger with this statically after creating the native instance.
 native::Native *Logging::native_;
 
 // static.
-void Logging::Init(native::Native *native) {
-  Logging::native_ = native;
+void Logging::Init(native::Native *native) { native_ = native; }
 
-  // Enable UART transmitter only. No need for a receiver.
-  native->SetUCSR1B(native->GetUCSR1B() | (1 << native::TXEN1));
-
-  // Set frame format to just 8 data bits. We don't need any parity or stop bits
-  // because the UART receiver in the simulator doesn't care.
-  native->SetUCSR1C(native->GetUCSR1C() | (1 << native::UCSZ10));
-
-  // Clear transmission flag.
-  native->SetUCSR1A(native->GetUCSR1A() | (1 << native::TXC1));
-}
-
-Logging::~Logging() {
-  // Assuming we're logging with the LOG macro, nce the log
-  // line is finished its temporary Logging instance will be
-  // destructed. We need to transmit a newline character to
-  // tell simavr that this line is finished.
-  Transmit(native_, "\n");
-}
-
-Logging &Logging::operator<<(const char *msg) {
-  Transmit(native_, msg);
-  return *this;
+void Logging::Log(const char *fmt, ...) {
+  va_list va;
+  va_start(va, fmt);
+  // TODO: this buffer is 10% of our RAM. is there a way of printf-ing directly
+  // into UDR1?
+  char buffer[256];
+  vsnprintf(buffer, sizeof(buffer), fmt, va);
+  for (int i = 0; buffer[i] != 0; ++i) {
+    Transmit(native_, buffer[i]);
+  }
+  Transmit(native_, '\n');
 }
 
 } // namespace threeboard

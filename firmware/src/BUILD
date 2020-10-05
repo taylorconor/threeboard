@@ -30,6 +30,7 @@ avr_library(
     srcs = ["key_controller.cpp"],
     hdrs = ["key_controller.h"],
     deps = [
+        "//src:logging",
         "//src/delegates:keypress_handler_delegate",
         "//src/native",
         "//src/util",
@@ -62,7 +63,10 @@ avr_library(
     name = "logging",
     srcs = ["logging.cpp"],
     hdrs = ["logging.h"],
-    deps = ["//src/native"],
+    deps = [
+        "//src/native",
+        "//src/util",
+    ],
 )
 
 avr_library(

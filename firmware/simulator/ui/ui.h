@@ -1,26 +1,30 @@
 #pragma once
 
-#include "simulator/components/firmware_state_delegate.h"
-#include "simulator/simulator_delegate.h"
-
 #include <atomic>
-#include <functional>
 #include <thread>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
+#include "simulator/components/firmware_state_delegate.h"
+#include "simulator/simulator_delegate.h"
+
+// Forward declaration of ncurses WINDOW. Defined in curses.h and included by
+// ui.cpp.
+typedef struct _win_st WINDOW;
+
 namespace threeboard {
 namespace simulator {
 
-// This class is responsible for rendering the simulator UI to the terminal. It
-// has no knowledge of the simulator's existence, it relies on its owner setting
-// the relevant simulator fields via the setter methods. A callback can be
-// provided (StateUpdateCallback) which is called before each render frame, to
-// allow the owner to set the current state of the simulator in the UI.
+// This class is responsible for rendering the simulator UI to the terminal.
+// It has no knowledge of the simulator's existence, it relies on its owner
+// setting the relevant simulator fields via the setter methods. A callback
+// can be provided (StateUpdateCallback) which is called before each render
+// frame, to allow the owner to set the current state of the simulator in
+// the UI.
 class UI {
 public:
-  UI(SimulatorDelegate *, FirmwareStateDelegate *);
+  UI(SimulatorDelegate *, FirmwareStateDelegate *, const std::string &log_file);
   ~UI();
 
   void StartAsyncRenderLoop();
@@ -41,14 +45,21 @@ public:
 private:
   void UpdateKeyState();
   void RenderLoop();
-  void DrawLeds();
-  void DrawKeys();
-  void DrawStatusText();
   std::string GetClockSpeedString();
   void UpdateCpuStateBreakdownList();
 
+  void DrawLeds();
+  void DrawKeys();
+  void DrawStatusText();
+  void DrawLogBox();
+
   SimulatorDelegate *simulator_delegate_;
   FirmwareStateDelegate *firmware_state_delegate_;
+
+  // The output window used by curses.
+  WINDOW *window_;
+  // The pad (a special case of a window) used to display the log file.
+  WINDOW *log_pad_;
 
   // Keep track of the simulator cycle count from the previous render pass so we
   // can calculate CPU frequency.
@@ -80,6 +91,7 @@ private:
   uint8_t bank0_[8] = {};
   uint8_t bank1_[8] = {};
   std::unique_ptr<std::thread> render_thread_;
+  std::string log_file_;
 };
 } // namespace simulator
 } // namespace threeboard

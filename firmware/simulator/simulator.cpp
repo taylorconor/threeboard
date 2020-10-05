@@ -19,7 +19,16 @@ bool IsEnabled(uint8_t reg, uint8_t pin) { return reg & (1 << pin); }
 Simulator::Simulator(Simavr *simavr)
     : simavr_(simavr), is_running_(false),
       firmware_(std::make_unique<Firmware>(simavr_)),
-      uart_(std::make_unique<Uart>(simavr_, this)) {}
+      uart_(std::make_unique<Uart>(simavr_, this)) {
+  char log_file[L_tmpnam];
+  if (std::tmpnam(log_file)) {
+    log_file_path_ = std::string(log_file);
+    log_stream_.open(log_file_path_, std::ios_base::app);
+  } else {
+    std::cout << "Failed to create log file" << std::endl;
+    exit(0);
+  }
+}
 
 Simulator::~Simulator() {
   is_running_ = false;
@@ -34,7 +43,7 @@ void Simulator::Run() {
 
   firmware_->Reset();
   firmware_->RunAsync();
-  ui_ = std::make_unique<UI>(this, firmware_.get());
+  ui_ = std::make_unique<UI>(this, firmware_.get(), log_file_path_);
   usb_host_ = std::make_unique<UsbHost>(simavr_, this);
   ui_->StartAsyncRenderLoop();
   is_running_ = true;
@@ -134,7 +143,9 @@ void Simulator::HandleVirtualKeypress(uint8_t mod_code, uint8_t key_code) {
 }
 
 void Simulator::HandleUartLogLine(const std::string &log_line) {
-  ui_->DisplayLogLine(0, log_line);
+  auto cycle = firmware_->GetCpuCycleCount();
+  log_stream_ << cycle << "\t" << log_line << std::endl;
+  ui_->DisplayLogLine(cycle, log_line);
 }
 
 uint16_t Simulator::GetGdbPort() { return kGdbPort; }
