@@ -29,6 +29,5 @@ public:
 
 protected:
   virtual ~KeypressHandlerDelegate() = default;
-  ;
 };
 } // namespace threeboard

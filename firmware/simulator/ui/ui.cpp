@@ -13,8 +13,9 @@ namespace {
 
 constexpr uint8_t kRootX = 0;
 constexpr uint8_t kRootY = 0;
-constexpr uint8_t kLogBoxY = kRootY + 18;
-constexpr uint8_t kStatusColOffset = 47;
+constexpr uint8_t kOutputBoxY = kRootY + 17;
+constexpr uint8_t kLogBoxY = kRootY + 21;
+constexpr uint8_t kLogStatusColOffset = 47;
 
 constexpr uint8_t kKeyHoldTime = 20;
 constexpr uint8_t kLedPermanence = 50;
@@ -187,8 +188,8 @@ void UI::StartAsyncRenderLoop() {
   // displays the contents of the logs.
   int max_x, max_y;
   getmaxyx(window_, max_y, max_x);
-  log_pad_ = newpad(max_y - kLogBoxY - 1, max_x);
-  scrollok(log_pad_, TRUE);
+  output_pad_ = std::make_unique<Pad>(kLogBoxY - kOutputBoxY, max_x);
+  log_pad_ = std::make_unique<Pad>(max_y - kLogBoxY - 1, max_x);
 
   is_running_ = true;
   render_thread_ = std::make_unique<std::thread>(&UI::RenderLoop, this);
@@ -207,15 +208,18 @@ void UI::ClearLedState() {
   }
 }
 
-void UI::DisplayKeyboardCharacter(char c) {}
+void UI::DisplayKeyboardCharacter(char c) {
+  std::lock_guard<std::mutex> lock(screen_output_mutex_);
+  output_pad_->Write(c);
+}
 
 void UI::DisplayLogLine(uint64_t cycle, const std::string &log_line) {
   std::string cycle_str = std::to_string(cycle);
   std::string log =
       cycle_str + S(16 - cycle_str.length(), ' ') + log_line + "\n";
 
-  std::lock_guard<std::mutex> lock(output_mutex_);
-  wprintw(log_pad_, log.c_str());
+  std::lock_guard<std::mutex> lock(screen_output_mutex_);
+  log_pad_->Write(log);
 }
 
 void UI::SetR(bool enabled) { SetLedState(r_, enabled); }
@@ -285,7 +289,7 @@ void UI::UpdateKeyState() {
 void UI::RenderLoop() {
   while (is_running_) {
     {
-      std::lock_guard<std::mutex> lock(output_mutex_);
+      std::lock_guard<std::mutex> lock(screen_output_mutex_);
       current_frame_++;
 
       // Trigger any applicable keypresses from the user into the firmware.
@@ -301,6 +305,7 @@ void UI::RenderLoop() {
       DrawLeds();
       DrawKeys();
       DrawStatusText();
+      DrawOutputBox();
       DrawLogBox();
 
       // Move the cursor to a place where stdio output won't overwrite any of
@@ -347,7 +352,7 @@ void UI::DrawKeys() {
 }
 
 void UI::DrawStatusText() {
-  const int col_offset = kRootX + kStatusColOffset;
+  const int col_offset = kRootX + kLogStatusColOffset;
   int row_offset = 1;
 
   // Title text.
@@ -400,6 +405,21 @@ void UI::DrawStatusText() {
   }
 }
 
+void UI::DrawOutputBox() {
+  move(kOutputBoxY, kRootX);
+  auto color = COLOR_PAIR(kMedGrey);
+  attron(color);
+  std::string title = "- keyboard output ";
+  printw(title.c_str());
+
+  int window_max_x, window_max_y;
+  getmaxyx(window_, window_max_y, window_max_x);
+  printw(S(window_max_x - title.length(), '-').c_str());
+  attroff(color);
+
+  output_pad_->Refresh(kOutputBoxY + 1, 0, kLogBoxY - 1, window_max_x - 1);
+}
+
 void UI::DrawLogBox() {
   move(kLogBoxY, kRootX);
   auto color = COLOR_PAIR(kMedGrey);
@@ -412,7 +432,7 @@ void UI::DrawLogBox() {
   printw(S(window_max_x - filename_indicator.length(), '-').c_str());
   attroff(color);
 
-  prefresh(log_pad_, 0, 0, kLogBoxY + 1, 0, window_max_y, window_max_x - 1);
+  log_pad_->Refresh(kLogBoxY + 1, 0, window_max_y, window_max_x - 1);
 }
 
 std::string UI::GetClockSpeedString() {

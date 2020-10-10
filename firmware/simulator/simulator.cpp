@@ -138,8 +138,26 @@ void Simulator::HandlePhysicalKeypress(char key, bool state) {
 }
 
 void Simulator::HandleVirtualKeypress(uint8_t mod_code, uint8_t key_code) {
-  std::cout << "Received virtual keypress: mod=" << (int)mod_code
-            << ", key=" << (int)key_code << std::endl;
+  bool capitalise = false;
+  // Check for L_SHIFT and R_SHIFT.
+  if ((mod_code & 0x22) > 0 && (mod_code & ~0x22) == 0) {
+    capitalise = true;
+  } else if (mod_code != 0) {
+    // Ignore and reject any non-shift modcodes.
+    return;
+  }
+
+  // Only consider printable a-z, A-Z keycodes.
+  if (key_code < 0x04 || key_code > 0x1d) {
+    return;
+  }
+
+  char c = key_code + 0x5d;
+  if (capitalise) {
+    c -= 0x20;
+  }
+
+  ui_->DisplayKeyboardCharacter(c);
 }
 
 void Simulator::HandleUartLogLine(const std::string &log_line) {

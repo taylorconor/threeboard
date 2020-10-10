@@ -41,10 +41,6 @@ std::unique_ptr<Simavr> SimavrImpl::Create(const std::string &firmware_file) {
   avr_init(avr);
   avr_load_firmware(avr, &f);
   auto avr_ptr = std::unique_ptr<avr_t>(avr);
-  std::cout << "bsssize = " << f.bsssize << ", datasize = " << f.datasize
-            << ", eesize = " << f.eesize << ", fusesize = " << f.fusesize
-            << ", flashsize = " << f.flashsize << ", ioend = " << avr_ptr->ioend
-            << std::endl;
   auto *raw_ptr = new SimavrImpl(std::move(avr_ptr), f.bsssize, f.datasize);
   return std::unique_ptr<SimavrImpl>(raw_ptr);
 }

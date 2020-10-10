@@ -9,6 +9,7 @@
 
 #include "simulator/components/firmware_state_delegate.h"
 #include "simulator/simulator_delegate.h"
+#include "simulator/ui/pad.h"
 
 // Forward declaration of ncurses WINDOW. Defined in curses.h and included by
 // ui.cpp.
@@ -55,6 +56,7 @@ private:
   void DrawLeds();
   void DrawKeys();
   void DrawStatusText();
+  void DrawOutputBox();
   void DrawLogBox();
 
   SimulatorDelegate *simulator_delegate_;
@@ -62,13 +64,14 @@ private:
 
   // The output window used by curses.
   WINDOW *window_;
-  // The pad (a special case of a window) used to display the log file.
-  WINDOW *log_pad_;
+
+  std::unique_ptr<Pad> output_pad_;
+  std::unique_ptr<Pad> log_pad_;
 
   // Mutex to avoid text output conflicts so we don't have to depend on the
   // pthread-enabled ncurses library build, which may not be available on all
   // platforms.
-  std::mutex output_mutex_;
+  std::mutex screen_output_mutex_;
 
   // Keep track of the simulator cycle count from the previous render pass so we
   // can calculate CPU frequency.
