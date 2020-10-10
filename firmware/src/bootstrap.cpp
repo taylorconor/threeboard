@@ -14,6 +14,8 @@ void RunThreeboard() {
   // place that NativeImpl is injected. To keep all other components testable,
   // they all use the Native interface.
   auto native_impl = native::NativeImpl::Get();
+  Logging::Init(native_impl);
+  LOG("Native layer initialised");
 
   // Similar to how we construct native_impl above, this is the only place where
   // UsbImpl is injected, so as to enable other components to be testable with a
@@ -29,8 +31,6 @@ void RunThreeboard() {
 
   // native::I2C i2c;
   // i2c.Init();
-
-  Logging::Init(native_impl);
 
   // The threeboard object composes in all of these controllers, handlers and
   // implementation objects, and synchronises them in an infinite runloop.

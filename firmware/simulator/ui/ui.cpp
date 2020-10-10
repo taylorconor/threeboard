@@ -14,6 +14,7 @@ namespace {
 constexpr uint8_t kRootX = 0;
 constexpr uint8_t kRootY = 0;
 constexpr uint8_t kLogBoxY = kRootY + 18;
+constexpr uint8_t kStatusColOffset = 47;
 
 constexpr uint8_t kKeyHoldTime = 20;
 constexpr uint8_t kLedPermanence = 50;
@@ -174,15 +175,21 @@ void UI::StartAsyncRenderLoop() {
     exit(0);
   }
   setlocale(LC_ALL, "en_US.UTF-8");
+
+  // Initialise the main curses window.
   window_ = initscr();
-  int max_x, max_y;
-  getmaxyx(window_, max_y, max_x);
-  log_pad_ = newpad(max_y - kLogBoxY - 1, max_x);
-  scrollok(log_pad_, TRUE);
   InitialiseColours();
   noecho();
   timeout(0);
   curs_set(0);
+
+  // Initialise the logging sub-window ('pad'), the scrollable area that
+  // displays the contents of the logs.
+  int max_x, max_y;
+  getmaxyx(window_, max_y, max_x);
+  log_pad_ = newpad(max_y - kLogBoxY - 1, max_x);
+  scrollok(log_pad_, TRUE);
+
   is_running_ = true;
   render_thread_ = std::make_unique<std::thread>(&UI::RenderLoop, this);
 }
@@ -206,6 +213,8 @@ void UI::DisplayLogLine(uint64_t cycle, const std::string &log_line) {
   std::string cycle_str = std::to_string(cycle);
   std::string log =
       cycle_str + S(16 - cycle_str.length(), ' ') + log_line + "\n";
+
+  std::lock_guard<std::mutex> lock(output_mutex_);
   wprintw(log_pad_, log.c_str());
 }
 
@@ -275,28 +284,31 @@ void UI::UpdateKeyState() {
 
 void UI::RenderLoop() {
   while (is_running_) {
-    current_frame_++;
+    {
+      std::lock_guard<std::mutex> lock(output_mutex_);
+      current_frame_++;
 
-    // Trigger any applicable keypresses from the user into the firmware.
-    UpdateKeyState();
+      // Trigger any applicable keypresses from the user into the firmware.
+      UpdateKeyState();
 
-    // Tell the simulator that we're about to redraw and need the most recent
-    // state set from the firmware onto the UI. This is an optimisation to avoid
-    // having the firmware update state more than it needs to.
-    simulator_delegate_->PrepareRenderState();
+      // Tell the simulator that we're about to redraw and need the most recent
+      // state set from the firmware onto the UI. This is an optimisation to
+      // avoid having the firmware update state more than it needs to.
+      simulator_delegate_->PrepareRenderState();
 
-    // Draw each UI component.
-    DrawBorder();
-    DrawLeds();
-    DrawKeys();
-    DrawStatusText();
-    DrawLogBox();
+      // Draw each UI component.
+      DrawBorder();
+      DrawLeds();
+      DrawKeys();
+      DrawStatusText();
+      DrawLogBox();
 
-    // Move the cursor to a place where stdio output won't overwrite any of the
-    // simulator UI.
-    // TODO: is there a way of disabling or suppressing non-curses io?
-    move(kRootY + 20, kRootX);
-    refresh();
+      // Move the cursor to a place where stdio output won't overwrite any of
+      // the simulator UI.
+      // TODO: is there a way of disabling or suppressing non-curses io?
+      move(kRootY + 20, kRootX);
+      refresh();
+    }
 
     // Maintain kSimulatorFps FPS.
     std::this_thread::sleep_for(
@@ -335,27 +347,51 @@ void UI::DrawKeys() {
 }
 
 void UI::DrawStatusText() {
-  move(kRootY + 1, kRootX + 47);
+  const int col_offset = kRootX + kStatusColOffset;
+  int row_offset = 1;
+
+  // Title text.
+  move(kRootY + row_offset++, col_offset);
   printw("threeboard v1 (x86 simulator)");
-  move(kRootY + 2, kRootX + 47);
+
+  // Clock frequency monitor.
+  move(kRootY + row_offset++, col_offset);
   printw("clock frequency: %s", GetClockSpeedString().c_str());
-  move(kRootY + 3, kRootX + 47);
+
+  // Memory usage monitor and per-section detail.
+  move(kRootY + row_offset++, col_offset);
+  printw("memory usage: %s", GetSramUsageString().c_str());
+  UpdateSramUsageBreakdownList();
+  for (const auto &[section_name, section_bytes] : sram_usage_breakdown_memo_) {
+    move(kRootY + row_offset++, col_offset);
+    printw("  %s: %d bytes", section_name.c_str(), section_bytes);
+  }
+
+  // CPU state distribution.
+  move(kRootY + row_offset++, col_offset);
   UpdateCpuStateBreakdownList();
   printw("state:");
-  int i = 0;
-  for (; i < state_str_memo_.size(); ++i) {
-    move(kRootY + 4 + i, kRootX + 47);
-    int colour =
-        state_str_memo_[i].second ? COLOR_PAIR(kWhite) : COLOR_PAIR(kMedGrey);
+  if (state_str_memo_.empty()) {
+    printw(" Loading...");
+  }
+  for (const auto &[text, is_active] : state_str_memo_) {
+    move(kRootY + row_offset++, col_offset);
+    int colour = is_active ? COLOR_PAIR(kWhite) : COLOR_PAIR(kMedGrey);
     attron(colour);
-    printw("  %s", state_str_memo_[i].first.c_str());
+    printw("  %s", text.c_str());
     attroff(colour);
   }
-  move(kRootY + 4 + i, kRootX + 47);
-  printw("gdb: %s (port %d)",
-         (firmware_state_delegate_->IsGdbEnabled() ? "enabled" : "disabled"),
-         simulator_delegate_->GetGdbPort());
-  move(kRootY + 5 + i, kRootX + 47);
+
+  // gdb status and port display.
+  move(kRootY + row_offset++, col_offset);
+  printw("gdb: %s",
+         firmware_state_delegate_->IsGdbEnabled() ? "enabled" : "disabled");
+  if (firmware_state_delegate_->IsGdbEnabled()) {
+    printw(" (port %d)", simulator_delegate_->GetGdbPort());
+  }
+
+  // USB attach status monitor.
+  move(kRootY + row_offset++, col_offset);
   printw("usb: %s",
          (simulator_delegate_->IsUsbAttached() ? "attached" : "detached"));
 
@@ -380,18 +416,24 @@ void UI::DrawLogBox() {
 }
 
 std::string UI::GetClockSpeedString() {
-  if (cycles_since_memo_update_ < kSimulatorFps) {
-    return freq_str_memo_;
+  if (cycles_since_memo_update_ == kSimulatorFps) {
+    uint64_t current_cycle = firmware_state_delegate_->GetCpuCycleCount();
+    uint64_t diff = current_cycle - prev_sim_cycle_;
+    if (prev_sim_cycle_ > current_cycle) {
+      diff = current_cycle + (~0 - prev_sim_cycle_);
+    }
+    prev_sim_cycle_ = firmware_state_delegate_->GetCpuCycleCount();
+    freq_str_memo_ = ParseCpuFreq(diff);
   }
-
-  uint64_t current_cycle = firmware_state_delegate_->GetCpuCycleCount();
-  uint64_t diff = current_cycle - prev_sim_cycle_;
-  if (prev_sim_cycle_ > current_cycle) {
-    diff = current_cycle + (~0 - prev_sim_cycle_);
-  }
-  prev_sim_cycle_ = firmware_state_delegate_->GetCpuCycleCount();
-  freq_str_memo_ = ParseCpuFreq(diff);
   return freq_str_memo_;
+}
+
+std::string UI::GetSramUsageString() {
+  if (cycles_since_memo_update_ == kSimulatorFps) {
+    sram_str_memo_ =
+        std::to_string(firmware_state_delegate_->GetSramUsage()) + "%";
+  }
+  return sram_str_memo_;
 }
 
 void UI::UpdateCpuStateBreakdownList() {
@@ -418,6 +460,26 @@ void UI::UpdateCpuStateBreakdownList() {
     state_str_memo_.emplace_back(ss.str(), is_active);
   }
   cpu_states_since_last_flush_.clear();
+}
+
+void UI::UpdateSramUsageBreakdownList() {
+  if (cycles_since_memo_update_ != kSimulatorFps) {
+    return;
+  }
+
+  sram_usage_breakdown_memo_.clear();
+  if (firmware_state_delegate_->GetDataSectionSize() != 0) {
+    sram_usage_breakdown_memo_.emplace_back(
+        ".data", firmware_state_delegate_->GetDataSectionSize());
+  }
+  if (firmware_state_delegate_->GetBssSectionSize() != 0) {
+    sram_usage_breakdown_memo_.emplace_back(
+        ".bss", firmware_state_delegate_->GetBssSectionSize());
+  }
+
+  // Stack size is always included, if it's zero then something is broken.
+  sram_usage_breakdown_memo_.emplace_back(
+      "stack", firmware_state_delegate_->GetStackSize());
 }
 
 } // namespace simulator

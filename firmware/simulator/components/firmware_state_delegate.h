@@ -11,6 +11,11 @@ public:
   virtual uint64_t GetCpuCycleCount() const = 0;
   virtual bool IsGdbEnabled() const = 0;
 
+  virtual uint16_t GetDataSectionSize() const = 0;
+  virtual uint16_t GetBssSectionSize() const = 0;
+  virtual uint16_t GetStackSize() const = 0;
+  virtual uint16_t GetSramUsage() const = 0;
+
 protected:
   virtual ~FirmwareStateDelegate() = default;
 };

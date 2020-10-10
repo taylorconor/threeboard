@@ -16,6 +16,11 @@
 #define PROGMEM
 #endif
 
+// PSTR is only defined by avr-libc, this just guarantees that it's always
+// defined (although may not do anything id PROGMEM is a noop).
+#undef PSTR
+#define PSTR(s) ((const PROGMEM char *)(s))
+
 namespace threeboard {
 namespace native {
 

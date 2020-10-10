@@ -40,13 +40,13 @@ void Simulator::Run() {
     std::cout << "Attempted to run a running simulator instance!" << std::endl;
     exit(0);
   }
-
   firmware_->Reset();
-  firmware_->RunAsync();
   ui_ = std::make_unique<UI>(this, firmware_.get(), log_file_path_);
-  usb_host_ = std::make_unique<UsbHost>(simavr_, this);
   ui_->StartAsyncRenderLoop();
+
+  usb_host_ = std::make_unique<UsbHost>(simavr_, this);
   is_running_ = true;
+  firmware_->RunAsync();
   std::unique_lock<std::mutex> lock(mutex_);
   while (is_running_) {
     sim_run_var_.wait(lock);

@@ -30,15 +30,21 @@ public:
   void SetState(uint8_t val) override;
   void SetGdbPort(uint8_t val) override;
 
-  uint8_t GetData(uint8_t idx) override;
-  uint8_t GetState() override;
-  uint8_t GetGdbPort() override;
-  uint64_t GetCycle() override;
+  uint8_t GetData(uint8_t idx) const override;
+  uint8_t GetState() const override;
+  uint8_t GetGdbPort() const override;
+  uint64_t GetCycle() const override;
+  uint16_t GetStackPointer() const override;
+  uint16_t GetBssSectionSize() const override;
+  uint16_t GetDataSectionSize() const override;
+  uint16_t GetRamSize() const override;
 
 private:
-  SimavrImpl(std::unique_ptr<avr_t> avr);
+  SimavrImpl(std::unique_ptr<avr_t> avr, uint16_t bss_size, uint16_t data_size);
 
   std::unique_ptr<avr_t> avr_;
+  uint16_t bss_size_;
+  uint16_t data_size_;
 };
 } // namespace simulator
 } // namespace threeboard

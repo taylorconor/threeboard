@@ -69,10 +69,14 @@ public:
   virtual void SetState(uint8_t val) = 0;
   virtual void SetGdbPort(uint8_t val) = 0;
 
-  virtual uint8_t GetData(uint8_t idx) = 0;
-  virtual uint8_t GetState() = 0;
-  virtual uint8_t GetGdbPort() = 0;
-  virtual uint64_t GetCycle() = 0;
+  virtual uint8_t GetData(uint8_t idx) const = 0;
+  virtual uint8_t GetState() const = 0;
+  virtual uint8_t GetGdbPort() const = 0;
+  virtual uint64_t GetCycle() const = 0;
+  virtual uint16_t GetStackPointer() const = 0;
+  virtual uint16_t GetBssSectionSize() const = 0;
+  virtual uint16_t GetDataSectionSize() const = 0;
+  virtual uint16_t GetRamSize() const = 0;
 };
 } // namespace simulator
 } // namespace threeboard

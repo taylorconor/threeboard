@@ -1,5 +1,6 @@
 #include "logging.h"
 
+#include <stdarg.h>
 #include <stdio.h>
 
 #include "src/util/util.h"
@@ -26,8 +27,6 @@ void Logging::Init(native::Native *native) { native_ = native; }
 void Logging::Log(const char *fmt, ...) {
   va_list va;
   va_start(va, fmt);
-  // TODO: this buffer is 10% of our RAM. is there a way of printf-ing directly
-  // into UDR1?
   char buffer[256];
   vsnprintf(buffer, sizeof(buffer), fmt, va);
   for (int i = 0; buffer[i] != 0; ++i) {

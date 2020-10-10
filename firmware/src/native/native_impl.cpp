@@ -5,17 +5,19 @@
 #include <avr/sleep.h>
 #include <stdlib.h>
 
+#include "src/logging.h"
 #include "src/native/mcu.h"
 
 int __cxa_guard_acquire(__guard *g) { return !*(char *)(g); }
 void __cxa_guard_release(__guard *g) { *(char *)g = 1; }
 void __cxa_guard_abort(__guard *) {}
 
-// The delete operator needs to be implemented, since even generating code for
-// the virtual destructor of Native requires linking against a delete operator.
-// This isn't a problem for the Native class because it's a singleton, so in
-// practice it has no effect.
-void operator delete(void *ptr, unsigned int size) { free(ptr); }
+// The delete operator needs to be implemented, since generating code for the
+// virtual destructor requires a deleting destructor to be defined.
+void operator delete(void *ptr, unsigned int size) {
+  LOG("Unexpected call to deleting destructor. Quitting.");
+  exit(0);
+}
 
 namespace threeboard {
 namespace native {

@@ -65,7 +65,6 @@ void KeyController::PollKeyState() {
   // keypress event should be registered.
   if ((key_mask_ >> 3) == 0 && key_mask_ > 0) {
     keypress_handler_->HandleKeypress((Keypress)(key_mask_ & 7));
-    Logging::Log("Issuing keypress for mask: %d", key_mask_);
     key_mask_ = 0;
   }
 }

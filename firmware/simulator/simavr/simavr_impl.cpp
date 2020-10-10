@@ -13,8 +13,8 @@ namespace simulator {
 namespace {
 
 // C-style trampoline function to bounce the avr_irq_register_notify callback to
-// the provided callback type defined in T, which is assumed to have been cast
-// to void* and provided in param.
+// an instance of the provided callback type defined in T, which is assumed to
+// have been cast to void* and provided in param.
 template <typename T>
 void CallbackTrampoline(avr_irq_t *irq, uint32_t value, void *param) {
   auto *callback = (T *)param;
@@ -41,11 +41,17 @@ std::unique_ptr<Simavr> SimavrImpl::Create(const std::string &firmware_file) {
   avr_init(avr);
   avr_load_firmware(avr, &f);
   auto avr_ptr = std::unique_ptr<avr_t>(avr);
-  auto *raw_ptr = new SimavrImpl(std::move(avr_ptr));
+  std::cout << "bsssize = " << f.bsssize << ", datasize = " << f.datasize
+            << ", eesize = " << f.eesize << ", fusesize = " << f.fusesize
+            << ", flashsize = " << f.flashsize << ", ioend = " << avr_ptr->ioend
+            << std::endl;
+  auto *raw_ptr = new SimavrImpl(std::move(avr_ptr), f.bsssize, f.datasize);
   return std::unique_ptr<SimavrImpl>(raw_ptr);
 }
 
-SimavrImpl::SimavrImpl(std::unique_ptr<avr_t> avr) : avr_(std::move(avr)) {}
+SimavrImpl::SimavrImpl(std::unique_ptr<avr_t> avr, uint16_t bss_size,
+                       uint16_t data_size)
+    : avr_(std::move(avr)), bss_size_(bss_size), data_size_(data_size) {}
 
 void SimavrImpl::Run() { avr_run(avr_.get()); }
 
@@ -77,15 +83,25 @@ void SimavrImpl::SetData(uint8_t idx, uint8_t val) { avr_->data[idx] = val; }
 
 void SimavrImpl::SetState(uint8_t val) { avr_->state = val; }
 
-uint8_t SimavrImpl::GetGdbPort() { return avr_->gdb_port; }
+uint8_t SimavrImpl::GetGdbPort() const { return avr_->gdb_port; }
 
 void SimavrImpl::SetGdbPort(uint8_t val) { avr_->gdb_port = val; }
 
-uint8_t SimavrImpl::GetData(uint8_t idx) { return avr_->data[idx]; };
+uint8_t SimavrImpl::GetData(uint8_t idx) const { return avr_->data[idx]; };
 
-uint8_t SimavrImpl::GetState() { return avr_->state; }
+uint8_t SimavrImpl::GetState() const { return avr_->state; }
 
-uint64_t SimavrImpl::GetCycle() { return avr_->cycle; }
+uint64_t SimavrImpl::GetCycle() const { return avr_->cycle; }
+
+uint16_t SimavrImpl::GetStackPointer() const {
+  return avr_->data[R_SPL] | (avr_->data[R_SPH] << 8);
+}
+
+uint16_t SimavrImpl::GetBssSectionSize() const { return bss_size_; }
+
+uint16_t SimavrImpl::GetDataSectionSize() const { return data_size_; }
+
+uint16_t SimavrImpl::GetRamSize() const { return avr_->ramend; }
 
 } // namespace simulator
 } // namespace threeboard

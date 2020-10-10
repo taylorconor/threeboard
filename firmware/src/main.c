@@ -20,6 +20,15 @@ AVR_MCU(F_CPU, MCU_NAME);
 // (name and frequency) defined by AVR_MCU above. This macro is unfortunately
 // only available in C.
 int main() {
+  // Forcibly disable all dynamic memory allocation my restricting malloc's heap
+  // space size to 0. Everything in the threeboard is statically allocated,
+  // split between .data (initialised static variables), .bss (uninitialised
+  // static variables), and the remainder dedicated to the stack.
+  extern void *__malloc_heap_start;
+  extern void *__malloc_heap_end;
+  __malloc_heap_end = 0;
+  __malloc_heap_start = 0;
+
   // Call into an `extern "C"` function in C++ to run the threeboard firmware.
   RunThreeboard();
   return 0;

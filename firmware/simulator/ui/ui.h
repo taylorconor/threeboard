@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <mutex>
 #include <thread>
 #include <unordered_map>
 #include <unordered_set>
@@ -46,7 +47,10 @@ private:
   void UpdateKeyState();
   void RenderLoop();
   std::string GetClockSpeedString();
+  std::string GetSramUsageString();
+
   void UpdateCpuStateBreakdownList();
+  void UpdateSramUsageBreakdownList();
 
   void DrawLeds();
   void DrawKeys();
@@ -61,6 +65,11 @@ private:
   // The pad (a special case of a window) used to display the log file.
   WINDOW *log_pad_;
 
+  // Mutex to avoid text output conflicts so we don't have to depend on the
+  // pthread-enabled ncurses library build, which may not be available on all
+  // platforms.
+  std::mutex output_mutex_;
+
   // Keep track of the simulator cycle count from the previous render pass so we
   // can calculate CPU frequency.
   uint64_t prev_sim_cycle_ = 0;
@@ -69,19 +78,21 @@ private:
   // their values don't update so fast they flicker and become unreadable.
   uint8_t cycles_since_memo_update_ = 0;
   std::string freq_str_memo_ = "Loading...";
-  std::vector<std::pair<std::string, bool>> state_str_memo_ = {
-      {"Loading...", false}};
+  std::string sram_str_memo_ = "Loading...";
+  std::vector<std::pair<std::string, bool>> state_str_memo_;
+  std::vector<std::pair<std::string, uint16_t>> sram_usage_breakdown_memo_;
 
   std::unordered_map<uint8_t, uint64_t> cpu_mode_distribution_;
   std::unordered_set<int> cpu_states_since_last_flush_;
 
+  std::unique_ptr<std::thread> render_thread_;
+  std::atomic<bool> is_running_;
+  std::string log_file_;
+  uint64_t current_frame_ = 0;
+
   uint8_t key_a_ = 0;
   uint8_t key_s_ = 0;
   uint8_t key_d_ = 0;
-
-  std::atomic<bool> is_running_;
-  uint64_t current_frame_ = 0;
-
   uint8_t r_ = 0;
   uint8_t g_ = 0;
   uint8_t b_ = 0;
@@ -90,8 +101,6 @@ private:
   uint8_t status_ = 0;
   uint8_t bank0_[8] = {};
   uint8_t bank1_[8] = {};
-  std::unique_ptr<std::thread> render_thread_;
-  std::string log_file_;
 };
 } // namespace simulator
 } // namespace threeboard

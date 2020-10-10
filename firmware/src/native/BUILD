@@ -39,6 +39,7 @@ avr_pure_library(
     deps = [
         ":mcu",
         ":native",
+        "//src:logging",
         "//src/delegates:timer_interrupt_handler_delegate",
     ],
 )

@@ -46,6 +46,27 @@ uint64_t Firmware::GetCpuCycleCount() const { return simavr_->GetCycle(); }
 
 bool Firmware::IsGdbEnabled() const { return simavr_->GetGdbPort(); }
 
+uint16_t Firmware::GetDataSectionSize() const {
+  return simavr_->GetDataSectionSize();
+}
+
+uint16_t Firmware::GetBssSectionSize() const {
+  return simavr_->GetBssSectionSize();
+}
+
+uint16_t Firmware::GetStackSize() const {
+  return simavr_->GetRamSize() - simavr_->GetStackPointer();
+}
+
+uint16_t Firmware::GetSramUsage() const {
+  // Memory is laid out as follows in the atmega32u4:
+  // |- ioports -| |- .data -|- .bss -|- stack >> -----|
+  // |-- 255 B --| |-------------- 2.5 K --------------|
+  // |--------------- ramsize = 28xx B ----------------|
+  double usage = GetDataSectionSize() + GetBssSectionSize() + GetStackSize();
+  return (usage / simavr_->GetRamSize()) * 100;
+}
+
 void Firmware::EnableGdb(uint16_t port) const {
   simavr_->SetGdbPort(port);
   simavr_->SetState(STOPPED);
