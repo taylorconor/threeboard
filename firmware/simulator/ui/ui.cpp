@@ -28,7 +28,7 @@ constexpr uint8_t kBrightRed = 4;
 
 void printwln(const std::string &str) { printw((str + '\n').c_str()); }
 
-void InitialiseColours() {
+void InitialiseColors() {
   start_color();
   init_pair(kWhite, COLOR_WHITE, COLOR_BLACK);
   init_color(16, 500, 500, 500);
@@ -67,18 +67,18 @@ void DrawBorder() {
 
 // Draw a single LED in the provided state under the current cursor;
 void DrawLed(uint8_t &enabled, const std::string &extra) {
-  int colour = enabled ? COLOR_PAIR(kBrightRed) : COLOR_PAIR(kDarkGrey);
-  attron(colour);
+  int color = enabled ? COLOR_PAIR(kBrightRed) : COLOR_PAIR(kDarkGrey);
+  attron(color);
   printw(("●" + extra).c_str());
-  attroff(colour);
+  attroff(color);
   if (enabled < kLedPermanence && enabled > 0) {
     enabled--;
   }
 }
 
 void DrawKey(int x_offset, bool pressed, char letter) {
-  int colour = pressed ? COLOR_PAIR(kMedGrey) : COLOR_PAIR(kWhite);
-  attron(colour);
+  int color = pressed ? COLOR_PAIR(kMedGrey) : COLOR_PAIR(kWhite);
+  attron(color);
   if (pressed) {
     move(kRootY + 9, x_offset + 2);
     printw(S(4, '_').c_str());
@@ -102,7 +102,7 @@ void DrawKey(int x_offset, bool pressed, char letter) {
     move(kRootY + 13, x_offset);
     printw("|/____\\|");
   }
-  attroff(colour);
+  attroff(color);
 }
 
 void SetLedState(uint8_t &led, bool enabled) {
@@ -156,8 +156,9 @@ UI::UI(SimulatorDelegate *sim_delegate,
        FirmwareStateDelegate *firmware_state_delegate,
        const std::string &log_file)
     : simulator_delegate_(sim_delegate),
-      firmware_state_delegate_(firmware_state_delegate), is_running_(false),
-      log_file_(log_file) {}
+      firmware_state_delegate_(firmware_state_delegate),
+      screen_output_mutex_(std::make_unique<std::recursive_mutex>()),
+      is_running_(false), log_file_(log_file) {}
 
 UI::~UI() {
   if (is_running_) {
@@ -179,7 +180,7 @@ void UI::StartAsyncRenderLoop() {
 
   // Initialise the main curses window.
   window_ = initscr();
-  InitialiseColours();
+  InitialiseColors();
   noecho();
   timeout(0);
   curs_set(0);
@@ -188,8 +189,10 @@ void UI::StartAsyncRenderLoop() {
   // displays the contents of the logs.
   int max_x, max_y;
   getmaxyx(window_, max_y, max_x);
-  output_pad_ = std::make_unique<Pad>(kLogBoxY - kOutputBoxY, max_x);
-  log_pad_ = std::make_unique<Pad>(max_y - kLogBoxY - 1, max_x);
+  output_pad_ = std::make_unique<Pad>(screen_output_mutex_.get(),
+                                      kLogBoxY - kOutputBoxY, max_x);
+  log_pad_ = std::make_unique<Pad>(screen_output_mutex_.get(),
+                                   max_y - kLogBoxY - 1, max_x);
 
   is_running_ = true;
   render_thread_ = std::make_unique<std::thread>(&UI::RenderLoop, this);
@@ -208,17 +211,12 @@ void UI::ClearLedState() {
   }
 }
 
-void UI::DisplayKeyboardCharacter(char c) {
-  std::lock_guard<std::mutex> lock(screen_output_mutex_);
-  output_pad_->Write(c);
-}
+void UI::DisplayKeyboardCharacter(char c) { output_pad_->Write(c); }
 
 void UI::DisplayLogLine(uint64_t cycle, const std::string &log_line) {
   std::string cycle_str = std::to_string(cycle);
   std::string log =
       cycle_str + S(16 - cycle_str.length(), ' ') + log_line + "\n";
-
-  std::lock_guard<std::mutex> lock(screen_output_mutex_);
   log_pad_->Write(log);
 }
 
@@ -289,7 +287,7 @@ void UI::UpdateKeyState() {
 void UI::RenderLoop() {
   while (is_running_) {
     {
-      std::lock_guard<std::mutex> lock(screen_output_mutex_);
+      std::lock_guard<std::recursive_mutex> lock(*screen_output_mutex_);
       current_frame_++;
 
       // Trigger any applicable keypresses from the user into the firmware.
@@ -381,10 +379,10 @@ void UI::DrawStatusText() {
   }
   for (const auto &[text, is_active] : state_str_memo_) {
     move(kRootY + row_offset++, col_offset);
-    int colour = is_active ? COLOR_PAIR(kWhite) : COLOR_PAIR(kMedGrey);
-    attron(colour);
+    int color = is_active ? COLOR_PAIR(kWhite) : COLOR_PAIR(kMedGrey);
+    attron(color);
     printw("  %s", text.c_str());
-    attroff(colour);
+    attroff(color);
   }
 
   // gdb status and port display.
@@ -396,7 +394,7 @@ void UI::DrawStatusText() {
   }
 
   // USB attach status monitor.
-  move(kRootY + row_offset++, col_offset);
+  move(kRootY + row_offset, col_offset);
   printw("usb: %s",
          (simulator_delegate_->IsUsbAttached() ? "attached" : "detached"));
 
@@ -406,33 +404,17 @@ void UI::DrawStatusText() {
 }
 
 void UI::DrawOutputBox() {
-  move(kOutputBoxY, kRootX);
-  auto color = COLOR_PAIR(kMedGrey);
-  attron(color);
-  std::string title = "- keyboard output ";
-  printw(title.c_str());
-
   int window_max_x, window_max_y;
   getmaxyx(window_, window_max_y, window_max_x);
-  printw(S(window_max_x - title.length(), '-').c_str());
-  attroff(color);
-
-  output_pad_->Refresh(kOutputBoxY + 1, 0, kLogBoxY - 1, window_max_x - 1);
+  output_pad_->Refresh("keyboard output", kMedGrey, kOutputBoxY + 1, 0,
+                       kLogBoxY - 1, window_max_x - 1);
 }
 
 void UI::DrawLogBox() {
-  move(kLogBoxY, kRootX);
-  auto color = COLOR_PAIR(kMedGrey);
-  attron(color);
-  std::string filename_indicator = "- log file: " + log_file_ + " ";
-  printw(filename_indicator.c_str());
-
   int window_max_x, window_max_y;
   getmaxyx(window_, window_max_y, window_max_x);
-  printw(S(window_max_x - filename_indicator.length(), '-').c_str());
-  attroff(color);
-
-  log_pad_->Refresh(kLogBoxY + 1, 0, window_max_y, window_max_x - 1);
+  log_pad_->Refresh("log file: " + log_file_, kMedGrey, kLogBoxY + 1, 0,
+                    window_max_y - 1, window_max_x - 1);
 }
 
 std::string UI::GetClockSpeedString() {

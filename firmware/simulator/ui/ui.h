@@ -71,7 +71,7 @@ private:
   // Mutex to avoid text output conflicts so we don't have to depend on the
   // pthread-enabled ncurses library build, which may not be available on all
   // platforms.
-  std::mutex screen_output_mutex_;
+  std::unique_ptr<std::recursive_mutex> screen_output_mutex_;
 
   // Keep track of the simulator cycle count from the previous render pass so we
   // can calculate CPU frequency.
