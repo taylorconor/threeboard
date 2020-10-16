@@ -1,5 +1,6 @@
 #include "i2c.h"
 
+#include "src/logging.h"
 #include <avr/io.h>
 
 namespace threeboard {
@@ -8,9 +9,6 @@ namespace {
 
 constexpr uint8_t kControlByteRead = 0b10100001;
 constexpr uint8_t kControlByteWrite = 0b10100000;
-
-#define ENABLE_ERR() ((PORTF |= 1 << PF6) && (PORTF &= ~(1 << PF7)))
-#define ENABLE_STATUS() ((PORTF |= 1 << PF7) && (PORTF &= ~(1 << PF6)))
 
 void SendStart() {
   TWCR = ((1 << TWINT) | (1 << TWSTA) | (1 << TWEN));
@@ -78,7 +76,6 @@ void I2C::SequentialRead(const uint16_t &address, uint8_t *data,
   }
   /*  *(data + i) = ReadByte(false);
       SendStop();*/
-  ENABLE_STATUS();
 }
 } // namespace native
 } // namespace threeboard

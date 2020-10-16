@@ -27,10 +27,9 @@ cc_library(
     hdrs = ["usb_host.h"],
     deps = [
         "//simulator:simulator_delegate",
-        "//simulator/simavr",
+        "//simulator/simavr:simavr",
         "//src/usb/shared:constants",
         "//src/usb/shared:protocol",
-        "@third_party//:simavr",
     ],
 )
 
@@ -46,8 +45,7 @@ cc_library(
     data = [":threeboard_sim_binary"],
     deps = [
         ":firmware_state_delegate",
-        "//simulator/simavr",
-        "@third_party//:simavr",
+        "//simulator/simavr:simavr",
     ],
 )
 
@@ -57,6 +55,6 @@ cc_library(
     hdrs = ["uart.h"],
     deps = [
         "//simulator:simulator_delegate",
-        "//simulator/simavr",
+        "//simulator/simavr:simavr",
     ],
 )

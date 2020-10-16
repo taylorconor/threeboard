@@ -15,6 +15,5 @@ cc_library(
     deps = [
         ":sim_core_declare",
         "//src/native:constants",
-        "@third_party//:simavr",
     ],
 )

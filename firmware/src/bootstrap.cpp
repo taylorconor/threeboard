@@ -29,8 +29,10 @@ void RunThreeboard() {
   LedController led_controller(native_impl);
   KeyController key_controller(native_impl, &event_buffer);
 
-  // native::I2C i2c;
-  // i2c.Init();
+  native::I2C i2c;
+  LOG("i2c created");
+  i2c.Init();
+  LOG("i2c initialised");
 
   // The threeboard object composes in all of these controllers, handlers and
   // implementation objects, and synchronises them in an infinite runloop.

@@ -3,18 +3,20 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
 
-MACOS_PREFIX="local/"
-LINUX_PREFIX=""
+MACOS_PREFIX = "local/"
 
 cc_library(
     name = "libelf",
     srcs = select({
         "@bazel_tools//src/conditions:darwin": [MACOS_PREFIX + "lib/libelf.a"],
-	"//conditions:default": [LINUX_PREFIX + "lib/x86_64-linux-gnu/libelf.a"],
+        "//conditions:default": ["lib/x86_64-linux-gnu/libelf.a"],
     }),
     linkopts = select({
         "@bazel_tools//src/conditions:darwin": [],
-	"//conditions:default": ["-lz", "-pthread"],
+        "//conditions:default": [
+            "-lz",
+            "-pthread",
+        ],
     }),
     visibility = ["//visibility:private"],
     alwayslink = 1,
@@ -23,9 +25,9 @@ cc_library(
 # simavr is hardcoded to install in /usr/local/* regardless of target OS.
 cc_library(
     name = "simavr",
+    srcs = [MACOS_PREFIX + "lib/libsimavr.a"],
     hdrs = glob([MACOS_PREFIX + "include/simavr/**"]),
     strip_include_prefix = MACOS_PREFIX + "include",
-    srcs = [MACOS_PREFIX + "lib/libsimavr.a"],
     deps = [":libelf"],
     alwayslink = 1,
 )

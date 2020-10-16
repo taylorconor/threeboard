@@ -16,7 +16,7 @@ cc_library(
         "//simulator/components:firmware_lib",
         "//simulator/components:uart",
         "//simulator/components:usb_host",
-        "//simulator/simavr",
+        "//simulator/simavr:simavr",
         "//simulator/ui",
     ],
 )

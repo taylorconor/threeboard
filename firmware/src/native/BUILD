@@ -48,5 +48,8 @@ avr_pure_library(
     name = "i2c",
     srcs = ["i2c.cpp"],
     hdrs = ["i2c.h"],
-    deps = [":native"],
+    deps = [
+        ":native",
+        "//src:logging",
+    ],
 )
