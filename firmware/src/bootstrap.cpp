@@ -33,6 +33,13 @@ void RunThreeboard() {
   LOG("i2c created");
   i2c.Init();
   LOG("i2c initialised");
+  uint8_t data[] = {1, 2, 3, 4, 5};
+  i2c.Write(0, data, 5);
+  LOG("Finished i2c write");
+  uint8_t read_data[] = {0, 0, 0, 0, 0};
+  i2c.SequentialRead(0, read_data, 5);
+  LOG("Finished i2c read: {%d,%d,%d,%d,%d}", read_data[0], read_data[1],
+      read_data[2], read_data[3], read_data[4]);
 
   // The threeboard object composes in all of these controllers, handlers and
   // implementation objects, and synchronises them in an infinite runloop.

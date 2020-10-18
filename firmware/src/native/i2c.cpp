@@ -74,8 +74,8 @@ void I2C::SequentialRead(const uint16_t &address, uint8_t *data,
   for (; i < length - 1; i++) {
     *(data + i) = ReadByte(true);
   }
-  /*  *(data + i) = ReadByte(false);
-      SendStop();*/
+  *(data + i) = ReadByte(false);
+  SendStop();
 }
 } // namespace native
 } // namespace threeboard

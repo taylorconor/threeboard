@@ -4,6 +4,7 @@ cc_library(
     name = "simavr",
     hdrs = ["simavr.h"],
     deps = [
+        "//simulator:lifetime",
         "//simulator/simavr/internal:sim_32u4",
     ],
 )

@@ -7,6 +7,7 @@
 #include "simavr/avr_usb.h"
 #include "simavr/sim_elf.h"
 #include "simavr/sim_gdb.h"
+#include "simulator/lifetime.h"
 
 namespace threeboard {
 namespace simulator {
@@ -63,16 +64,27 @@ int SimavrImpl::InvokeIoctl(uint32_t ioctl, void *param) {
   return avr_ioctl(avr_.get(), ioctl, param);
 }
 
-void SimavrImpl::RegisterUsbAttachCallback(UsbAttachCallback *callback) {
-  avr_irq_register_notify(
-      avr_io_getirq(avr_.get(), AVR_IOCTL_USB_GETIRQ(), USB_IRQ_ATTACH),
-      &CallbackTrampoline<UsbAttachCallback>, (void *)callback);
+std::unique_ptr<Lifetime>
+SimavrImpl::RegisterUsbAttachCallback(UsbAttachCallback *callback) {
+  auto *irq = avr_io_getirq(avr_.get(), AVR_IOCTL_USB_GETIRQ(), USB_IRQ_ATTACH);
+  avr_irq_register_notify(irq, &CallbackTrampoline<UsbAttachCallback>,
+                          (void *)callback);
+  return std::make_unique<Lifetime>([irq, callback]() {
+    avr_irq_unregister_notify(irq, &CallbackTrampoline<UsbAttachCallback>,
+                              (void *)callback);
+  });
 }
 
-void SimavrImpl::RegisterUartOutputCallback(UartOutputCallback *callback) {
-  avr_irq_register_notify(
-      avr_io_getirq(avr_.get(), AVR_IOCTL_UART_GETIRQ('1'), UART_IRQ_OUTPUT),
-      &CallbackTrampoline<UartOutputCallback>, (void *)callback);
+std::unique_ptr<Lifetime>
+SimavrImpl::RegisterUartOutputCallback(UartOutputCallback *callback) {
+  auto *irq =
+      avr_io_getirq(avr_.get(), AVR_IOCTL_UART_GETIRQ('1'), UART_IRQ_OUTPUT);
+  avr_irq_register_notify(irq, &CallbackTrampoline<UartOutputCallback>,
+                          (void *)callback);
+  return std::make_unique<Lifetime>([irq, callback]() {
+    avr_irq_unregister_notify(irq, &CallbackTrampoline<UartOutputCallback>,
+                              (void *)callback);
+  });
 }
 
 void SimavrImpl::SetData(uint8_t idx, uint8_t val) { avr_->data[idx] = val; }

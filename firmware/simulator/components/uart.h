@@ -20,6 +20,7 @@ private:
 
   SimulatorDelegate *simulator_delegate_;
   std::unique_ptr<UartOutputCallback> input_callback_;
+  std::unique_ptr<Lifetime> input_lifetime_;
   std::string log_buffer_;
 };
 } // namespace simulator

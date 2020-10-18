@@ -14,13 +14,12 @@ using usb::RequestType;
 UsbHost::UsbHost(Simavr *simavr, SimulatorDelegate *simulator_delegate)
     : simavr_(simavr), simulator_delegate_(simulator_delegate),
       is_running_(false), is_attached_(false) {
-  // avr_->log = 4;
-
   // Register a callback on USB attach, so we'll know when we try to start the
   // host if the device is ready or not.
   usb_attach_callback_ = std::make_unique<UsbAttachCallback>(
       std::bind(&UsbHost::InternalUsbAttachCallback, this, _1));
-  simavr_->RegisterUsbAttachCallback(usb_attach_callback_.get());
+  usb_attach_lifetime_ =
+      simavr_->RegisterUsbAttachCallback(usb_attach_callback_.get());
 }
 
 UsbHost::~UsbHost() {

@@ -33,6 +33,7 @@ private:
   std::atomic<bool> is_attached_;
   std::unique_ptr<std::thread> device_control_thread_;
   std::unique_ptr<UsbAttachCallback> usb_attach_callback_;
+  std::unique_ptr<Lifetime> usb_attach_lifetime_;
 };
 } // namespace simulator
 } // namespace threeboard

@@ -17,7 +17,7 @@ Uart::Uart(Simavr *simavr, SimulatorDelegate *simulator_delegate)
 
   input_callback_ = std::make_unique<UartOutputCallback>(
       std::bind(&Uart::LogCharacterInputCallback, this, _1));
-  simavr->RegisterUartOutputCallback(input_callback_.get());
+  input_lifetime_ = simavr->RegisterUartOutputCallback(input_callback_.get());
 }
 
 void Uart::LogCharacterInputCallback(uint8_t value) {

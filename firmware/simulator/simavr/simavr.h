@@ -1,8 +1,10 @@
 #pragma once
 
-#include "simulator/simavr/internal/iom32u4.h"
 #include <functional>
 #include <stdint.h>
+
+#include "simulator/lifetime.h"
+#include "simulator/simavr/internal/iom32u4.h"
 
 namespace threeboard {
 namespace simulator {
@@ -62,8 +64,11 @@ public:
   virtual void Terminate() = 0;
 
   virtual int InvokeIoctl(uint32_t ioctl, void *param) = 0;
-  virtual void RegisterUsbAttachCallback(UsbAttachCallback *callback) = 0;
-  virtual void RegisterUartOutputCallback(UartOutputCallback *callback) = 0;
+
+  virtual std::unique_ptr<Lifetime>
+  RegisterUsbAttachCallback(UsbAttachCallback *callback) = 0;
+  virtual std::unique_ptr<Lifetime>
+  RegisterUartOutputCallback(UartOutputCallback *callback) = 0;
 
   virtual void SetData(uint8_t idx, uint8_t val) = 0;
   virtual void SetState(uint8_t val) = 0;
