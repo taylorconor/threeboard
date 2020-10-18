@@ -13,12 +13,21 @@ cc_library(
 )
 
 cc_library(
+    name = "simulator_delegate_mock",
+    hdrs = ["simulator_delegate_mock.h"],
+    deps = [
+        ":simulator_delegate",
+        "@gtest",
+    ]
+)
+
+cc_library(
     name = "simulator_lib",
     srcs = ["simulator.cpp"],
     hdrs = ["simulator.h"],
     deps = [
         ":simulator_delegate",
-        "//simulator/components:firmware_lib",
+        "//simulator/components:firmware",
         "//simulator/components:uart",
         "//simulator/components:usb_host",
         "//simulator/simavr:simavr",
