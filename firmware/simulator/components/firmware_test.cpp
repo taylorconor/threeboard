@@ -5,6 +5,7 @@
 
 namespace threeboard {
 namespace simulator {
+namespace {
 
 using ::testing::_;
 using ::testing::Return;
@@ -21,5 +22,6 @@ public:
 };
 
 TEST_F(FirmwareTest, FakeTest) {}
+} // namespace
 } // namespace simulator
 } // namespace threeboard

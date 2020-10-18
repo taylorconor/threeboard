@@ -69,6 +69,17 @@ avr_library(
     ],
 )
 
+cc_test(
+    name = "logging_test",
+    srcs = ["logging_test.cpp"],
+    deps = [
+        ":logging",
+        "//src/native:native_mock",
+        "@gtest",
+        "@gtest//:gtest_main",
+    ],
+)
+
 avr_library(
     name = "threeboard_lib",
     srcs = ["threeboard.cpp"],
