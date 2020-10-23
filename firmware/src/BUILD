@@ -55,7 +55,6 @@ avr_library(
     hdrs = ["event_buffer.h"],
     deps = [
         "//src/delegates:keypress_handler_delegate",
-        "//src/native",
     ],
 )
 

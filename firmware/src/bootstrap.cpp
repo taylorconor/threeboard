@@ -24,7 +24,7 @@ void RunThreeboard() {
 
   // Set up the remaining objects to inject into the Threeboard instance. These
   // could be constructed within the instance, but injecting them makes testing
-  // easier since we can inject mocks for tets.
+  // easier since we can inject mocks for tests.
   EventBuffer event_buffer;
   LedController led_controller(native_impl);
   KeyController key_controller(native_impl, &event_buffer);

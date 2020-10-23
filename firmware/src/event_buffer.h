@@ -1,10 +1,11 @@
 #pragma once
 
 #include "src/delegates/keypress_handler_delegate.h"
-#include "src/native/native.h"
 
 namespace threeboard {
 
+// A very basic delegate implementation that allows state to be passed from the
+// key controller to the main keypress polling runloop.
 class EventBuffer : public KeypressHandlerDelegate {
 public:
   ~EventBuffer() override = default;
