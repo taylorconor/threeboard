@@ -13,8 +13,8 @@ namespace {
 
 constexpr uint8_t kRootX = 0;
 constexpr uint8_t kRootY = 0;
-constexpr uint8_t kOutputBoxY = kRootY + 17;
-constexpr uint8_t kLogBoxY = kRootY + 21;
+constexpr uint8_t kOutputBoxY = kRootY + 15;
+constexpr uint8_t kLogBoxY = kRootY + 19;
 constexpr uint8_t kLogStatusColOffset = 47;
 
 constexpr uint8_t kKeyHoldTime = 20;

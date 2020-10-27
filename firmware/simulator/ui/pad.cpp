@@ -31,7 +31,7 @@ void Pad::Refresh(const std::string &title, int title_color, int start_row,
   auto color = COLOR_PAIR(title_color);
   attron(color);
   printw("- %s %s", title.c_str(),
-         S(end_col - title.length() - 3, '-').c_str());
+         S(end_col - title.length() - 2, '-').c_str());
   attroff(color);
 
   prefresh(pad_, 0, 0, start_row + 1, start_col, end_row, end_col);
