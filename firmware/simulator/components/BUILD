@@ -50,6 +50,17 @@ cc_test(
 )
 
 cc_library(
+    name = "i2c_eeprom",
+    srcs = ["i2c_eeprom.cpp"],
+    hdrs = ["i2c_eeprom.h"],
+    deps = [
+        "//simulator:simulator_delegate",
+        "//simulator/simavr",
+        "//src:logging",
+    ],
+)
+
+cc_library(
     name = "uart",
     srcs = ["uart.cpp"],
     hdrs = ["uart.h"],

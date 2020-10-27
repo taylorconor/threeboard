@@ -6,6 +6,7 @@
 #include <mutex>
 
 #include "simulator/components/firmware.h"
+#include "simulator/components/i2c_eeprom.h"
 #include "simulator/components/uart.h"
 #include "simulator/components/usb_host.h"
 #include "simulator/simavr/simavr.h"
@@ -31,9 +32,10 @@ private:
 
   Simavr *simavr_;
   std::atomic<bool> is_running_;
-  std::unique_ptr<Firmware> firmware_;
-  std::unique_ptr<UsbHost> usb_host_;
-  std::unique_ptr<Uart> uart_;
+  Firmware firmware_;
+  UsbHost usb_host_;
+  Uart uart_;
+  I2cEeprom eeprom1_;
   std::unique_ptr<UI> ui_;
   std::mutex mutex_;
   std::condition_variable sim_run_var_;

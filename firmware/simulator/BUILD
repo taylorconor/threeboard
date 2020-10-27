@@ -18,7 +18,7 @@ cc_library(
     deps = [
         ":simulator_delegate",
         "@gtest",
-    ]
+    ],
 )
 
 cc_library(
@@ -28,9 +28,10 @@ cc_library(
     deps = [
         ":simulator_delegate",
         "//simulator/components:firmware",
+        "//simulator/components:i2c_eeprom",
         "//simulator/components:uart",
         "//simulator/components:usb_host",
-        "//simulator/simavr:simavr",
+        "//simulator/simavr",
         "//simulator/ui",
     ],
 )

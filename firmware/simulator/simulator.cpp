@@ -17,9 +17,9 @@ bool IsEnabled(uint8_t reg, uint8_t pin) { return reg & (1 << pin); }
 } // namespace
 
 Simulator::Simulator(Simavr *simavr)
-    : simavr_(simavr), is_running_(false),
-      firmware_(std::make_unique<Firmware>(simavr_)),
-      uart_(std::make_unique<Uart>(simavr_, this)) {
+    : simavr_(simavr), is_running_(false), firmware_(simavr_),
+      uart_(simavr_, this), usb_host_(simavr_, this),
+      eeprom1_(simavr_, 524288, 0, 0xFE) {
   char log_file[L_tmpnam];
   if (std::tmpnam(log_file)) {
     log_file_path_ = std::string(log_file);
@@ -40,13 +40,12 @@ void Simulator::Run() {
     std::cout << "Attempted to run a running simulator instance!" << std::endl;
     exit(0);
   }
-  firmware_->Reset();
-  ui_ = std::make_unique<UI>(this, firmware_.get(), log_file_path_);
+  firmware_.Reset();
+  ui_ = std::make_unique<UI>(this, &firmware_, log_file_path_);
   ui_->StartAsyncRenderLoop();
 
-  usb_host_ = std::make_unique<UsbHost>(simavr_, this);
   is_running_ = true;
-  firmware_->RunAsync();
+  firmware_.RunAsync();
   std::unique_lock<std::mutex> lock(mutex_);
   while (is_running_) {
     sim_run_var_.wait(lock);
@@ -54,10 +53,10 @@ void Simulator::Run() {
 }
 
 void Simulator::PrepareRenderState() {
-  const uint8_t portb = firmware_->GetPortB();
-  const uint8_t portc = firmware_->GetPortC();
-  const uint8_t portd = firmware_->GetPortD();
-  const uint8_t portf = firmware_->GetPortF();
+  const uint8_t portb = firmware_.GetPortB();
+  const uint8_t portc = firmware_.GetPortC();
+  const uint8_t portd = firmware_.GetPortD();
+  const uint8_t portf = firmware_.GetPortF();
 
   // Clear the LED state before the next frame is calculated.
   ui_->ClearLedState();
@@ -117,23 +116,23 @@ void Simulator::HandlePhysicalKeypress(char key, bool state) {
     is_running_ = false;
     sim_run_var_.notify_all();
   } else if (key == 'g') {
-    if (firmware_->IsGdbEnabled()) {
-      firmware_->DisableGdb();
+    if (firmware_.IsGdbEnabled()) {
+      firmware_.DisableGdb();
     } else {
-      firmware_->EnableGdb(GetGdbPort());
+      firmware_.EnableGdb(GetGdbPort());
     }
   }
 
   // The key pins are all active low.
   else if (key == 'a') {
     // Switch 1 - maps to PB2.
-    firmware_->SetPinB(2, !state);
+    firmware_.SetPinB(2, !state);
   } else if (key == 's') {
     // Switch 2 - maps to PB3.
-    firmware_->SetPinB(3, !state);
+    firmware_.SetPinB(3, !state);
   } else if (key == 'd') {
     // Switch 3 - maps to PB1.
-    firmware_->SetPinB(1, !state);
+    firmware_.SetPinB(1, !state);
   }
 }
 
@@ -161,14 +160,14 @@ void Simulator::HandleVirtualKeypress(uint8_t mod_code, uint8_t key_code) {
 }
 
 void Simulator::HandleUartLogLine(const std::string &log_line) {
-  auto cycle = firmware_->GetCpuCycleCount();
+  auto cycle = firmware_.GetCpuCycleCount();
   log_stream_ << cycle << "\t" << log_line << std::endl;
   ui_->DisplayLogLine(cycle, log_line);
 }
 
 uint16_t Simulator::GetGdbPort() { return kGdbPort; }
 
-bool Simulator::IsUsbAttached() { return usb_host_->IsAttached(); }
+bool Simulator::IsUsbAttached() { return usb_host_.IsAttached(); }
 
 } // namespace simulator
 } // namespace threeboard

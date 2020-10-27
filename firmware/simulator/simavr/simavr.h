@@ -6,6 +6,11 @@
 #include "simulator/lifetime.h"
 #include "simulator/simavr/internal/iom32u4.h"
 
+// TODO: Remove asap!
+extern "C" {
+struct avr_t;
+}
+
 namespace threeboard {
 namespace simulator {
 
@@ -82,6 +87,9 @@ public:
   virtual uint16_t GetBssSectionSize() const = 0;
   virtual uint16_t GetDataSectionSize() const = 0;
   virtual uint16_t GetRamSize() const = 0;
+
+  // TODO: Remove asap!
+  virtual avr_t *GetAvr() = 0;
 };
 } // namespace simulator
 } // namespace threeboard

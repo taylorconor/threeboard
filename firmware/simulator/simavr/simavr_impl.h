@@ -4,7 +4,9 @@
 
 #include <memory>
 
-#include "simavr/sim_avr_types.h"
+extern "C" {
+struct avr_t;
+}
 
 namespace threeboard {
 namespace simulator {
@@ -43,6 +45,9 @@ public:
   uint16_t GetBssSectionSize() const override;
   uint16_t GetDataSectionSize() const override;
   uint16_t GetRamSize() const override;
+
+  // TODO: Remove asap!
+  avr_t *GetAvr() override { return avr_.get(); }
 
 private:
   SimavrImpl(std::unique_ptr<avr_t> avr, uint16_t bss_size, uint16_t data_size);
