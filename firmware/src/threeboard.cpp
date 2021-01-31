@@ -10,7 +10,7 @@ namespace threeboard {
 
 using LedState = LedController::LedState;
 
-const Threeboard::handler_function Threeboard::state_machine[4][2][1] = {
+const Threeboard::HandlerFunction Threeboard::state_machine[4][2][1] = {
     [Layer::DEFAULT] = {[State::INPUT] = {&Threeboard::HandleDefaultInput},
                         [State::FLUSH] = {&Threeboard::HandleDefaultFlush}},
     [Layer::R] = {[State::INPUT] = {&Threeboard::HandleDefaultInput},

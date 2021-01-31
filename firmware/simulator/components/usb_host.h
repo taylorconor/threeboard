@@ -14,7 +14,8 @@ namespace simulator {
 // A class which facilitates interaction with the simulated threeboard over USB
 // by acting as the USB host. It does the bare minimum to trick the threeboard
 // into thinking it's connected to an actual USB host, and provides methods to
-// interact with the simulated threeboard over USB.
+// interact with the simulated threeboard over USB. This host is in no way USB
+// conformant.
 class UsbHost {
 public:
   UsbHost(Simavr *simavr, SimulatorDelegate *simulator_delegate);

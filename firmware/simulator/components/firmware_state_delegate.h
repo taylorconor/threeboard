@@ -5,6 +5,7 @@
 namespace threeboard {
 namespace simulator {
 
+// A delegate interface for reading state about the firmware being simulated.
 class FirmwareStateDelegate {
 public:
   virtual int GetCpuState() const = 0;

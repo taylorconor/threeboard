@@ -13,7 +13,7 @@ void RunThreeboard() {
   // interrupt setup code, setting various pin port values). This is the only
   // place that NativeImpl is injected. To keep all other components testable,
   // they all use the Native interface.
-  auto native_impl = native::NativeImpl::Get();
+  auto *native_impl = native::NativeImpl::Get();
   Logging::Init(native_impl);
   LOG("Native layer initialised");
 
@@ -29,6 +29,8 @@ void RunThreeboard() {
   LedController led_controller(native_impl);
   KeyController key_controller(native_impl, &event_buffer);
 
+  // TODO: pass the i2c instance into the threeboard. All this code does is
+  // prove that read after write works.
   native::I2C i2c(native_impl);
   uint8_t data[] = {1, 2, 3, 4, 5};
   i2c.Write(0, 0, data, 5);
@@ -38,8 +40,8 @@ void RunThreeboard() {
   LOG("Finished i2c read: {%d,%d,%d,%d,%d}", read_data[0], read_data[1],
       read_data[2], read_data[3], read_data[4]);
 
-  // The threeboard object composes in all of these controllers, handlers and
-  // implementation objects, and synchronises them in an infinite runloop.
+  // The `threeboard` object is a high-level class responsible for coordinating
+  // all threeboard components composed into it.
   Threeboard threeboard(native_impl, &usb_impl, &event_buffer, &led_controller,
                         &key_controller);
 

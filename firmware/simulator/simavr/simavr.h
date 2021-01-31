@@ -54,6 +54,7 @@ struct UsbPacketBuffer {
 
 using UsbAttachCallback = std::function<void(uint32_t)>;
 using UartOutputCallback = std::function<void(uint8_t)>;
+using I2cMessageCallback = std::function<void(uint32_t)>;
 
 // A shim to collect the simavr API into one single interface to make all
 // classes that interact with simavr testable.
@@ -74,6 +75,10 @@ public:
   RegisterUsbAttachCallback(UsbAttachCallback *callback) = 0;
   virtual std::unique_ptr<Lifetime>
   RegisterUartOutputCallback(UartOutputCallback *callback) = 0;
+  virtual std::unique_ptr<Lifetime>
+  RegisterI2cMessageCallback(I2cMessageCallback *callback) = 0;
+
+  virtual void RaiseI2cIrq(uint8_t direction, uint32_t value) = 0;
 
   virtual void SetData(uint8_t idx, uint8_t val) = 0;
   virtual void SetState(uint8_t val) = 0;
@@ -87,9 +92,6 @@ public:
   virtual uint16_t GetBssSectionSize() const = 0;
   virtual uint16_t GetDataSectionSize() const = 0;
   virtual uint16_t GetRamSize() const = 0;
-
-  // TODO: Remove asap!
-  virtual avr_t *GetAvr() = 0;
 };
 } // namespace simulator
 } // namespace threeboard

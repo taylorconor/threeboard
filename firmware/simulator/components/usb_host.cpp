@@ -37,7 +37,6 @@ void UsbHost::DeviceControlLoop() {
 
   // Before properly beginning the device control loop, we need to issue a USB
   // reset to ensure that the threeboard and simavr are configured correctly.
-  // TODO: get AVR_IOCTL_USB_RESET_AND_SOFI into master!
   simavr_->InvokeIoctl(USB_RESET, nullptr);
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
 

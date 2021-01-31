@@ -5,7 +5,8 @@
 namespace threeboard {
 
 // A very basic delegate implementation that allows state to be passed from the
-// key controller to the main keypress polling runloop.
+// key controller to the main keypress polling run loop. Keeping this as a
+// separate class allows decoupling to avoid a dependency cycle.
 class EventBuffer : public KeypressHandlerDelegate {
 public:
   ~EventBuffer() override = default;
@@ -20,7 +21,7 @@ public:
   // for handling all keypresses and combos. It runs inside an ISR, so to keep
   // ISR executions as short as possible, it offloads the event to a buffer
   // variable (pending_keypress_) which is picked up in the main program's
-  // runloop.
+  // run loop.
   void HandleKeypress(const Keypress &) override;
 
 private:

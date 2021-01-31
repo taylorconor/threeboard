@@ -1,6 +1,7 @@
 #pragma once
 
 #include "simavr.h"
+#include "simavr/sim_irq.h"
 
 #include <memory>
 
@@ -32,6 +33,10 @@ public:
   RegisterUsbAttachCallback(UsbAttachCallback *callback) override;
   std::unique_ptr<Lifetime>
   RegisterUartOutputCallback(UartOutputCallback *callback) override;
+  std::unique_ptr<Lifetime>
+  RegisterI2cMessageCallback(I2cMessageCallback *callback) override;
+
+  void RaiseI2cIrq(uint8_t direction, uint32_t value) override;
 
   void SetData(uint8_t idx, uint8_t val) override;
   void SetState(uint8_t val) override;
@@ -46,15 +51,13 @@ public:
   uint16_t GetDataSectionSize() const override;
   uint16_t GetRamSize() const override;
 
-  // TODO: Remove asap!
-  avr_t *GetAvr() override { return avr_.get(); }
-
 private:
   SimavrImpl(std::unique_ptr<avr_t> avr, uint16_t bss_size, uint16_t data_size);
 
   std::unique_ptr<avr_t> avr_;
   uint16_t bss_size_;
   uint16_t data_size_;
+  avr_irq_t *i2c_irq_;
 };
 } // namespace simulator
 } // namespace threeboard

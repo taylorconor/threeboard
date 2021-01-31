@@ -23,6 +23,10 @@ public:
               (UsbAttachCallback *), (override));
   MOCK_METHOD(std::unique_ptr<Lifetime>, RegisterUartOutputCallback,
               (UartOutputCallback *), (override));
+  MOCK_METHOD(std::unique_ptr<Lifetime>, RegisterI2cMessageCallback,
+              (I2cMessageCallback *), (override));
+
+  MOCK_METHOD(void, RaiseI2cIrq, (uint8_t, uint32_t), (override));
 
   MOCK_METHOD(void, SetData, (uint8_t, uint8_t), (override));
   MOCK_METHOD(void, SetState, (uint8_t), (override));

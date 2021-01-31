@@ -13,17 +13,18 @@
 AVR_MCU(F_CPU, MCU_NAME);
 #endif
 
-// This main function is so simple because the only purpose of main.c is to call
-// into C++. The reason we do this is to enable the raw ELF file produced by
-// building this main file to be testable in the simavr simulator. The simulator
-// relies on linking in a section to the ELF file describing the MCU settings
-// (name and frequency) defined by AVR_MCU above. This macro is unfortunately
-// only available in C.
+// This main function is just a C wrapper around the C++ `bootstrap.cpp`. The
+// reason we do this is to enable the raw ELF file produced by building this
+// main file to be testable in the simavr simulator. The simulator relies on
+// linking in a section to the ELF file describing the MCU settings (name and
+// frequency) defined by AVR_MCU above. This macro produces code that is not
+// syntactically compatible with C++.
 int main() {
-  // Forcibly disable all dynamic memory allocation my restricting malloc's heap
+  // Forcibly disable all dynamic memory allocation by restricting malloc's heap
   // space size to 0. Everything in the threeboard is statically allocated,
-  // split between .data (initialised static variables), .bss (uninitialised
-  // static variables), and the remainder dedicated to the stack.
+  // with the memory space split between .data (initialised static variables),
+  // .bss (uninitialised static variables), and the remainder dedicated to the
+  // stack.
   extern void *__malloc_heap_start;
   extern void *__malloc_heap_end;
   __malloc_heap_end = 0;

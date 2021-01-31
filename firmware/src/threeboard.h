@@ -7,7 +7,7 @@
 #include "src/usb/usb.h"
 
 // Manages the state of the keyboard and acts as a delegate to coordinate all of
-// the various interrupt-driven handlers.
+// the various timer interrupt driven handlers.
 namespace threeboard {
 class Threeboard : public TimerInterruptHandlerDelegate {
 public:
@@ -18,8 +18,9 @@ public:
   // Main application runloop.
   void Run();
 
-  // Implement the InterruptHandlerDelegate overrides. Timer1 is used to clock
-  // the LedController, and Timer2 is used to clock the KeyController.
+  // Implement the InterruptHandlerDelegate overrides. Timer1 is used to provide
+  // a clock signal to the LedController, and Timer2 is used to provide a clock
+  // signal to the KeyController.
   void HandleTimer1Interrupt() override;
   void HandleTimer3Interrupt() override;
 
@@ -42,7 +43,7 @@ private:
     FLUSH = 1,
   };
 
-  // The per-layer properties of the threeboard. These are akways common
+  // The per-layer properties of the threeboard. These are always common
   // properties for each layer (since each layer has access to the same LEDs
   // etc). It also stores the current state at each layer, which allows the
   // threeboard to restore the correct previous state when switching layers.
@@ -55,10 +56,11 @@ private:
   // The state machine maps a handler function to a specific state within a
   // layer. Handler functions are not generally state-specific, so they can be
   // reused.
-  typedef void (Threeboard::*handler_function)(const Keypress &);
-  static const handler_function state_machine[4][2][1];
+  typedef void (Threeboard::*HandlerFunction)(const Keypress &);
+  static const HandlerFunction state_machine[4][2][1];
 
   // All of the components composed into this class which we need to coordinate.
+  // None of these are owned.
   native::Native *native_;
   usb::Usb *usb_;
   EventBuffer *event_buffer_;

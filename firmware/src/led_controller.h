@@ -13,6 +13,7 @@ namespace threeboard {
 class LedController {
 public:
   // State of individual addressable LEDs.
+  // TODO: implement support for blinking LED states.
   enum class LedState {
     OFF = 0,
     ON = 1,
@@ -20,7 +21,7 @@ public:
     BLINK_FAST = 3,
   };
 
-  LedController(native::Native *native);
+  explicit LedController(native::Native *native);
 
   // Handles rendering of the next scan row. Called by the timer interrupt
   // handler every 2ms.

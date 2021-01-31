@@ -29,6 +29,7 @@ public:
   std::unique_ptr<Uart> uart_;
 };
 
+// TODO: write tests!
 TEST_F(UartTest, FakeTest) {}
 } // namespace
 } // namespace simulator

@@ -43,8 +43,14 @@ private:
   void RunDetached();
 
   Simavr *simavr_;
+
+  // This thread is used to offload the simavr run loop into its own thread.
   std::thread sim_thread_;
+
+  // True if simavr is running. This can be updated from multiple threads.
   std::atomic<bool> is_running_;
+
+  // True if we have been told to reset simavr on its next clock cycle.
   std::atomic<bool> should_reset_;
 };
 } // namespace simulator

@@ -20,12 +20,6 @@ constexpr bool was_pressed(const uint8_t state, const uint8_t offset) {
 
 } // namespace
 
-// TODO: This is a very naive implementation of a keyboard controller. It lacks:
-// - Debouncing (it assumes Cherry MX switches with 5ms debounce profile)
-// - Key repeat
-// - Event handling outside the ISR
-// - More intelligent key combo registration
-
 KeyController::KeyController(native::Native *native,
                              KeypressHandlerDelegate *keypress_handler)
     : native_(native), keypress_handler_(keypress_handler) {
@@ -67,11 +61,5 @@ void KeyController::PollKeyState() {
     keypress_handler_->HandleKeypress((Keypress)(key_mask_ & 7));
     key_mask_ = 0;
   }
-}
-
-bool KeyController::HasActiveKeypress() {
-  const uint8_t keymask =
-      (1 << native::PB1) | (1 << native::PB2) | (1 << native::PB3);
-  return native_->GetPINB() & keymask;
 }
 } // namespace threeboard

@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "simavr/avr_ioport.h"
+#include "simavr/avr_twi.h"
 #include "simavr/avr_uart.h"
 #include "simavr/avr_usb.h"
 #include "simavr/sim_elf.h"
@@ -21,6 +22,11 @@ void CallbackTrampoline(avr_irq_t *irq, uint32_t value, void *param) {
   auto *callback = (T *)param;
   (*callback)(value);
 }
+
+static const char *_ee_irq_names[2] = {
+    [TWI_IRQ_INPUT] = "8>eeprom.out",
+    [TWI_IRQ_OUTPUT] = "32<eeprom.in",
+};
 } // namespace
 
 // static.
@@ -85,6 +91,36 @@ SimavrImpl::RegisterUartOutputCallback(UartOutputCallback *callback) {
     avr_irq_unregister_notify(irq, &CallbackTrampoline<UartOutputCallback>,
                               (void *)callback);
   });
+}
+
+std::unique_ptr<Lifetime>
+SimavrImpl::RegisterI2cMessageCallback(I2cMessageCallback *callback) {
+  i2c_irq_ = avr_alloc_irq(&avr_->irq_pool, 0, 2, _ee_irq_names);
+  avr_irq_register_notify(i2c_irq_ + TWI_IRQ_OUTPUT,
+                          &CallbackTrampoline<I2cMessageCallback>,
+                          (void *)callback);
+
+  avr_connect_irq(
+      i2c_irq_ + TWI_IRQ_INPUT,
+      avr_io_getirq(avr_.get(), AVR_IOCTL_TWI_GETIRQ(0), TWI_IRQ_INPUT));
+  avr_connect_irq(
+      avr_io_getirq(avr_.get(), AVR_IOCTL_TWI_GETIRQ(0), TWI_IRQ_OUTPUT),
+      i2c_irq_ + TWI_IRQ_OUTPUT);
+
+  return std::make_unique<Lifetime>([this, callback]() {
+    avr_irq_unregister_notify(i2c_irq_, &CallbackTrampoline<I2cMessageCallback>,
+                              (void *)callback);
+    avr_unconnect_irq(
+        i2c_irq_ + TWI_IRQ_INPUT,
+        avr_io_getirq(avr_.get(), AVR_IOCTL_TWI_GETIRQ(0), TWI_IRQ_INPUT));
+    avr_unconnect_irq(
+        avr_io_getirq(avr_.get(), AVR_IOCTL_TWI_GETIRQ(0), TWI_IRQ_OUTPUT),
+        i2c_irq_ + TWI_IRQ_OUTPUT);
+  });
+}
+
+void SimavrImpl::RaiseI2cIrq(uint8_t direction, uint32_t value) {
+  avr_raise_irq(i2c_irq_ + direction, value);
 }
 
 void SimavrImpl::SetData(uint8_t idx, uint8_t val) { avr_->data[idx] = val; }

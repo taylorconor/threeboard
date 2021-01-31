@@ -26,6 +26,7 @@ public:
   std::unique_ptr<UsbHost> usb_host_;
 };
 
+// TODO: write tests!
 TEST_F(UsbHostTest, FakeTest) {}
 } // namespace
 } // namespace simulator

@@ -21,6 +21,7 @@ public:
   std::unique_ptr<Firmware> firmware_;
 };
 
+// TODO: write tests!
 TEST_F(FirmwareTest, FakeTest) {}
 } // namespace
 } // namespace simulator
