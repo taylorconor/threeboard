@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 #include <stdint.h>
 
 #include "simulator/lifetime.h"
