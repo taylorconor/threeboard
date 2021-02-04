@@ -9,8 +9,8 @@ avr_library(
     hdrs = ["led_controller.h"],
     visibility = ["//visibility:public"],
     deps = [
+        ":logging",
         "//src/native",
-        "//src/util:bitset",
     ],
 )
 

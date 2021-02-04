@@ -146,14 +146,18 @@ void Simulator::HandleVirtualKeypress(uint8_t mod_code, uint8_t key_code) {
     return;
   }
 
-  // Only consider printable a-z, A-Z keycodes.
-  if (key_code < 0x04 || key_code > 0x1d) {
+  char c;
+  if (key_code >= 0x04 && key_code <= 0x1d) {
+    c = key_code + 0x5d;
+    if (capitalise) {
+      c -= 0x20;
+    }
+  } else if (key_code == 0x2a) {
+    c = ' ';
+  } else {
+    // Ignore unsupported characters.
+    // TODO: support special characters!
     return;
-  }
-
-  char c = key_code + 0x5d;
-  if (capitalise) {
-    c -= 0x20;
   }
 
   ui_->DisplayKeyboardCharacter(c);

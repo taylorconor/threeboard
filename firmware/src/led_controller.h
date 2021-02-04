@@ -3,7 +3,6 @@
 #include <stdint.h>
 
 #include "src/native/native.h"
-#include "src/util/bitset.h"
 
 namespace threeboard {
 
@@ -38,19 +37,33 @@ public:
   void SetStatus(LedState state);
 
 private:
-  // The state of the LEDs (bitset of `State` values).
-  util::bitset<48> state_;
   native::Native *native_;
 
-  // Set the numeric (i.e. non-blink) value of one of the LED banks.
-  void SetBankValue(uint8_t bank, uint8_t val);
-  // Set the state of an individual LED.
-  void SetLedState(int led_index, LedState state);
+  // The state of all of the LEDs under the control of LedController. There are
+  // some wasted bits here which can be compressed into a bitset/bitfield in the
+  // future if we're tight on memory. But for now we have plenty.
+  uint8_t bank_0_ = 0;
+  uint8_t bank_1_ = 0;
+  LedState led_r_ = LedState::OFF;
+  LedState led_g_ = LedState::OFF;
+  LedState led_b_ = LedState::OFF;
+  LedState led_prog_ = LedState::OFF;
+  LedState led_err_ = LedState::OFF;
+  LedState led_status_ = LedState::OFF;
+
+  // The next LED line to scan.
+  uint8_t next_scan_line_ = 0;
+
+  // The status of LED blinking, and a timer used to control the blinking.
+  uint8_t blink_status_ = 0;
+
   // Copy `state_` out to the hardware pins for a given row.
   void WriteStateToPins(uint8_t row);
-  // Retrieve an LedState from the `state_` bitset.
-  LedState GetLedState(int led_index);
-  // Copy the state for the given column out to the hardware pins.
-  void WriteColumns(uint8_t col0);
+
+  // Copy the provided state out to the LED column array for the LED banks.
+  void WriteColumns(uint8_t vals);
+
+  void ApplyLedState(native::PortModFn port_mod_fn, uint8_t val,
+                     LedState state);
 };
 } // namespace threeboard

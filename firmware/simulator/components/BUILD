@@ -56,7 +56,6 @@ cc_library(
     deps = [
         "//simulator:simulator_delegate",
         "//simulator/simavr",
-        "//src:logging",
     ],
 )
 

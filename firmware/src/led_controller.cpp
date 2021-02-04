@@ -1,20 +1,7 @@
 #include "led_controller.h"
+#include "src/logging.h"
 
 namespace threeboard {
-namespace {
-
-// defines indexes into the `state_` bitset.
-constexpr uint8_t kBank0 = 0;
-constexpr uint8_t kBank1 = 16;
-constexpr uint8_t kLedR = 32;
-constexpr uint8_t kLedG = 34;
-constexpr uint8_t kLedB = 36;
-constexpr uint8_t kLedProg = 38;
-constexpr uint8_t kLedErr = 40;
-constexpr uint8_t kLedStatus = 42;
-constexpr uint8_t kBlinkStatus = 44;
-constexpr uint8_t kPrevScanLine = 45;
-
 /**
    Pin mappings:
    STATUS (status1) - 31 - PC6
@@ -30,8 +17,6 @@ constexpr uint8_t kPrevScanLine = 45;
    col3 - 38 - PF5
  */
 
-} // namespace
-
 LedController::LedController(native::Native *native) : native_(native) {
   // Specify which pins will be used by this controller.
   native_->EnableDDRB(0b01110000);
@@ -41,39 +26,42 @@ LedController::LedController(native::Native *native) : native_(native) {
 }
 
 void LedController::ScanNextLine() {
-  // The scan line occupies the last 3 bits in the bitset. It should be
-  // overwritten on each scan.
-  uint8_t scan_line = state_.GetContainerByte(kPrevScanLine) & 7;
+  // The scan line identifies which row (or "line") of LEDs is next to be
+  // refreshed. It occupies the last 3 bits in the bitset, and is incremented on
+  // each scan.
+  uint8_t scan_line = next_scan_line_;
+  next_scan_line_ = (next_scan_line_ + 1) % 5;
+
+  // The most significant 7 bits of the blink status are used for counting blink
+  // delay, the least significant bit is used to determine the current global
+  // blink status and so should be preserved.
+  blink_status_ =
+      (((blink_status_ & 0b11111110) + 1) % 0b11111110) + (blink_status_ & 1);
+
   WriteStateToPins(scan_line);
-  state_.SetBits(kPrevScanLine, 3, (scan_line + 1) % 5);
 }
 
-void LedController::SetBank0(uint8_t val) { SetBankValue(kBank0, val); }
-void LedController::SetBank1(uint8_t val) { SetBankValue(kBank1, val); }
-void LedController::SetR(LedState state) { SetLedState(kLedR, state); }
-void LedController::SetG(LedState state) { SetLedState(kLedG, state); }
-void LedController::SetB(LedState state) { SetLedState(kLedB, state); }
-void LedController::SetProg(LedState state) { SetLedState(kLedProg, state); }
-void LedController::SetErr(LedState state) { SetLedState(kLedErr, state); }
-void LedController::SetStatus(LedState state) {
-  SetLedState(kLedStatus, state);
-}
+void LedController::SetBank0(uint8_t val) { bank_0_ = val; }
+void LedController::SetBank1(uint8_t val) { bank_1_ = val; }
+void LedController::SetR(LedState state) { led_r_ = state; }
+void LedController::SetG(LedState state) { led_g_ = state; }
+void LedController::SetB(LedState state) { led_b_ = state; }
+void LedController::SetProg(LedState state) { led_prog_ = state; }
+void LedController::SetErr(LedState state) { led_err_ = state; }
+void LedController::SetStatus(LedState state) { led_status_ = state; }
 
 void LedController::WriteStateToPins(uint8_t row) {
-  // ERR and STATUS are a special case since they're mutally exclusive LEDs.
+  // ERR and STATUS are a special case since they're mutually exclusive LEDs.
   // They could be set on each scan, but to maintain consistent brightness they
   // have each been assigned their own scan line.
-  // TODO: uncomment after testing.
   if (row == 0) {
-    if (GetLedState(kLedErr) == LedState::ON) {
-      native_->EnablePORTB(1 << native::PB6);
-    }
+    ApplyLedState(&native::Native::EnablePORTB, 1 << native::PB6, led_err_);
   } else if (row == 1) {
+    // ERR must be disabled to allow STATUS to be enabled.
     native_->DisablePORTB(1 << native::PB6);
-    if (GetLedState(kLedStatus) == LedState::ON) {
-      native_->EnablePORTC(1 << native::PC6);
-    }
+    ApplyLedState(&native::Native::EnablePORTC, 1 << native::PC6, led_status_);
   } else {
+    // Disable both ERR and STATUS until the row scanner starts again.
     native_->DisablePORTC(1 << native::PC6);
   }
 
@@ -83,60 +71,57 @@ void LedController::WriteStateToPins(uint8_t row) {
   native_->DisablePORTD(0b11010000);
   native_->EnablePORTF(0b00110011);
 
-  // Enable the corect row pin and column pins for the current row.
+  // Enable the correct row pin and column pins for the current row.
   if (row == 0) {
     // row 0: 4 MSB of bank 0
     native_->EnablePORTD(1 << native::PD7);
-    WriteColumns(kBank0);
+    WriteColumns(bank_0_ >> 4);
   } else if (row == 1) {
     // row 1: 4 LSB of bank 0
     native_->EnablePORTB(1 << native::PB4);
-    WriteColumns(kBank0 + 8);
+    WriteColumns(bank_0_ & 0xFF);
   } else if (row == 2) {
     // row 2: 4 MSB of bank 1
     native_->EnablePORTD(1 << native::PD6);
-    WriteColumns(kBank1);
+    WriteColumns(bank_1_ >> 4);
   } else if (row == 3) {
     // row 3: 4 LSB of bank 1
     native_->EnablePORTD(1 << native::PD4);
-    WriteColumns(kBank1 + 8);
+    WriteColumns(bank_1_ & 0xFF);
   } else if (row == 4) {
-    // row 4: R,G,B and PROG
+    // row 4: R,G,B and PROG. These support full LedState rather than simple
+    // booleans.
     native_->EnablePORTB(1 << native::PB5);
-    WriteColumns(kLedR);
+    ApplyLedState(&native::Native::DisablePORTF, 1 << native::PF0, led_r_);
+    ApplyLedState(&native::Native::DisablePORTF, 1 << native::PF1, led_g_);
+    ApplyLedState(&native::Native::DisablePORTF, 1 << native::PF4, led_b_);
+    ApplyLedState(&native::Native::DisablePORTF, 1 << native::PF5, led_prog_);
   }
 }
 
-void LedController::SetBankValue(uint8_t bank, uint8_t val) {
-  for (int8_t i = 7; i >= 0; i--) {
-    SetLedState(bank + (i * 2), (LedState)(val & 1));
-    val >>= 1;
-  }
-}
-
-void LedController::SetLedState(int led_index, LedState state) {
-  state_.SetBits(led_index, 2, (uint8_t)state);
-}
-
-LedController::LedState LedController::GetLedState(int led_index) {
-  // Calculate the index of the LSB of the LedState in the containing byte.
-  uint8_t bit_index = 6 - (led_index % 8);
-  return (LedState)((state_.GetContainerByte(led_index) & (3 << bit_index)) >>
-                    bit_index);
-}
-
-void LedController::WriteColumns(uint8_t col0) {
-  if (GetLedState(col0) == LedState::ON) {
+void LedController::WriteColumns(uint8_t vals) {
+  if (vals & 8) {
     native_->DisablePORTF(1 << native::PF0);
   }
-  if (GetLedState(col0 + 2) == LedState::ON) {
+  if (vals & 4) {
     native_->DisablePORTF(1 << native::PF1);
   }
-  if (GetLedState(col0 + 4) == LedState::ON) {
+  if (vals & 2) {
     native_->DisablePORTF(1 << native::PF4);
   }
-  if (GetLedState(col0 + 6) == LedState::ON) {
+  if (vals & 1) {
     native_->DisablePORTF(1 << native::PF5);
+  }
+}
+
+void LedController::ApplyLedState(native::PortModFn port_mod_fn, uint8_t val,
+                                  LedState state) {
+  if (state == LedState::ON) {
+    (native_->*port_mod_fn)(val);
+  } else if (state == LedState::BLINK) {
+    // TODO: implement blinking
+  } else if (state == LedState::BLINK_FAST) {
+    // TODO: implement fast blinking
   }
 }
 

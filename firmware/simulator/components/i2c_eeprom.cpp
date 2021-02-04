@@ -3,7 +3,6 @@
 #include <functional>
 
 #include "simavr/avr_twi.h"
-#include "src/logging.h"
 
 namespace threeboard {
 namespace simulator {

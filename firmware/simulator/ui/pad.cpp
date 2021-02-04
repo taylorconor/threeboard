@@ -1,6 +1,7 @@
 #include "pad.h"
 
 #include <curses.h>
+#include <iostream>
 #include <mutex>
 
 namespace threeboard {

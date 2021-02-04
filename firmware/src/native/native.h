@@ -108,5 +108,7 @@ public:
   virtual void SetUBRR1L(uint8_t) = 0;
 };
 
+typedef void (Native::*PortModFn)(uint8_t);
+
 } // namespace native
 } // namespace threeboard
