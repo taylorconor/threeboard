@@ -32,14 +32,10 @@ void LedController::ScanNextLine() {
   uint8_t scan_line = next_scan_line_;
   next_scan_line_ = (next_scan_line_ + 1) % 5;
 
-  // The most significant 7 bits of the blink status are used for counting blink
-  // delay, the least significant bit is used to determine the current global
-  // blink status and so should be preserved.
-  blink_status_ =
-      (((blink_status_ & 0b11111110) + 1) % 0b11111110) + (blink_status_ & 1);
-
   WriteStateToPins(scan_line);
 }
+
+void LedController::UpdateBlinkStatus() { blink_status_++; }
 
 void LedController::SetBank0(uint8_t val) { bank_0_ = val; }
 void LedController::SetBank1(uint8_t val) { bank_1_ = val; }
@@ -119,9 +115,13 @@ void LedController::ApplyLedState(native::PortModFn port_mod_fn, uint8_t val,
   if (state == LedState::ON) {
     (native_->*port_mod_fn)(val);
   } else if (state == LedState::BLINK) {
-    // TODO: implement blinking
+    if (blink_status_ & 0x80) {
+      (native_->*port_mod_fn)(val);
+    }
   } else if (state == LedState::BLINK_FAST) {
-    // TODO: implement fast blinking
+    if (blink_status_ & 0x40) {
+      (native_->*port_mod_fn)(val);
+    }
   }
 }
 

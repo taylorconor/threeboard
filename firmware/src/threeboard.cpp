@@ -123,6 +123,7 @@ void Threeboard::HandleTimer1Interrupt() {
 void Threeboard::HandleTimer3Interrupt() {
   LOG_ONCE("Timer 3 setup complete");
   key_controller_->PollKeyState();
+  led_controller_->UpdateBlinkStatus();
 }
 
 } // namespace threeboard

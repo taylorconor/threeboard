@@ -12,7 +12,6 @@ namespace threeboard {
 class LedController {
 public:
   // State of individual addressable LEDs.
-  // TODO: implement support for blinking LED states.
   enum class LedState {
     OFF = 0,
     ON = 1,
@@ -25,6 +24,10 @@ public:
   // Handles rendering of the next scan row. Called by the timer interrupt
   // handler every 2ms.
   void ScanNextLine();
+
+  // Handles timing of LED blinking. Called by the timer interrupt handler every
+  // 5ms.
+  void UpdateBlinkStatus();
 
   // Setters for all available addressable LEDs.
   void SetBank0(uint8_t val);
