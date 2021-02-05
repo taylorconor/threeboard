@@ -15,7 +15,7 @@ void __cxa_guard_abort(__guard *) {}
 // The delete operator needs to be implemented, since generating code for the
 // virtual destructor requires a deleting destructor to be defined.
 void operator delete(void *ptr, unsigned int size) {
-  LOG("Unexpected call to deleting destructor. Quitting.");
+  LOG("Unexpected call to delete operator. Quitting.");
   exit(0);
 }
 

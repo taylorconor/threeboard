@@ -3,9 +3,9 @@
 <!-- TODO: update this image to an animation when it's ready. -->
 <img src="documentation/images/top.png" align="right"/>
 
-threeboard is a fully-functional mechanical USB keyboard with only three keys! It's not a macro pad; it can do just as much as the keyboard you currently have on your desk. It's also programmable and supports multiple layers. It's built completely from scratch, no Arduino involved.
+threeboard is a fully-functional mechanical USB keyboard with only three keys! However it can do just as much as the keyboard you currently have on your desk. It's also programmable and supports multiple layers. It's built completely from scratch, no Arduino involved.
 
-Unlike a traditional keyboard, characters don't show up on the screen after each keypress, because there aren't enough keys. Instead, combinations of the three keys are used to specify key and modifier codes on two built-in 8-bit LED binary indicators. This can then be sent to the host computer as USB keycodes. The multiple layers allow programming and storing macros into the threeboards storage for later retrieval.
+Unlike a traditional keyboard, characters don't show up on the screen after each keypress, because there aren't enough keys. Instead, combinations of the three keys are used to specify key and modifier codes on two built-in 8-bit LED binary indicators. This can then be sent to the host computer as USB keycodes. The multiple layers allow programming and storing macros into the threeboards storage for later retrieval. All functionality is documented in the [threeboard user manual](documentation/threeboard/threeboard_user_manual.md).
 
 ## Why?
 
@@ -15,24 +15,25 @@ This repository also contains extensive documentation, both within the firmware 
 
 ## How to try it out
 
-<!-- TODO: update this image to an animation when it's ready. -->
 <img src="documentation/images/helloworld.gif" align="right" width="400" />
 
-The threeboard project includes a terminal-based graphical threeboard simulator, built on top of the [simavr](https://github.com/buserror/simavr) AVR simulator, which runs same firmware file that gets flashed to physical hardware. The simulator also allows remote GDB debugging, so you can step through the threeboard firmware as it's being simulated to learn about it or investigate bugs! See [`src/simulator`](taylorconor.com) for documentation about how to build and run the simulator.
+The threeboard project includes a terminal-based fully functional graphical firmware simulator. You can build and run the simulator yourself by reading the [simulator build instructions](documentation/threeboard/simulator_build_instructions.md). The simulator is built on top of the [simavr](https://github.com/buserror/simavr) AVR simulator, and runs the exact same firmware file that gets flashed to physical hardware. The simulator also allows remote debugging with GDB, so you can step through the threeboard firmware as it's being simulated to learn about it or investigate bugs!
 
-Building your own physical threeboard requires soldering tools and components, as well as a physical threeboard PCB. If you're interested in building one, check out the [threeboard build instructions](taylorconor.com).
+Building your own physical threeboard requires a physical threeboard PCB, soldering tools and components, as well as some knowledge of electronics and soldering. If you're interested in building one, check out the [threeboard hardware build instructions](documentation/threeboard/hardware_build_instructions.md).
 
 ## Full documentation
 <!-- TODO: add links to relevant documentation. -->
-### Background reading
-[How do USB keyboards work?](taylorconor.com)
+### Background reading 
+[threeboard user manual](documentation/threeboard/threeboard_user_manual.md)  
+[How do USB keyboards work?](documentation/threeboard/how_usb_keyboards_work.md) 
 
 ### Firmware
-[Firmware design overview](taylorconor.com)  
-[Using the threeboard simulator](taylorconor.com)  
-[Simulated test framework](taylorconor.com)  
+[Firmware design overview](documentation/threeboard/firmware_design_overview.md)  
+[Firmware build instructions](documentation/threeboard/firmware_build_instructions.md)  
+[Simulator user manual](documentation/threeboard/simulator_user_manual.md)  
+[Simulator build instructions](documentation/threeboard/simulator_build_instructions.md)  
 
 ### Hardware
-[Hardware design overview](taylorconor.com)  
-[Manufacturing and assembling the threeboard hardware](taylorconor.com)  
-[Component list](taylorconor.com)
+[Hardware design overview](documentation/threeboard/hardware_design_overview.md)  
+[Hardware build instructions](documentation/threeboard/hardware_build_instructions.md)  
+[Component list](documentation/threeboard/component_list.md)
