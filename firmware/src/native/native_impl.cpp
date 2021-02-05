@@ -32,9 +32,9 @@ void Timer1Init() {
   TCNT1 = 0;
 
   // Set the compare value. We want the interrupt to fire once every 2ms to
-  // avoid LED flicker and missed keystrokes; The 16MHz clock ticks every
-  // 0.0000625ms, so we calculate the compare value as 2ms/0.0000625ms =
-  // 32000. Subtract 1 because the timer starts from 0.
+  // avoid LED flicker; The 16MHz clock ticks every 0.0000625ms, so we calculate
+  // the compare value as 2ms/0.0000625ms = 32000. Subtract 1 because the timer
+  // starts from 0.
   OCR1A = 31999;
 
   // Enable output compare interrupts for timer 1, using compare value A
@@ -67,6 +67,7 @@ ISR(TIMER1_COMPA_vect) {
       ->GetTimerInterruptHandlerDelegate()
       ->HandleTimer1Interrupt();
 }
+
 ISR(TIMER3_COMPA_vect) {
   NativeImpl::Get()
       ->GetTimerInterruptHandlerDelegate()

@@ -35,7 +35,12 @@ void LedController::ScanNextLine() {
   WriteStateToPins(scan_line);
 }
 
-void LedController::UpdateBlinkStatus() { blink_status_++; }
+void LedController::UpdateBlinkStatus() {
+  // This is called every 5ms. Bit 7 of blink_status_ toggles every 640ms (used
+  // to determine the blink status), and bit 6 toggles every 320ms (used to
+  // determine the fast blink status). So this should wrap around by design.
+  blink_status_++;
+}
 
 void LedController::SetBank0(uint8_t val) { bank_0_ = val; }
 void LedController::SetBank1(uint8_t val) { bank_1_ = val; }
@@ -48,8 +53,8 @@ void LedController::SetStatus(LedState state) { led_status_ = state; }
 
 void LedController::WriteStateToPins(uint8_t row) {
   // ERR and STATUS are a special case since they're mutually exclusive LEDs.
-  // They could be set on each scan, but to maintain consistent brightness they
-  // have each been assigned their own scan line.
+  // They could be set on each scan, but to maintain consistent brightness
+  // they have each been assigned their own scan line.
   if (row == 0) {
     ApplyLedState(&native::Native::EnablePORTB, 1 << native::PB6, led_err_);
   } else if (row == 1) {
