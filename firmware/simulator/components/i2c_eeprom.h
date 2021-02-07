@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include <simavr/avr_twi.h>
 #include <vector>
 
+#include "simavr/avr_twi.h"
 #include "simulator/simavr/simavr.h"
 
 namespace threeboard {

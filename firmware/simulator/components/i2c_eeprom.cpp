@@ -2,8 +2,6 @@
 
 #include <functional>
 
-#include "simavr/avr_twi.h"
-
 namespace threeboard {
 namespace simulator {
 namespace {
