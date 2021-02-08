@@ -18,7 +18,7 @@ bool IsEnabled(uint8_t reg, uint8_t pin) { return reg & (1 << pin); }
 
 Simulator::Simulator(Simavr *simavr)
     : simavr_(simavr), is_running_(false), firmware_(simavr_),
-      uart_(simavr_, this), usb_host_(simavr_, this),
+      usb_host_(simavr_, this), uart_(simavr_, this),
       eeprom1_(simavr_, 524288, 0, 0xFE) {
   char log_file[L_tmpnam];
   if (std::tmpnam(log_file)) {
