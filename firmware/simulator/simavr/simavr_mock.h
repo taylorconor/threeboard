@@ -40,6 +40,9 @@ public:
   MOCK_METHOD(uint16_t, GetBssSectionSize, (), (const override));
   MOCK_METHOD(uint16_t, GetDataSectionSize, (), (const override));
   MOCK_METHOD(uint16_t, GetRamSize, (), (const override));
+
+  MOCK_METHOD(uint32_t, TwiIrqMsg, (uint8_t, uint8_t, uint8_t),
+              (const override));
 };
 } // namespace detail
 

@@ -8,8 +8,8 @@ namespace {
 
 using namespace std::placeholders;
 
-avr_twi_msg_t ParseTwiMessage(uint32_t value) {
-  avr_twi_msg_irq_t v;
+TwiMessage ParseTwiMessage(uint32_t value) {
+  TwiMessageIrq v;
   v.u.v = value;
   return v.u.twi;
 }
@@ -40,12 +40,12 @@ I2cEeprom::I2cEeprom(Simavr *simavr, uint32_t size_bytes, uint8_t address,
       simavr_->RegisterI2cMessageCallback(i2c_message_callback_.get());
 }
 
-bool I2cEeprom::IsRelevant(const avr_twi_msg_t &message) {
+bool I2cEeprom::IsRelevant(const TwiMessage &message) {
   return (message.addr & address_mask_) == (address_ & address_mask_);
 }
 
 void I2cEeprom::HandleI2cMessage(uint32_t value) {
-  avr_twi_msg_t message = ParseTwiMessage(value);
+  TwiMessage message = ParseTwiMessage(value);
 
   if (message.msg & TWI_COND_STOP) {
     // Reset the transaction if the message is addressed to us.
@@ -60,7 +60,7 @@ void I2cEeprom::HandleI2cMessage(uint32_t value) {
       offset_ = 0;
       offset_index_ = 0;
       simavr_->RaiseI2cIrq(TWI_IRQ_INPUT,
-                           avr_twi_irq_msg(TWI_COND_ACK, true, 1));
+                           simavr_->TwiIrqMsg(TWI_COND_ACK, true, 1));
     }
   }
 
@@ -80,14 +80,14 @@ void I2cEeprom::HandleI2cMessage(uint32_t value) {
 
       // Ack the message.
       simavr_->RaiseI2cIrq(TWI_IRQ_INPUT,
-                           avr_twi_irq_msg(TWI_COND_ACK, true, 1));
+                           simavr_->TwiIrqMsg(TWI_COND_ACK, true, 1));
     }
 
     if (message.msg & TWI_COND_READ) {
       // Simple return of selected byte.
       uint8_t current_byte = buffer_[offset_++];
-      simavr_->RaiseI2cIrq(TWI_IRQ_INPUT,
-                           avr_twi_irq_msg(TWI_COND_READ, true, current_byte));
+      simavr_->RaiseI2cIrq(
+          TWI_IRQ_INPUT, simavr_->TwiIrqMsg(TWI_COND_READ, true, current_byte));
     }
   }
 }

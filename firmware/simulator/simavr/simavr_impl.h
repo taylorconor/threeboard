@@ -51,6 +51,8 @@ public:
   uint16_t GetDataSectionSize() const override;
   uint16_t GetRamSize() const override;
 
+  uint32_t TwiIrqMsg(uint8_t msg, uint8_t addr, uint8_t data) const override;
+
 private:
   SimavrImpl(std::unique_ptr<avr_t> avr, uint16_t bss_size, uint16_t data_size);
 

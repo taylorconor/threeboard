@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <vector>
 
-#include "simavr/avr_twi.h"
 #include "simulator/simavr/simavr.h"
 
 namespace threeboard {
@@ -20,7 +19,7 @@ public:
 
 private:
   // Determine if the provided message is addressed to this EEPROM.
-  bool IsRelevant(const avr_twi_msg_t &message);
+  bool IsRelevant(const TwiMessage &message);
 
   // Handle a message fragment.
   void HandleI2cMessage(uint32_t value);

@@ -147,5 +147,9 @@ uint16_t SimavrImpl::GetDataSectionSize() const { return data_size_; }
 
 uint16_t SimavrImpl::GetRamSize() const { return avr_->ramend; }
 
+uint32_t SimavrImpl::TwiIrqMsg(uint8_t msg, uint8_t addr, uint8_t data) const {
+  return avr_twi_irq_msg(msg, addr, data);
+}
+
 } // namespace simulator
 } // namespace threeboard
