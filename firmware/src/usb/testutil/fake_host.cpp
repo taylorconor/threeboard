@@ -59,6 +59,7 @@ void FakeHost::AddFakeEndpointExpectations(Request request) {
   packet.bRequest = request;
   packet.wValue = DescriptorId(DescriptorType::DEVICE, 0).GetValue();
   packet.wLength = 255;
+  packet.wIndex = 0;
   EXPECT_CALL(*native_mock_, GetUEDATX())
       .Times(8)
       .WillOnce(Return(packet.bmRequestType.GetValue()))

@@ -12,7 +12,8 @@ class Layer {
 public:
   virtual ~Layer() = default;
 
-  Layer(LedController *led_controller) : led_controller_(led_controller) {}
+  explicit Layer(LedController *led_controller)
+      : led_controller_(led_controller) {}
 
   // Handle a keypress event.
   virtual void HandleEvent(const Keypress &) = 0;
