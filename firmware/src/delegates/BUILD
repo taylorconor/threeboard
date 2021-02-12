@@ -14,6 +14,14 @@ cc_library(
 )
 
 avr_library(
+    name = "layer_controller_delegate",
+    hdrs = ["layer_controller_delegate.h"],
+    deps = [
+        "//src/layers:layer_id",
+    ],
+)
+
+avr_library(
     name = "usb_interrupt_handler_delegate",
     hdrs = ["usb_interrupt_handler_delegate.h"],
 )

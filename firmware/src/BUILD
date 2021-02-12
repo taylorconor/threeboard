@@ -7,7 +7,6 @@ avr_library(
     name = "led_controller",
     srcs = ["led_controller.cpp"],
     hdrs = ["led_controller.h"],
-    visibility = ["//visibility:public"],
     deps = [
         ":logging",
         "//src/native",
@@ -89,6 +88,11 @@ avr_library(
         ":led_controller",
         "//src/native",
         "//src/usb",
+        "//src/layers:default_layer",
+        "//src/layers:layer_r",
+        "//src/layers:layer_g",
+        "//src/layers:layer_b",
+        "//src/layers:layer_id",
     ],
 )
 

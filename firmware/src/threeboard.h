@@ -2,6 +2,12 @@
 
 #include "src/event_buffer.h"
 #include "src/key_controller.h"
+#include "src/layers/default_layer.h"
+#include "src/layers/layer.h"
+#include "src/layers/layer_b.h"
+#include "src/layers/layer_g.h"
+#include "src/layers/layer_id.h"
+#include "src/layers/layer_r.h"
 #include "src/led_controller.h"
 #include "src/native/native.h"
 #include "src/usb/usb.h"
@@ -9,13 +15,14 @@
 // Manages the state of the keyboard and acts as a delegate to coordinate all of
 // the various timer interrupt driven handlers.
 namespace threeboard {
-class Threeboard : public TimerInterruptHandlerDelegate {
+class Threeboard : public TimerInterruptHandlerDelegate,
+                   public LayerControllerDelegate {
 public:
   Threeboard(native::Native *native, usb::Usb *usb, EventBuffer *event_buffer,
              LedController *led_controller, KeyController *key_controller);
   ~Threeboard() override = default;
 
-  // Main application runloop.
+  // Main application event loop.
   void Run();
 
   // Implement the InterruptHandlerDelegate overrides. Timer1 is used to provide
@@ -24,56 +31,27 @@ public:
   void HandleTimer1Interrupt() override;
   void HandleTimer3Interrupt() override;
 
-  // Methods for handling events in the state machine.
-  void HandleDefaultInput(const Keypress &);
-  void HandleDefaultFlush(const Keypress &);
+  // Implement the LayerControllerDelegate overrides.
+  void SwitchToLayer(const LayerId &layer_id) override;
+  void FlushToHost() override;
 
 private:
-  // All possible layers in the threeboard.
-  enum Layer : uint8_t {
-    DEFAULT = 0,
-    R = 1,
-    G = 2,
-    B = 3,
-  };
-
-  // All possible states in the threeboard state machine.
-  enum State : uint8_t {
-    INPUT = 0,
-    FLUSH = 1,
-  };
-
-  // The per-layer properties of the threeboard. These are always common
-  // properties for each layer (since each layer has access to the same LEDs
-  // etc). It also stores the current state at each layer, which allows the
-  // threeboard to restore the correct previous state when switching layers.
-  struct LayerProperties {
-    uint8_t bank0 = 0;
-    uint8_t bank1 = 0;
-    State state = State::INPUT;
-  };
-
-  // The state machine maps a handler function to a specific state within a
-  // layer. Handler functions are not generally state-specific, so they can be
-  // reused.
-  typedef void (Threeboard::*HandlerFunction)(const Keypress &);
-  static const HandlerFunction state_machine[4][2][1];
-
   // All of the components composed into this class which we need to coordinate.
-  // None of these are owned.
   native::Native *native_;
   usb::Usb *usb_;
   EventBuffer *event_buffer_;
   LedController *led_controller_;
   KeyController *key_controller_;
 
+  // Define all of the concrete layers of the threeboard. They need to be held
+  // in memory here but are only accessed via the layer array.
+  DefaultLayer layer_default_;
+  LayerR layer_r_;
+  LayerG layer_g_;
+  LayerB layer_b_;
+
   // Current layer of the keyboard.
-  Layer layer_;
-
-  // The state/properties of each layer is held in memory in properties_.
-  LayerProperties properties_[4];
-
-  void UpdateLedState();
-  void SwitchToNextLayer();
+  LayerId layer_id_;
+  Layer *layer_[4]{};
 };
 } // namespace threeboard
