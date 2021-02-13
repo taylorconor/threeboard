@@ -97,6 +97,16 @@ public:
   virtual void SetUDADDR(uint8_t) = 0;
   virtual void SetUERST(uint8_t) = 0;
 
+  // Two wire registers
+  virtual void SetTWAMR(uint8_t) = 0;
+  virtual void SetTWSR(uint8_t) = 0;
+  virtual uint8_t GetTWSR() const = 0;
+  virtual void SetTWBR(uint8_t) = 0;
+  virtual void SetTWCR(uint8_t) = 0;
+  virtual uint8_t GetTWCR() const = 0;
+  virtual void SetTWDR(uint8_t) = 0;
+  virtual uint8_t GetTWDR() const = 0;
+
   virtual volatile uint8_t &GetUCSR1A() const = 0;
   virtual void SetUCSR1A(uint8_t) = 0;
   virtual volatile uint8_t &GetUCSR1B() const = 0;

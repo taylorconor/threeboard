@@ -95,5 +95,11 @@ constexpr uint8_t TXEN1 = 3;
 constexpr uint8_t UCSZ10 = 1;
 constexpr uint8_t UCSZ11 = 2;
 
+// TWCR
+constexpr uint8_t TWEN = 2;
+constexpr uint8_t TWSTO = 4;
+constexpr uint8_t TWSTA = 5;
+constexpr uint8_t TWINT = 7;
+
 } // namespace native
 } // namespace threeboard

@@ -50,6 +50,5 @@ avr_pure_library(
     hdrs = ["i2c.h"],
     deps = [
         ":native",
-        "//src:logging",
     ],
 )

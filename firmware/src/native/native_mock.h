@@ -83,6 +83,14 @@ public:
   MOCK_METHOD(uint8_t, GetUDADDR, (), (const override));
   MOCK_METHOD(void, SetUDADDR, (const uint8_t), (override));
   MOCK_METHOD(void, SetUERST, (const uint8_t), (override));
+  MOCK_METHOD(void, SetTWAMR, (uint8_t), (override));
+  MOCK_METHOD(void, SetTWSR, (uint8_t), (override));
+  MOCK_METHOD(uint8_t, GetTWSR, (), (const override));
+  MOCK_METHOD(void, SetTWBR, (uint8_t), (override));
+  MOCK_METHOD(void, SetTWCR, (uint8_t), (override));
+  MOCK_METHOD(uint8_t, GetTWCR, (), (const override));
+  MOCK_METHOD(void, SetTWDR, (uint8_t), (override));
+  MOCK_METHOD(uint8_t, GetTWDR, (), (const override));
   MOCK_METHOD(uint8_t &, GetUCSR1A, (), (const volatile override));
   MOCK_METHOD(void, SetUCSR1A, (uint8_t), (override));
   MOCK_METHOD(uint8_t &, GetUCSR1B, (), (const volatile override));

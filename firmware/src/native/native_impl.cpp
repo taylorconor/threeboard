@@ -183,6 +183,15 @@ uint8_t NativeImpl::GetUDADDR() const { return UDADDR; }
 void NativeImpl::SetUDADDR(const uint8_t val) { UDADDR = val; }
 void NativeImpl::SetUERST(const uint8_t val) { UERST = val; }
 
+void NativeImpl::SetTWAMR(const uint8_t val) { TWAMR = val; }
+uint8_t NativeImpl::GetTWSR() const { return TWSR; }
+void NativeImpl::SetTWSR(const uint8_t val) { TWSR = val; }
+void NativeImpl::SetTWBR(const uint8_t val) { TWBR = val; }
+uint8_t NativeImpl::GetTWCR() const { return TWCR; }
+void NativeImpl::SetTWCR(const uint8_t val) { TWCR = val; }
+uint8_t NativeImpl::GetTWDR() const { return TWDR; }
+void NativeImpl::SetTWDR(const uint8_t val) { TWDR = val; }
+
 volatile uint8_t &NativeImpl::GetUCSR1A() const { return UCSR1A; }
 void NativeImpl::SetUCSR1A(uint8_t val) { UCSR1A = val; }
 volatile uint8_t &NativeImpl::GetUCSR1B() const { return UCSR1B; }

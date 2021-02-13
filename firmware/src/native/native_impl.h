@@ -83,6 +83,15 @@ public:
   void SetUDADDR(uint8_t) final;
   void SetUERST(uint8_t) final;
 
+  void SetTWAMR(uint8_t) final;
+  uint8_t GetTWSR() const final;
+  void SetTWSR(uint8_t) final;
+  void SetTWBR(uint8_t) final;
+  uint8_t GetTWCR() const final;
+  void SetTWCR(uint8_t) final;
+  uint8_t GetTWDR() const final;
+  void SetTWDR(uint8_t) final;
+
   volatile uint8_t &GetUCSR1A() const final;
   void SetUCSR1A(uint8_t) final;
   volatile uint8_t &GetUCSR1B() const final;
