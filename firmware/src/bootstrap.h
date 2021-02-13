@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-void RunThreeboard();
+void RunThreeboardEventLoop();
 
 #ifdef __cplusplus
 }

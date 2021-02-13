@@ -8,7 +8,7 @@
 
 using namespace threeboard;
 
-void RunThreeboard() {
+void RunThreeboardEventLoop() {
   // The native interface is used to abstract away all "native" code (e.g.
   // interrupt setup code, setting various pin port values). This is the only
   // place that NativeImpl is injected. To keep all other components testable,
@@ -46,5 +46,5 @@ void RunThreeboard() {
                         &key_controller);
 
   // Run the firmware event loop. This will run forever.
-  threeboard.Run();
+  threeboard.RunEventLoop();
 }

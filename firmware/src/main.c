@@ -31,6 +31,6 @@ int main() {
   __malloc_heap_start = 0;
 
   // Call into an `extern "C"` function in C++ to run the threeboard firmware.
-  RunThreeboard();
+  RunThreeboardEventLoop();
   return 0;
 }

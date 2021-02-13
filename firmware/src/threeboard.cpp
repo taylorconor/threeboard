@@ -23,7 +23,7 @@ Threeboard::Threeboard(native::Native *native, usb::Usb *usb,
   native_->EnableTimer3();
 }
 
-void Threeboard::Run() {
+void Threeboard::RunEventLoop() {
   native_->EnableInterrupts();
 
   // Wait until the USB stack has been configured before continuing the event

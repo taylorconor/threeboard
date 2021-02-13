@@ -18,7 +18,7 @@ public:
   ~Threeboard() override = default;
 
   // Main application event loop.
-  void Run();
+  void RunEventLoop();
 
   // Implement the InterruptHandlerDelegate overrides. Timer1 is used to provide
   // a clock signal to the LedController, and Timer2 is used to provide a clock
