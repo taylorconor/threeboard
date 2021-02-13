@@ -7,7 +7,6 @@ namespace threeboard {
 class LayerControllerDelegate {
 public:
   virtual void SwitchToLayer(const LayerId &) = 0;
-  virtual void FlushToHost() = 0;
 
 protected:
   virtual ~LayerControllerDelegate() = default;

@@ -1,4 +1,4 @@
-#include "bootstrap.h"
+#include "src/bootstrap.h"
 
 // When building the ELF binary for use in the simavr simulator, the simulator
 // needs some extra information about the host MCU added to the ELF file, which

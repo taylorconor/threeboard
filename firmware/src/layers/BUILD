@@ -9,17 +9,35 @@ avr_library(
 )
 
 avr_library(
+    name = "layer_controller",
+    srcs = ["layer_controller.cpp"],
+    hdrs = ["layer_controller.h"],
+    deps = [
+        ":default_layer",
+        ":layer_b",
+        ":layer_g",
+        ":layer_r",
+        "//src/delegates:layer_controller_delegate",
+        "//src/usb",
+    ],
+)
+
+avr_library(
     name = "layer",
+    srcs = ["layer.cpp"],
     hdrs = ["layer.h"],
     deps = [
+        "//src:led_controller",
         "//src/delegates:keypress_handler_delegate",
+        "//src/layers:layer_id",
+        "//src/usb",
     ],
 )
 
 avr_library(
     name = "default_layer",
-    hdrs = ["default_layer.h"],
     srcs = ["default_layer.cpp"],
+    hdrs = ["default_layer.h"],
     deps = [
         ":layer",
         "//src:led_controller",
@@ -29,8 +47,8 @@ avr_library(
 
 avr_library(
     name = "layer_r",
-    hdrs = ["layer_r.h"],
     srcs = ["layer_r.cpp"],
+    hdrs = ["layer_r.h"],
     deps = [
         ":layer",
         "//src:led_controller",
@@ -40,8 +58,8 @@ avr_library(
 
 avr_library(
     name = "layer_g",
-    hdrs = ["layer_g.h"],
     srcs = ["layer_g.cpp"],
+    hdrs = ["layer_g.h"],
     deps = [
         ":layer",
         "//src:led_controller",
@@ -51,8 +69,8 @@ avr_library(
 
 avr_library(
     name = "layer_b",
-    hdrs = ["layer_b.h"],
     srcs = ["layer_b.cpp"],
+    hdrs = ["layer_b.h"],
     deps = [
         ":layer",
         "//src:led_controller",

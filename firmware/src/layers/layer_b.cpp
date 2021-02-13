@@ -10,7 +10,7 @@ void LayerB::HandleEvent(const Keypress &keypress) {
   } else if (keypress == Keypress::Y) {
     bank1_++;
   } else if (keypress == Keypress::Z) {
-    layer_controller_delegate_->FlushToHost();
+    FlushToHost();
   } else if (keypress == Keypress::XZ) {
     bank0_ = 0;
   } else if (keypress == Keypress::YZ) {

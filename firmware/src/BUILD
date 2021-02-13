@@ -86,13 +86,9 @@ avr_library(
         ":event_buffer",
         ":key_controller",
         ":led_controller",
+        "//src/layers:layer_controller",
         "//src/native",
         "//src/usb",
-        "//src/layers:default_layer",
-        "//src/layers:layer_r",
-        "//src/layers:layer_g",
-        "//src/layers:layer_b",
-        "//src/layers:layer_id",
     ],
 )
 

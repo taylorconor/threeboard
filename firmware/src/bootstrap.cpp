@@ -1,4 +1,4 @@
-#include "bootstrap.h"
+#include "src/bootstrap.h"
 
 #include "src/logging.h"
 #include "src/native/i2c.h"

@@ -1,5 +1,4 @@
-#include "led_controller.h"
-#include "src/logging.h"
+#include "src/led_controller.h"
 
 namespace threeboard {
 /**

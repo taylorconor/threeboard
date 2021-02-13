@@ -1,8 +1,9 @@
 #pragma once
 
 #include "src/delegates/keypress_handler_delegate.h"
-#include "src/delegates/layer_controller_delegate.h"
+#include "src/layers/layer_id.h"
 #include "src/led_controller.h"
+#include "src/usb/usb.h"
 
 namespace threeboard {
 
@@ -12,8 +13,8 @@ class Layer {
 public:
   virtual ~Layer() = default;
 
-  explicit Layer(LedController *led_controller)
-      : led_controller_(led_controller) {}
+  explicit Layer(LedController *led_controller, usb::Usb *usb)
+      : led_controller_(led_controller), usb_(usb) {}
 
   // Handle a keypress event.
   virtual void HandleEvent(const Keypress &) = 0;
@@ -21,42 +22,14 @@ public:
   // Called when the threeboard has transitioned to this layer.
   virtual void TransitionedToLayer() = 0;
 
-  uint8_t Bank0() const { return bank0_; }
-
-  uint8_t Bank1() const { return bank1_; }
-
 protected:
-  using LedState = LedController::LedState;
+  virtual void FlushToHost();
 
-  // TODO: move to cpp
-  void UpdateLedState(LayerId layer_id) const {
-    switch (layer_id) {
-    case LayerId::DFLT:
-      led_controller_->SetR(LedState::OFF);
-      led_controller_->SetG(LedState::OFF);
-      led_controller_->SetB(LedState::OFF);
-      break;
-    case LayerId::R:
-      led_controller_->SetR(LedState::ON);
-      led_controller_->SetG(LedState::OFF);
-      led_controller_->SetB(LedState::OFF);
-      break;
-    case LayerId::G:
-      led_controller_->SetR(LedState::OFF);
-      led_controller_->SetG(LedState::ON);
-      led_controller_->SetB(LedState::OFF);
-      break;
-    case LayerId::B:
-      led_controller_->SetR(LedState::OFF);
-      led_controller_->SetG(LedState::OFF);
-      led_controller_->SetB(LedState::ON);
-      break;
-    }
-    led_controller_->SetBank0(bank0_);
-    led_controller_->SetBank1(bank1_);
-  }
+  void UpdateLedState(LayerId layer_id);
 
   LedController *led_controller_;
+  usb::Usb *usb_;
+
   uint8_t bank0_ = 0;
   uint8_t bank1_ = 0;
 };
