@@ -15,7 +15,7 @@ namespace usb {
 // It explicitly does not support the ENDPOINT_HALT feature, since it's rarely
 // used and shouldn't affect functionality at all.
 class UsbImpl : public Usb, public UsbInterruptHandlerDelegate {
-public:
+ public:
   UsbImpl(native::Native *);
   void Setup() final;
   bool HasConfigured() final;
@@ -27,7 +27,7 @@ public:
   // Test only.
   void SetRequestHandler(RequestHandler *);
 
-private:
+ private:
   native::Native *native_;
   HidState hid_state_;
   RequestHandler *request_handler_;
@@ -35,5 +35,5 @@ private:
   int8_t SendKeypress();
   void SendHidState();
 };
-} // namespace usb
-} // namespace threeboard
+}  // namespace usb
+}  // namespace threeboard

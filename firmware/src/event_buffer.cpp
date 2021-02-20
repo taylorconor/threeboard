@@ -12,4 +12,4 @@ void EventBuffer::HandleKeypress(const Keypress &keypress) {
   pending_keypress_ = keypress;
 }
 
-} // namespace threeboard
+}  // namespace threeboard

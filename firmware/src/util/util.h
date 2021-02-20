@@ -20,5 +20,5 @@ __force_inline constexpr uint8_t lsb(const uint16_t &val) {
 
 __force_inline constexpr uint8_t msb(const uint16_t &val) { return val >> 8; }
 
-} // namespace util
-} // namespace threeboard
+}  // namespace util
+}  // namespace threeboard

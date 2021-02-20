@@ -1,15 +1,14 @@
 #pragma once
 
-#include "simavr.h"
-
 #include "gmock/gmock.h"
+#include "simavr.h"
 
 namespace threeboard {
 namespace simulator {
 namespace detail {
 
 class DefaultSimavrMock : public Simavr {
-public:
+ public:
   MOCK_METHOD(void, Run, (), (override));
 
   MOCK_METHOD(void, InitGdb, (), (override));
@@ -44,9 +43,9 @@ public:
   MOCK_METHOD(uint32_t, TwiIrqMsg, (uint8_t, uint8_t, uint8_t),
               (const override));
 };
-} // namespace detail
+}  // namespace detail
 
 using SimavrMock = ::testing::StrictMock<detail::DefaultSimavrMock>;
 
-} // namespace simulator
-} // namespace threeboard
+}  // namespace simulator
+}  // namespace threeboard

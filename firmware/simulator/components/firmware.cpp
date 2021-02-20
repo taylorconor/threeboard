@@ -102,5 +102,5 @@ void Firmware::RunDetached() {
               << std::endl;
   }
 }
-} // namespace simulator
-} // namespace threeboard
+}  // namespace simulator
+}  // namespace threeboard

@@ -16,13 +16,13 @@
 namespace threeboard {
 namespace simulator {
 class Simulator : public SimulatorDelegate {
-public:
+ public:
   explicit Simulator(Simavr *simavr);
   ~Simulator() override;
 
   void Run();
 
-private:
+ private:
   void PrepareRenderState() final;
   void HandlePhysicalKeypress(char key, bool state) final;
   void HandleVirtualKeypress(uint8_t mod_code, uint8_t key_code) final;
@@ -42,5 +42,5 @@ private:
   std::string log_file_path_;
   std::ofstream log_stream_;
 };
-} // namespace simulator
-} // namespace threeboard
+}  // namespace simulator
+}  // namespace threeboard

@@ -21,6 +21,6 @@ void MockSendingSetupPacket(native::NativeMock *native_mock,
       .WillOnce(Return((uint8_t)packet.wLength))
       .WillOnce(Return((uint8_t)(packet.wLength >> 8)));
 }
-} // namespace testutil
-} // namespace usb
-} // namespace threeboard
+}  // namespace testutil
+}  // namespace usb
+}  // namespace threeboard

@@ -1,7 +1,8 @@
 #include "usb_host.h"
 
-#include <iostream>
 #include <unistd.h>
+
+#include <iostream>
 
 #include "src/usb/shared/constants.h"
 
@@ -12,8 +13,10 @@ using namespace std::placeholders;
 using usb::RequestType;
 
 UsbHost::UsbHost(Simavr *simavr, SimulatorDelegate *simulator_delegate)
-    : simavr_(simavr), simulator_delegate_(simulator_delegate),
-      is_running_(false), is_attached_(false) {
+    : simavr_(simavr),
+      simulator_delegate_(simulator_delegate),
+      is_running_(false),
+      is_attached_(false) {
   // Register a callback on USB attach, so we'll know when we try to start the
   // host if the device is ready or not.
   usb_attach_callback_ = std::make_unique<UsbAttachCallback>(
@@ -103,5 +106,5 @@ void UsbHost::InternalUsbAttachCallback(uint32_t status) {
         std::make_unique<std::thread>(&UsbHost::DeviceControlLoop, this);
   }
 }
-} // namespace simulator
-} // namespace threeboard
+}  // namespace simulator
+}  // namespace threeboard

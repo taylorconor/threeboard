@@ -25,17 +25,17 @@ namespace threeboard {
 namespace native {
 
 class Native {
-public:
+ public:
   virtual ~Native() {}
 
-  virtual TimerInterruptHandlerDelegate *
-  GetTimerInterruptHandlerDelegate() const = 0;
-  virtual void
-  SetTimerInterruptHandlerDelegate(TimerInterruptHandlerDelegate *) = 0;
-  virtual UsbInterruptHandlerDelegate *
-  GetUsbInterruptHandlerDelegate() const = 0;
-  virtual void
-  SetUsbInterruptHandlerDelegate(UsbInterruptHandlerDelegate *) = 0;
+  virtual TimerInterruptHandlerDelegate *GetTimerInterruptHandlerDelegate()
+      const = 0;
+  virtual void SetTimerInterruptHandlerDelegate(
+      TimerInterruptHandlerDelegate *) = 0;
+  virtual UsbInterruptHandlerDelegate *GetUsbInterruptHandlerDelegate()
+      const = 0;
+  virtual void SetUsbInterruptHandlerDelegate(
+      UsbInterruptHandlerDelegate *) = 0;
 
   virtual void EnableInterrupts() = 0;
   virtual void DisableInterrupts() = 0;
@@ -120,5 +120,5 @@ public:
 
 typedef void (Native::*PortModFn)(uint8_t);
 
-} // namespace native
-} // namespace threeboard
+}  // namespace native
+}  // namespace threeboard

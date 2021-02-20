@@ -12,7 +12,7 @@ namespace threeboard {
 // Manages the state of the keyboard and acts as a delegate to coordinate all of
 // the various timer interrupt driven handlers.
 class Threeboard : public TimerInterruptHandlerDelegate {
-public:
+ public:
   Threeboard(native::Native *native, usb::Usb *usb, EventBuffer *event_buffer,
              LedController *led_controller, KeyController *key_controller);
   ~Threeboard() override = default;
@@ -26,7 +26,7 @@ public:
   void HandleTimer1Interrupt() override;
   void HandleTimer3Interrupt() override;
 
-private:
+ private:
   // All of the components composed into this class which we need to coordinate.
   native::Native *native_;
   usb::Usb *usb_;
@@ -37,4 +37,4 @@ private:
   LayerController layer_controller_;
 };
 
-} // namespace threeboard
+}  // namespace threeboard

@@ -8,7 +8,7 @@ namespace threeboard {
 // key controller to the main keypress polling run loop. Keeping this as a
 // separate class allows decoupling to avoid a dependency cycle.
 class EventBuffer : public KeypressHandlerDelegate {
-public:
+ public:
   ~EventBuffer() override = default;
 
   // Immediately returns the pending keypress event if it's available, otherwise
@@ -24,7 +24,7 @@ public:
   // run loop.
   void HandleKeypress(const Keypress &) override;
 
-private:
+ private:
   Keypress pending_keypress_ = Keypress::INACTIVE;
 };
-} // namespace threeboard
+}  // namespace threeboard

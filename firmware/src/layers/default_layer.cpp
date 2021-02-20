@@ -27,4 +27,4 @@ void DefaultLayer::TransitionedToLayer() {
   UpdateLedState(LayerId::DFLT);
 }
 
-} // namespace threeboard
+}  // namespace threeboard

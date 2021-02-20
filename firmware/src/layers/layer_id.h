@@ -12,4 +12,4 @@ enum LayerId : uint8_t {
   B = 3,
 };
 
-} // namespace threeboard
+}  // namespace threeboard

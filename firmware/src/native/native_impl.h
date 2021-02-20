@@ -15,7 +15,7 @@ namespace threeboard {
 namespace native {
 
 class NativeImpl : public Native {
-public:
+ public:
   static Native *Get();
   ~NativeImpl() override = default;
 
@@ -102,12 +102,12 @@ public:
   void SetUBRR1H(uint8_t) final;
   void SetUBRR1L(uint8_t) final;
 
-private:
+ private:
   NativeImpl() = default;
 
   TimerInterruptHandlerDelegate *timer_delegate_;
   UsbInterruptHandlerDelegate *usb_delegate_;
 };
 
-} // namespace native
-} // namespace threeboard
+}  // namespace native
+}  // namespace threeboard

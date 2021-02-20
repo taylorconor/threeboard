@@ -1,17 +1,16 @@
 #pragma once
 
-#include "native.h"
-
 #include <iostream>
 
 #include "gmock/gmock.h"
+#include "native.h"
 
 namespace threeboard {
 namespace native {
 namespace detail {
 
 class DefaultNativeMock : public Native {
-public:
+ public:
   MOCK_METHOD(TimerInterruptHandlerDelegate *, GetTimerInterruptHandlerDelegate,
               (), (const override));
   MOCK_METHOD(void, SetTimerInterruptHandlerDelegate,
@@ -101,9 +100,9 @@ public:
   MOCK_METHOD(void, SetUBRR1H, (uint8_t), (override));
   MOCK_METHOD(void, SetUBRR1L, (uint8_t), (override));
 };
-} // namespace detail
+}  // namespace detail
 
 using NativeMock = ::testing::StrictMock<detail::DefaultNativeMock>;
 
-} // namespace native
-} // namespace threeboard
+}  // namespace native
+}  // namespace threeboard

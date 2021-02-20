@@ -1,8 +1,8 @@
 #include "usb_host.h"
 
+#include "gtest/gtest.h"
 #include "simulator/simavr/simavr_mock.h"
 #include "simulator/simulator_delegate_mock.h"
-#include "gtest/gtest.h"
 
 namespace threeboard {
 namespace simulator {
@@ -12,7 +12,7 @@ using ::testing::_;
 using ::testing::Return;
 
 class UsbHostTest : public ::testing::Test {
-public:
+ public:
   UsbHostTest() {
     // TODO: capture callback here.
     EXPECT_CALL(simavr_mock_, RegisterUsbAttachCallback(_)).Times(1);
@@ -28,6 +28,6 @@ public:
 
 // TODO: write tests!
 TEST_F(UsbHostTest, FakeTest) {}
-} // namespace
-} // namespace simulator
-} // namespace threeboard
+}  // namespace
+}  // namespace simulator
+}  // namespace threeboard

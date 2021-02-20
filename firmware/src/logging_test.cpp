@@ -9,12 +9,12 @@ namespace util {
 namespace {
 
 class LoggingTest : public ::testing::Test {
-public:
+ public:
   native::NativeMock native_mock_;
 };
 
 TEST_F(LoggingTest, FakeTest) {}
 
-} // namespace
-} // namespace util
-} // namespace threeboard
+}  // namespace
+}  // namespace util
+}  // namespace threeboard

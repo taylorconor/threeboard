@@ -12,7 +12,7 @@ using testing::_;
 using testing::Return;
 
 class KeyControllerTest : public ::testing::Test {
-public:
+ public:
   KeyControllerTest() {
     EXPECT_CALL(native_mock_, DisableDDRB(0b00001110)).Times(1);
     EXPECT_CALL(native_mock_, EnablePORTB(0b00001110)).Times(1);
@@ -154,5 +154,5 @@ TEST_F(KeyControllerTest, HandleConsecutiveKeypressesAsIndependent) {
   EXPECT_CALL(delegate_mock_, HandleKeypress(Keypress::Y)).Times(1);
   controller_->PollKeyState();
 }
-} // namespace
-} // namespace threeboard
+}  // namespace
+}  // namespace threeboard

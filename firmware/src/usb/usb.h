@@ -6,7 +6,7 @@ namespace threeboard {
 namespace usb {
 
 class Usb {
-public:
+ public:
   virtual ~Usb() = default;
 
   // Setup the USB hardware to begin connection to the host. This method blocks
@@ -18,5 +18,5 @@ public:
 
   virtual void SendKeypress(uint8_t key, uint8_t mod) = 0;
 };
-} // namespace usb
-} // namespace threeboard
+}  // namespace usb
+}  // namespace threeboard

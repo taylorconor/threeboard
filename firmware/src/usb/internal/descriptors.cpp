@@ -2,9 +2,8 @@
 
 namespace threeboard {
 namespace usb {
-DescriptorContainer
-DescriptorContainer::ParseFromProgmem(native::Native *native,
-                                      const uint8_t *ptr) {
+DescriptorContainer DescriptorContainer::ParseFromProgmem(
+    native::Native *native, const uint8_t *ptr) {
   DescriptorContainer descriptor;
   descriptor.id = native->ReadPgmWord(ptr);
   ptr += sizeof(descriptor.id);
@@ -15,5 +14,5 @@ DescriptorContainer::ParseFromProgmem(native::Native *native,
   descriptor.length = native->ReadPgmByte(ptr);
   return descriptor;
 }
-} // namespace usb
-} // namespace threeboard
+}  // namespace usb
+}  // namespace threeboard

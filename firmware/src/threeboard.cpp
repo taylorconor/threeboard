@@ -13,8 +13,11 @@ using LedState = LedController::LedState;
 Threeboard::Threeboard(native::Native *native, usb::Usb *usb,
                        EventBuffer *event_buffer, LedController *led_controller,
                        KeyController *key_controller)
-    : native_(native), usb_(usb), event_buffer_(event_buffer),
-      led_controller_(led_controller), key_controller_(key_controller),
+    : native_(native),
+      usb_(usb),
+      event_buffer_(event_buffer),
+      led_controller_(led_controller),
+      key_controller_(key_controller),
       layer_controller_(led_controller_, usb_) {
   // TODO: provide `this` as delegate to receive callback for success/error?
   usb_->Setup();
@@ -63,4 +66,4 @@ void Threeboard::HandleTimer3Interrupt() {
   led_controller_->UpdateBlinkStatus();
 }
 
-} // namespace threeboard
+}  // namespace threeboard

@@ -14,11 +14,14 @@ constexpr uint16_t kGdbPort = 1234;
 // Used to test a single pin in a register.
 bool IsEnabled(uint8_t reg, uint8_t pin) { return reg & (1 << pin); }
 
-} // namespace
+}  // namespace
 
 Simulator::Simulator(Simavr *simavr)
-    : simavr_(simavr), is_running_(false), firmware_(simavr_),
-      usb_host_(simavr_, this), uart_(simavr_, this),
+    : simavr_(simavr),
+      is_running_(false),
+      firmware_(simavr_),
+      usb_host_(simavr_, this),
+      uart_(simavr_, this),
       eeprom1_(simavr_, 524288, 0, 0xFE) {
   char log_file[L_tmpnam];
   if (std::tmpnam(log_file)) {
@@ -173,5 +176,5 @@ uint16_t Simulator::GetGdbPort() { return kGdbPort; }
 
 bool Simulator::IsUsbAttached() { return usb_host_.IsAttached(); }
 
-} // namespace simulator
-} // namespace threeboard
+}  // namespace simulator
+}  // namespace threeboard

@@ -3,18 +3,18 @@
 #include "src/native/native.h"
 
 // TODO: disable these when not running within the simulator.
-#define LOG(fmt, ...)                                                          \
-  do {                                                                         \
-    ::threeboard::Logging::Log(PSTR(fmt), ##__VA_ARGS__);                      \
+#define LOG(fmt, ...)                                     \
+  do {                                                    \
+    ::threeboard::Logging::Log(PSTR(fmt), ##__VA_ARGS__); \
   } while (0)
 
-#define LOG_ONCE(fmt, ...)                                                     \
-  do {                                                                         \
-    static bool ___tb_has_logged = false;                                      \
-    if (!___tb_has_logged) {                                                   \
-      ___tb_has_logged = true;                                                 \
-      LOG(fmt, ##__VA_ARGS__);                                                 \
-    }                                                                          \
+#define LOG_ONCE(fmt, ...)                \
+  do {                                    \
+    static bool ___tb_has_logged = false; \
+    if (!___tb_has_logged) {              \
+      ___tb_has_logged = true;            \
+      LOG(fmt, ##__VA_ARGS__);            \
+    }                                     \
   } while (0)
 
 namespace threeboard {
@@ -27,14 +27,14 @@ namespace threeboard {
 // etc. All simavr needs to receive USART bytes is for the bytes to be written
 // to UDR1 as fast as possible.
 class Logging {
-public:
+ public:
   // Must be called before any logging is performed to set the native
   // instance.
   static void Init(native::Native *native);
 
   static void Log(const char *fmt, ...);
 
-private:
+ private:
   static native::Native *native_;
 };
-} // namespace threeboard
+}  // namespace threeboard

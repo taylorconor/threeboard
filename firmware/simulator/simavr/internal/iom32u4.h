@@ -438,8 +438,8 @@
 #define PRTIM2 6
 #define PRTWI 7
 
-#define __AVR_HAVE_PRR0                                                        \
-  ((1 << PRADC) | (1 << PRUSART0) | (1 << PRSPI) | (1 << PRTIM1) |             \
+#define __AVR_HAVE_PRR0                                            \
+  ((1 << PRADC) | (1 << PRUSART0) | (1 << PRSPI) | (1 << PRTIM1) | \
    (1 << PRTIM0) | (1 << PRTIM2) | (1 << PRTWI))
 #define __AVR_HAVE_PRR0_PRADC
 #define __AVR_HAVE_PRR0_PRUSART0
@@ -1336,7 +1336,7 @@
 #define USB_GEN_vect _VECTOR(10) /* USB General Interrupt Request */
 
 #define USB_COM_vect_num 11
-#define USB_COM_vect                                                           \
+#define USB_COM_vect \
   _VECTOR(11) /* USB Endpoint/Pipe Interrupt Communication Request */
 
 #define WDT_vect_num 12
@@ -1421,7 +1421,7 @@
 #define TIMER4_OVF_vect _VECTOR(41) /* Timer/Counter4 Overflow */
 
 #define TIMER4_FPF_vect_num 42
-#define TIMER4_FPF_vect                                                        \
+#define TIMER4_FPF_vect \
   _VECTOR(42) /* Timer/Counter4 Fault Protection Interrupt */
 
 #define _VECTORS_SIZE (43 * 4)
@@ -1450,28 +1450,28 @@
 #define FUSE_SUT1 (unsigned char)~_BV(5)   /* Select start-up time */
 #define FUSE_CKOUT (unsigned char)~_BV(6)  /* Oscillator options */
 #define FUSE_CKDIV8 (unsigned char)~_BV(7) /* Divide clock by 8 */
-#define LFUSE_DEFAULT                                                          \
+#define LFUSE_DEFAULT \
   (FUSE_CKSEL1 & FUSE_CKSEL2 & FUSE_CKSEL3 & FUSE_SUT1 & FUSE_CKDIV8)
 
 /* High Fuse Byte */
 #define FUSE_BOOTRST (unsigned char)~_BV(0) /* Select Reset Vector */
 #define FUSE_BOOTSZ0 (unsigned char)~_BV(1) /* Select Boot Size */
 #define FUSE_BOOTSZ1 (unsigned char)~_BV(2) /* Select Boot Size */
-#define FUSE_EESAVE                                                            \
+#define FUSE_EESAVE \
   (unsigned char)~_BV(3) /* EEPROM memory is preserved through chip erase */
 #define FUSE_WDTON (unsigned char)~_BV(4) /* Watchdog timer always on */
-#define FUSE_SPIEN                                                             \
+#define FUSE_SPIEN \
   (unsigned char)~_BV(5) /* Enable Serial programming and Data Downloading */
 #define FUSE_JTAGEN (unsigned char)~_BV(6) /* Enable JTAG */
 #define FUSE_OCDEN (unsigned char)~_BV(7)  /* Enable OCD */
 #define HFUSE_DEFAULT (FUSE_BOOTSZ0 & FUSE_SPIEN)
 
 /* Extended Fuse Byte */
-#define FUSE_BODLEVEL0                                                         \
+#define FUSE_BODLEVEL0 \
   (unsigned char)~_BV(0) /* Brown-out Detector trigger level */
-#define FUSE_BODLEVEL1                                                         \
+#define FUSE_BODLEVEL1 \
   (unsigned char)~_BV(1) /* Brown-out Detector trigger level */
-#define FUSE_BODLEVEL2                                                         \
+#define FUSE_BODLEVEL2 \
   (unsigned char)~_BV(2)                 /* Brown-out Detector trigger level */
 #define FUSE_HWBE (unsigned char)~_BV(3) /* Hardware Boot Enable */
 #define EFUSE_DEFAULT (0xFF)

@@ -44,38 +44,38 @@ static constexpr DeviceDescriptor PROGMEM device_descriptor = {
 // strictly typed. It's taken from the example from the HID spec v1.11, section
 // E.6.
 static constexpr uint8_t PROGMEM hid_report[] = {
-    0x05, 0x01, // Usage Page (Generic Desktop)
-    0x09, 0x06, // Usage (Keyboard)
-    0xA1, 0x01, // Collection (Application)
-    0x05, 0x07, //   Usage Page (Key Codes)
-    0x19, 0xE0, //   Usage Minimum (224)
-    0x29, 0xE7, //   Usage Maximum (231)
-    0x15, 0x00, //   Logical Minimum (0)
-    0x25, 0x01, //   Logical Minimum (1)
-    0x75, 0x01, //   Report Size (1)
-    0x95, 0x08, //   Report Count (8)
-    0x81, 0x02, //   Input (Data, Variable, Absolute)
-    0x95, 0x01, //   Report Count (1)
-    0x75, 0x08, //   Report Size (8)
-    0x81, 0x01, //   Input (Constant)
-    0x95, 0x05, //   Report Count (5)
-    0x75, 0x01, //   Report Size (1)
-    0x05, 0x08, //   Usage Page (Page# for LEDs)
-    0x19, 0x01, //   Usage Minimum (1)
-    0x29, 0x05, //   Usage Maximum (5)
-    0x91, 0x02, //   Output (Data, Variable, Absolute)
-    0x95, 0x01, //   Report Count (1)
-    0x75, 0x03, //   Report Size (3)
-    0x91, 0x01, //   Output (Constant)
-    0x95, 0x06, //   Report Count (6)
-    0x75, 0x08, //   Report Size (8)
-    0x15, 0x00, //   Logical Minimum (0)
-    0x25, 0x65, //   Logical Maximum(101)
-    0x05, 0x07, //   Usage Page (Key Codes)
-    0x19, 0x00, //   Usage Minimum (0)
-    0x29, 0x65, //   Usage Maximum (101)
-    0x81, 0x00, //   Input (Data, Array)
-    0xC0        // End Collection
+    0x05, 0x01,  // Usage Page (Generic Desktop)
+    0x09, 0x06,  // Usage (Keyboard)
+    0xA1, 0x01,  // Collection (Application)
+    0x05, 0x07,  //   Usage Page (Key Codes)
+    0x19, 0xE0,  //   Usage Minimum (224)
+    0x29, 0xE7,  //   Usage Maximum (231)
+    0x15, 0x00,  //   Logical Minimum (0)
+    0x25, 0x01,  //   Logical Minimum (1)
+    0x75, 0x01,  //   Report Size (1)
+    0x95, 0x08,  //   Report Count (8)
+    0x81, 0x02,  //   Input (Data, Variable, Absolute)
+    0x95, 0x01,  //   Report Count (1)
+    0x75, 0x08,  //   Report Size (8)
+    0x81, 0x01,  //   Input (Constant)
+    0x95, 0x05,  //   Report Count (5)
+    0x75, 0x01,  //   Report Size (1)
+    0x05, 0x08,  //   Usage Page (Page# for LEDs)
+    0x19, 0x01,  //   Usage Minimum (1)
+    0x29, 0x05,  //   Usage Maximum (5)
+    0x91, 0x02,  //   Output (Data, Variable, Absolute)
+    0x95, 0x01,  //   Report Count (1)
+    0x75, 0x03,  //   Report Size (3)
+    0x91, 0x01,  //   Output (Constant)
+    0x95, 0x06,  //   Report Count (6)
+    0x75, 0x08,  //   Report Size (8)
+    0x15, 0x00,  //   Logical Minimum (0)
+    0x25, 0x65,  //   Logical Maximum(101)
+    0x05, 0x07,  //   Usage Page (Key Codes)
+    0x19, 0x00,  //   Usage Minimum (0)
+    0x29, 0x65,  //   Usage Maximum (101)
+    0x81, 0x00,  //   Input (Data, Array)
+    0xC0         // End Collection
 };
 
 struct CombinedDescriptor {
@@ -123,13 +123,13 @@ static constexpr CombinedDescriptor PROGMEM combined_descriptor = {
             .bReportDescriptorType = DescriptorType::HID_REPORT,
             .wReportDescriptorLength = sizeof(hid_report),
         },
-    .endpoint_descriptor = {.bLength = 7,
-                            .bDescriptorType = DescriptorType::ENDPOINT,
-                            .bEndpointAddress =
-                                kKeyboardEndpoint | kEndpointPipeTypeIn,
-                            .bmAttributes = kKeyboardEndpointTransferType,
-                            .wMaxPacketSize = kKeyboardMaxPacketSize,
-                            .bInterval = 1}};
+    .endpoint_descriptor = {
+        .bLength = 7,
+        .bDescriptorType = DescriptorType::ENDPOINT,
+        .bEndpointAddress = kKeyboardEndpoint | kEndpointPipeTypeIn,
+        .bmAttributes = kKeyboardEndpointTransferType,
+        .wMaxPacketSize = kKeyboardMaxPacketSize,
+        .bInterval = 1}};
 
 // Define all of the string descriptors we send from this device. The
 // supported_languages decriptor is mandatory, the others are just so the host
@@ -184,5 +184,5 @@ static const DescriptorContainer PROGMEM descriptor_list[] = {
      .data = (uint8_t *)&product,
      .length = product.bLength}};
 
-} // namespace usb
-} // namespace threeboard
+}  // namespace usb
+}  // namespace threeboard

@@ -65,16 +65,16 @@
         FUSE5_DEFAULT                                                          \
   }
 #elif FUSE_MEMORY_SIZE == 3
-#define _FUSE_HELPER                                                           \
+#define _FUSE_HELPER \
   { LFUSE_DEFAULT, HFUSE_DEFAULT, EFUSE_DEFAULT }
 #elif FUSE_MEMORY_SIZE == 2
-#define _FUSE_HELPER                                                           \
+#define _FUSE_HELPER \
   { LFUSE_DEFAULT, HFUSE_DEFAULT }
 #elif FUSE_MEMORY_SIZE == 1
-#define _FUSE_HELPER                                                           \
+#define _FUSE_HELPER \
   { FUSE_DEFAULT }
 #else
-#define _FUSE_HELPER                                                           \
+#define _FUSE_HELPER \
   { 0 }
 #endif
 
@@ -85,18 +85,18 @@
 #endif
 
 #ifdef SIGNATURE_0
-#define DEFAULT_CORE(_vector_size)                                             \
-  .ioend = RAMSTART - 1, .ramend = RAMEND, .flashend = FLASHEND,               \
-  .e2end = E2END, .vector_size = _vector_size, .fuse = _FUSE_HELPER,           \
-  .signature = {SIGNATURE_0, SIGNATURE_1, SIGNATURE_2}, .lockbits = 0xFF,      \
-  .reset_flags = {.porf = AVR_IO_REGBIT(MCU_STATUS_REG, PORF),                 \
-                  .extrf = AVR_IO_REGBIT(MCU_STATUS_REG, EXTRF),               \
-                  .borf = AVR_IO_REGBIT(MCU_STATUS_REG, BORF),                 \
+#define DEFAULT_CORE(_vector_size)                                        \
+  .ioend = RAMSTART - 1, .ramend = RAMEND, .flashend = FLASHEND,          \
+  .e2end = E2END, .vector_size = _vector_size, .fuse = _FUSE_HELPER,      \
+  .signature = {SIGNATURE_0, SIGNATURE_1, SIGNATURE_2}, .lockbits = 0xFF, \
+  .reset_flags = {.porf = AVR_IO_REGBIT(MCU_STATUS_REG, PORF),            \
+                  .extrf = AVR_IO_REGBIT(MCU_STATUS_REG, EXTRF),          \
+                  .borf = AVR_IO_REGBIT(MCU_STATUS_REG, BORF),            \
                   .wdrf = AVR_IO_REGBIT(MCU_STATUS_REG, WDRF)}
 #else
 // Disable signature when using an old avr toolchain
-#define DEFAULT_CORE(_vector_size)                                             \
-  .ioend = RAMSTART - 1, .ramend = RAMEND, .flashend = FLASHEND,               \
+#define DEFAULT_CORE(_vector_size)                               \
+  .ioend = RAMSTART - 1, .ramend = RAMEND, .flashend = FLASHEND, \
   .e2end = E2END, .vector_size = _vector_size
 #endif
 #endif /* __SIM_CORE_DECLARE_H__ */

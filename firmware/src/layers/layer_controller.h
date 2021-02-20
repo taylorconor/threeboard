@@ -11,12 +11,12 @@
 namespace threeboard {
 
 class LayerController : public LayerControllerDelegate {
-public:
+ public:
   LayerController(LedController *led_controller, usb::Usb *usb);
 
   void HandleEvent(const Keypress &);
 
-private:
+ private:
   // Implement the LayerControllerDelegate overrides.
   void SwitchToLayer(const LayerId &) override;
 
@@ -31,4 +31,4 @@ private:
   LayerId current_layer_;
   Layer *layer_[4]{};
 };
-} // namespace threeboard
+}  // namespace threeboard

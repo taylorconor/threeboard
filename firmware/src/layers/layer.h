@@ -10,7 +10,7 @@ namespace threeboard {
 // This interface defines the methods used for interacting with a specific layer
 // of the threeboard.
 class Layer {
-public:
+ public:
   virtual ~Layer() = default;
 
   explicit Layer(LedController *led_controller, usb::Usb *usb)
@@ -22,7 +22,7 @@ public:
   // Called when the threeboard has transitioned to this layer.
   virtual void TransitionedToLayer() = 0;
 
-protected:
+ protected:
   virtual void FlushToHost();
 
   void UpdateLedState(LayerId layer_id);
@@ -33,4 +33,4 @@ protected:
   uint8_t bank0_ = 0;
   uint8_t bank1_ = 0;
 };
-} // namespace threeboard
+}  // namespace threeboard

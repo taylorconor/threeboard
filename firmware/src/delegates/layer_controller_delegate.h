@@ -5,10 +5,10 @@
 namespace threeboard {
 
 class LayerControllerDelegate {
-public:
+ public:
   virtual void SwitchToLayer(const LayerId &) = 0;
 
-protected:
+ protected:
   virtual ~LayerControllerDelegate() = default;
 };
-} // namespace threeboard
+}  // namespace threeboard

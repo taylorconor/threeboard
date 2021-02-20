@@ -7,7 +7,7 @@ namespace simulator {
 
 // A delegate interface for reading state about the firmware being simulated.
 class FirmwareStateDelegate {
-public:
+ public:
   virtual int GetCpuState() const = 0;
   virtual uint64_t GetCpuCycleCount() const = 0;
   virtual bool IsGdbEnabled() const = 0;
@@ -17,8 +17,8 @@ public:
   virtual uint16_t GetStackSize() const = 0;
   virtual uint16_t GetSramUsage() const = 0;
 
-protected:
+ protected:
   virtual ~FirmwareStateDelegate() = default;
 };
-} // namespace simulator
-} // namespace threeboard
+}  // namespace simulator
+}  // namespace threeboard

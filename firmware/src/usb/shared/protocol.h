@@ -11,7 +11,7 @@ namespace usb {
 // RequestType bitmap format as defined by the USB spec rev. 2.0, section 9.3,
 // table 9-2.
 class RequestType {
-public:
+ public:
   constexpr RequestType() {}
 
   enum class Direction : uint8_t {
@@ -48,7 +48,7 @@ public:
   }
   __force_inline uint8_t GetValue() const { return value_; }
 
-private:
+ private:
   uint8_t value_ = 0;
 };
 
@@ -99,7 +99,7 @@ enum class DescriptorType : uint8_t {
 // descriptor, stored in wValue. Defined by the USB spec rev. 2.0,
 // section 9.4.3.
 class DescriptorId {
-public:
+ public:
   // We need explicit default constructor here to allow Descriptor to remain an
   // aggregate, but it serves no other purpose.
   constexpr DescriptorId() = default;
@@ -120,7 +120,7 @@ public:
 
   constexpr uint16_t GetValue() const { return value_; }
 
-private:
+ private:
   uint16_t value_ = 0;
 };
 
@@ -189,7 +189,8 @@ struct EndpointDescriptor {
 };
 
 // USB spec rev. 2.0, section 9.6.7, table 9-16.
-template <int T> struct UnicodeStringDescriptor {
+template <int T>
+struct UnicodeStringDescriptor {
   uint8_t bLength;
   DescriptorType bDescriptorType;
   const wchar_t bString[T];
@@ -198,7 +199,7 @@ template <int T> struct UnicodeStringDescriptor {
 // Setup packet format as defined by the USB spec rev. 2.0, section 9.3, table
 // 9-3.
 class SetupPacket {
-public:
+ public:
   RequestType bmRequestType;
   Request bRequest;
   uint16_t wValue;
@@ -213,5 +214,5 @@ public:
            wIndex == other.wIndex && wLength == other.wLength;
   }
 };
-} // namespace usb
-} // namespace threeboard
+}  // namespace usb
+}  // namespace threeboard

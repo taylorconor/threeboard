@@ -4,8 +4,10 @@ namespace threeboard {
 
 LayerController::LayerController(LedController *led_controller, usb::Usb *usb)
     : layer_default_(led_controller, usb, this),
-      layer_r_(led_controller, usb, this), layer_g_(led_controller, usb, this),
-      layer_b_(led_controller, usb, this), current_layer_(LayerId::DFLT) {
+      layer_r_(led_controller, usb, this),
+      layer_g_(led_controller, usb, this),
+      layer_b_(led_controller, usb, this),
+      current_layer_(LayerId::DFLT) {
   // Associate each Layer reference to the corresponding LayerId.
   layer_[LayerId::DFLT] = &layer_default_;
   layer_[LayerId::R] = &layer_r_;
@@ -22,4 +24,4 @@ void LayerController::SwitchToLayer(const LayerId &layer_id) {
   layer_[current_layer_]->TransitionedToLayer();
 }
 
-} // namespace threeboard
+}  // namespace threeboard

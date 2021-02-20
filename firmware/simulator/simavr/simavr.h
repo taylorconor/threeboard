@@ -1,8 +1,9 @@
 #pragma once
 
+#include <stdint.h>
+
 #include <functional>
 #include <memory>
-#include <stdint.h>
 
 #include "simulator/lifetime.h"
 #include "simulator/simavr/internal/iom32u4.h"
@@ -86,7 +87,7 @@ using I2cMessageCallback = std::function<void(uint32_t)>;
 // A shim to collect the simavr API into one single interface to make all
 // classes that interact with simavr testable.
 class Simavr {
-public:
+ public:
   virtual ~Simavr() = default;
 
   virtual void Run() = 0;
@@ -98,12 +99,12 @@ public:
 
   virtual int InvokeIoctl(uint32_t ioctl, void *param) = 0;
 
-  virtual std::unique_ptr<Lifetime>
-  RegisterUsbAttachCallback(UsbAttachCallback *callback) = 0;
-  virtual std::unique_ptr<Lifetime>
-  RegisterUartOutputCallback(UartOutputCallback *callback) = 0;
-  virtual std::unique_ptr<Lifetime>
-  RegisterI2cMessageCallback(I2cMessageCallback *callback) = 0;
+  virtual std::unique_ptr<Lifetime> RegisterUsbAttachCallback(
+      UsbAttachCallback *callback) = 0;
+  virtual std::unique_ptr<Lifetime> RegisterUartOutputCallback(
+      UartOutputCallback *callback) = 0;
+  virtual std::unique_ptr<Lifetime> RegisterI2cMessageCallback(
+      I2cMessageCallback *callback) = 0;
 
   virtual void RaiseI2cIrq(uint8_t direction, uint32_t value) = 0;
 
@@ -122,5 +123,5 @@ public:
 
   virtual uint32_t TwiIrqMsg(uint8_t msg, uint8_t addr, uint8_t data) const = 0;
 };
-} // namespace simulator
-} // namespace threeboard
+}  // namespace simulator
+}  // namespace threeboard

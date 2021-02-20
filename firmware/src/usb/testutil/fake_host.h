@@ -8,12 +8,12 @@ namespace usb {
 namespace testutil {
 
 class FakeHost {
-public:
+ public:
   FakeHost(native::NativeMock *native_mock, UsbImpl *usb_impl);
 
   void HandleDeviceEnumeration();
 
-private:
+ private:
   native::NativeMock *native_mock_;
   UsbImpl *usb_impl_;
 
@@ -22,6 +22,6 @@ private:
 
   void AddFakeEndpointExpectations(Request request);
 };
-} // namespace testutil
-} // namespace usb
-} // namespace threeboard
+}  // namespace testutil
+}  // namespace usb
+}  // namespace threeboard

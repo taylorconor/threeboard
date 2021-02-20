@@ -29,5 +29,5 @@ struct HidState {
   // Used to count up to `idle_config` for HID reporting.
   uint8_t idle_count = 0;
 };
-} // namespace usb
-} // namespace threeboard
+}  // namespace usb
+}  // namespace threeboard

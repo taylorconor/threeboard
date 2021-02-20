@@ -101,5 +101,5 @@ constexpr uint8_t TWSTO = 4;
 constexpr uint8_t TWSTA = 5;
 constexpr uint8_t TWINT = 7;
 
-} // namespace native
-} // namespace threeboard
+}  // namespace native
+}  // namespace threeboard

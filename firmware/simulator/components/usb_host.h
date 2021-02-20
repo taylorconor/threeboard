@@ -17,13 +17,13 @@ namespace simulator {
 // interact with the simulated threeboard over USB. This host is in no way USB
 // conformant.
 class UsbHost {
-public:
+ public:
   UsbHost(Simavr *simavr, SimulatorDelegate *simulator_delegate);
   ~UsbHost();
 
   bool IsAttached();
 
-private:
+ private:
   void DeviceControlLoop();
   void InternalUsbAttachCallback(uint32_t status);
 
@@ -36,5 +36,5 @@ private:
   std::unique_ptr<UsbAttachCallback> usb_attach_callback_;
   std::unique_ptr<Lifetime> usb_attach_lifetime_;
 };
-} // namespace simulator
-} // namespace threeboard
+}  // namespace simulator
+}  // namespace threeboard

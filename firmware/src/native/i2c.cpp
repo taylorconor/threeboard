@@ -7,7 +7,7 @@ namespace {
 constexpr uint8_t kWriteFlag = 0;
 constexpr uint8_t kReadFlag = 1;
 
-} // namespace
+}  // namespace
 
 I2C::I2C(native::Native *native) : native_(native) {
   // Enable internal pull-up resistors for SDA and SCL.
@@ -15,9 +15,9 @@ I2C::I2C(native::Native *native) : native_(native) {
   native_->EnablePORTD(0b00000011);
   // Address mask.
   native_->SetTWAMR(0xFE);
-  native_->SetTWSR(native_->GetTWSR() & ~3); // set presca1er bits to zero
-  native_->SetTWBR(0x46);                    // SCL frequency is 50K for 16Mhz
-  native_->SetTWCR(1 << native::TWEN);       // enab1e TWI module
+  native_->SetTWSR(native_->GetTWSR() & ~3);  // set presca1er bits to zero
+  native_->SetTWBR(0x46);                     // SCL frequency is 50K for 16Mhz
+  native_->SetTWCR(1 << native::TWEN);        // enab1e TWI module
 }
 
 void I2C::Write(uint8_t address, const uint32_t &offset, uint8_t *data,
@@ -87,5 +87,5 @@ void I2C::StartReadTransaction(uint8_t address, const uint32_t &offset) {
   SendStart();
   WriteByte(address | kReadFlag);
 }
-} // namespace native
-} // namespace threeboard
+}  // namespace native
+}  // namespace threeboard

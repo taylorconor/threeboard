@@ -6,7 +6,7 @@
 namespace threeboard {
 
 class LayerG : public Layer {
-public:
+ public:
   LayerG(LedController *led_controller, usb::Usb *usb,
          LayerControllerDelegate *layer_controller_delegate)
       : Layer(led_controller, usb),
@@ -17,8 +17,8 @@ public:
   // Called when the threeboard has transitioned to this layer.
   void TransitionedToLayer() override;
 
-private:
+ private:
   LayerControllerDelegate *layer_controller_delegate_;
 };
 
-} // namespace threeboard
+}  // namespace threeboard

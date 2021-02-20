@@ -1,14 +1,13 @@
 #pragma once
 
-#include "request_handler.h"
-
 #include "gmock/gmock.h"
+#include "request_handler.h"
 
 namespace threeboard {
 namespace usb {
 
 class RequestHandlerMockDefault : public RequestHandler {
-public:
+ public:
   RequestHandlerMockDefault(native::Native *native) : RequestHandler(native) {}
 
   MOCK_METHOD(void, HandleGetStatus, (), (override));
@@ -28,5 +27,5 @@ public:
 
 using RequestHandlerMock = ::testing::StrictMock<RequestHandlerMockDefault>;
 
-} // namespace usb
-} // namespace threeboard
+}  // namespace usb
+}  // namespace threeboard

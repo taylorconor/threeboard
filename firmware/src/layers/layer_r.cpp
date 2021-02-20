@@ -27,4 +27,4 @@ void LayerR::TransitionedToLayer() {
   UpdateLedState(LayerId::R);
 }
 
-} // namespace threeboard
+}  // namespace threeboard

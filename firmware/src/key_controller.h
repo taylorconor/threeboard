@@ -14,14 +14,14 @@ namespace threeboard {
 // - Event handling outside the ISR.
 // - More intelligent key combo registration.
 class KeyController {
-public:
+ public:
   KeyController(native::Native *native,
                 KeypressHandlerDelegate *keypress_handler);
 
   // Called by the timer 3 interrupt handler every 5ms.
   void PollKeyState();
 
-private:
+ private:
   native::Native *native_;
   KeypressHandlerDelegate *keypress_handler_;
 
@@ -29,4 +29,4 @@ private:
   // ready to pass to the keypress handler.
   uint8_t key_mask_;
 };
-} // namespace threeboard
+}  // namespace threeboard

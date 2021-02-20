@@ -41,7 +41,7 @@
 #define SIM_MMCU "atmega32u4"
 #define SIM_CORENAME mcu_mega32u4
 
-#define USBRF 5 // missing in avr/iom32u4.h
+#define USBRF 5  // missing in avr/iom32u4.h
 
 #define PD7 7
 #define PD6 6

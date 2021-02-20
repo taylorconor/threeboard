@@ -209,5 +209,5 @@ void UsbImpl::SendHidState() {
   native_->SetUEINTX(0x3A);
 }
 
-} // namespace usb
-} // namespace threeboard
+}  // namespace usb
+}  // namespace threeboard

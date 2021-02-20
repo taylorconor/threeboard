@@ -19,5 +19,5 @@ SetupPacket SetupPacket::ParseFromUsbEndpoint(native::Native *native) {
   return packet;
 }
 
-} // namespace usb
-} // namespace threeboard
+}  // namespace usb
+}  // namespace threeboard

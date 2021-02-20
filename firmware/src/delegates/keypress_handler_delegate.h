@@ -24,10 +24,10 @@ enum class Keypress : uint8_t {
 // An interface that defines the delegation of keypress handling, which is used
 // by the KeyController.
 class KeypressHandlerDelegate {
-public:
+ public:
   virtual void HandleKeypress(const Keypress &) = 0;
 
-protected:
+ protected:
   virtual ~KeypressHandlerDelegate() = default;
 };
-} // namespace threeboard
+}  // namespace threeboard

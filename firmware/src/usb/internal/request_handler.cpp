@@ -50,7 +50,7 @@ bool FindMatchingContainer(native::Native *native, const SetupPacket &packet,
     }*/
   return false;
 }
-} // namespace
+}  // namespace
 
 RequestHandler::RequestHandler(native::Native *native) : native_(native) {}
 
@@ -183,5 +183,5 @@ void RequestHandler::HandleSetProtocol(const SetupPacket &packet,
   HandshakeTransmitterInterrupt(native_);
   hid_state->protocol = packet.wValue;
 }
-} // namespace usb
-} // namespace threeboard
+}  // namespace usb
+}  // namespace threeboard

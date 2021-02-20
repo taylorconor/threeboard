@@ -1,8 +1,8 @@
 #include "uart.h"
 
+#include "gtest/gtest.h"
 #include "simulator/simavr/simavr_mock.h"
 #include "simulator/simulator_delegate_mock.h"
-#include "gtest/gtest.h"
 
 namespace threeboard {
 namespace simulator {
@@ -12,7 +12,7 @@ using ::testing::_;
 using ::testing::Return;
 
 class UartTest : public ::testing::Test {
-public:
+ public:
   UartTest() {
     uint32_t flags = 0;
     // TODO: capture the flags reference here.
@@ -31,6 +31,6 @@ public:
 
 // TODO: write tests!
 TEST_F(UartTest, FakeTest) {}
-} // namespace
-} // namespace simulator
-} // namespace threeboard
+}  // namespace
+}  // namespace simulator
+}  // namespace threeboard

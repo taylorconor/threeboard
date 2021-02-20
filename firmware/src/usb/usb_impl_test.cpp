@@ -15,7 +15,7 @@ using ::testing::Return;
 // Basic tests to prove that SetupPacket requests are handled by the correct
 // handler.
 class UsbImplRequestHandlingTest : public ::testing::Test {
-public:
+ public:
   UsbImplRequestHandlingTest() : handler_mock_(&native_mock_) {
     EXPECT_CALL(native_mock_, SetUsbInterruptHandlerDelegate(_)).Times(1);
     usb_ = std::make_unique<UsbImpl>(&native_mock_);
@@ -65,8 +65,8 @@ TEST_F(UsbImplRequestHandlingTest, DoesNothingOnInvalidSetupPacket) {
   SetupEndpointInterruptMocks();
   EXPECT_CALL(native_mock_, GetUEDATX())
       .Times(8)
-      .WillOnce(Return(0))   // bmRequestType
-      .WillOnce(Return(255)) // bRequest
+      .WillOnce(Return(0))    // bmRequestType
+      .WillOnce(Return(255))  // bRequest
       .WillRepeatedly(Return(0));
   usb_->HandleEndpointInterrupt();
 }
@@ -126,54 +126,54 @@ TEST_F(UsbImplRequestHandlingTest, HandleSetConfigurationRequest) {
 
 // HID requests.
 TEST_F(UsbImplRequestHandlingTest, HandleGetReportRequest) {
-  MockEndpointInterrupt(Request::HID_GET_REPORT,
-                        {RequestType::Direction::DEVICE_TO_HOST,
-                         RequestType::Type::CLASS,
-                         RequestType::Recipient::INTERFACE},
-                        kKeyboardInterface);
+  MockEndpointInterrupt(
+      Request::HID_GET_REPORT,
+      {RequestType::Direction::DEVICE_TO_HOST, RequestType::Type::CLASS,
+       RequestType::Recipient::INTERFACE},
+      kKeyboardInterface);
   EXPECT_CALL(handler_mock_, HandleGetReport(_)).Times(1);
   usb_->HandleEndpointInterrupt();
 }
 
 TEST_F(UsbImplRequestHandlingTest, HandleGetIdleRequest) {
-  MockEndpointInterrupt(Request::HID_GET_IDLE,
-                        {RequestType::Direction::DEVICE_TO_HOST,
-                         RequestType::Type::CLASS,
-                         RequestType::Recipient::INTERFACE},
-                        kKeyboardInterface);
+  MockEndpointInterrupt(
+      Request::HID_GET_IDLE,
+      {RequestType::Direction::DEVICE_TO_HOST, RequestType::Type::CLASS,
+       RequestType::Recipient::INTERFACE},
+      kKeyboardInterface);
   EXPECT_CALL(handler_mock_, HandleGetIdle(_)).Times(1);
   usb_->HandleEndpointInterrupt();
 }
 
 TEST_F(UsbImplRequestHandlingTest, HandleGetProtocolRequest) {
-  MockEndpointInterrupt(Request::HID_GET_PROTOCOL,
-                        {RequestType::Direction::DEVICE_TO_HOST,
-                         RequestType::Type::CLASS,
-                         RequestType::Recipient::INTERFACE},
-                        kKeyboardInterface);
+  MockEndpointInterrupt(
+      Request::HID_GET_PROTOCOL,
+      {RequestType::Direction::DEVICE_TO_HOST, RequestType::Type::CLASS,
+       RequestType::Recipient::INTERFACE},
+      kKeyboardInterface);
   EXPECT_CALL(handler_mock_, HandleGetProtocol(_)).Times(1);
   usb_->HandleEndpointInterrupt();
 }
 
 TEST_F(UsbImplRequestHandlingTest, HandleSetIdleRequest) {
-  auto packet = MockEndpointInterrupt(Request::HID_SET_IDLE,
-                                      {RequestType::Direction::HOST_TO_DEVICE,
-                                       RequestType::Type::CLASS,
-                                       RequestType::Recipient::INTERFACE},
-                                      kKeyboardInterface);
+  auto packet = MockEndpointInterrupt(
+      Request::HID_SET_IDLE,
+      {RequestType::Direction::HOST_TO_DEVICE, RequestType::Type::CLASS,
+       RequestType::Recipient::INTERFACE},
+      kKeyboardInterface);
   EXPECT_CALL(handler_mock_, HandleSetIdle(packet, _)).Times(1);
   usb_->HandleEndpointInterrupt();
 }
 
 TEST_F(UsbImplRequestHandlingTest, HandleSetProtocolRequest) {
-  auto packet = MockEndpointInterrupt(Request::HID_SET_PROTOCOL,
-                                      {RequestType::Direction::HOST_TO_DEVICE,
-                                       RequestType::Type::CLASS,
-                                       RequestType::Recipient::INTERFACE},
-                                      kKeyboardInterface);
+  auto packet = MockEndpointInterrupt(
+      Request::HID_SET_PROTOCOL,
+      {RequestType::Direction::HOST_TO_DEVICE, RequestType::Type::CLASS,
+       RequestType::Recipient::INTERFACE},
+      kKeyboardInterface);
   EXPECT_CALL(handler_mock_, HandleSetProtocol(packet, _)).Times(1);
   usb_->HandleEndpointInterrupt();
 }
-} // namespace
-} // namespace usb
-} // namespace threeboard
+}  // namespace
+}  // namespace usb
+}  // namespace threeboard

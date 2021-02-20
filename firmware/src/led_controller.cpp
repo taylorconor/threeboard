@@ -129,4 +129,4 @@ void LedController::ApplyLedState(native::PortModFn port_mod_fn, uint8_t val,
   }
 }
 
-} // namespace threeboard
+}  // namespace threeboard

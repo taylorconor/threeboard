@@ -3,11 +3,11 @@
 namespace threeboard {
 
 class TimerInterruptHandlerDelegate {
-public:
+ public:
   virtual void HandleTimer1Interrupt() = 0;
   virtual void HandleTimer3Interrupt() = 0;
 
-protected:
+ protected:
   virtual ~TimerInterruptHandlerDelegate() = default;
 };
-} // namespace threeboard
+}  // namespace threeboard

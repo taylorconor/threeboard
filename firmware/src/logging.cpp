@@ -13,7 +13,7 @@ __force_inline void Transmit(native::Native *native, char c) {
   // Send a single byte of log data to the USART1 I/O data register.
   native->SetUDR1(c);
 }
-} // namespace
+}  // namespace
 
 // static.
 // This is defined as static so that all usages of LOG don't need to provide
@@ -37,4 +37,4 @@ void Logging::Log(const char *fmt, ...) {
   Transmit(native_, '\n');
 }
 
-} // namespace threeboard
+}  // namespace threeboard

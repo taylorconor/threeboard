@@ -6,7 +6,7 @@ namespace threeboard {
 namespace native {
 
 class I2C {
-public:
+ public:
   explicit I2C(native::Native *native);
 
   // TODO: return status?
@@ -15,7 +15,7 @@ public:
   void Read(uint8_t address, const uint32_t &offset, uint8_t *data,
             const uint32_t &length);
 
-private:
+ private:
   native::Native *native_;
 
   void SendStart();
@@ -26,5 +26,5 @@ private:
   void StartWriteTransaction(uint8_t address, const uint32_t &offset);
   void StartReadTransaction(uint8_t address, const uint32_t &offset);
 };
-} // namespace native
-} // namespace threeboard
+}  // namespace native
+}  // namespace threeboard

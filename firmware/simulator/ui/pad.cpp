@@ -1,6 +1,7 @@
 #include "pad.h"
 
 #include <curses.h>
+
 #include <iostream>
 #include <mutex>
 
@@ -37,5 +38,5 @@ void Pad::Refresh(const std::string &title, int title_color, int start_row,
 
   prefresh(pad_, 0, 0, start_row + 1, start_col, end_row, end_col);
 }
-} // namespace simulator
-} // namespace threeboard
+}  // namespace simulator
+}  // namespace threeboard

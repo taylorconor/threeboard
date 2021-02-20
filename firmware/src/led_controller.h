@@ -10,7 +10,7 @@ namespace threeboard {
 // on an external clock pulse in the form of calls to `ScanNextLine` which is
 // provided by an interrupt handler polled by timer1 every 2ms.
 class LedController {
-public:
+ public:
   // State of individual addressable LEDs.
   enum class LedState {
     OFF = 0,
@@ -39,7 +39,7 @@ public:
   void SetErr(LedState state);
   void SetStatus(LedState state);
 
-private:
+ private:
   native::Native *native_;
 
   // The state of all of the LEDs under the control of LedController. There are
@@ -69,4 +69,4 @@ private:
   void ApplyLedState(native::PortModFn port_mod_fn, uint8_t val,
                      LedState state);
 };
-} // namespace threeboard
+}  // namespace threeboard

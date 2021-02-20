@@ -9,7 +9,7 @@ namespace threeboard {
 namespace usb {
 
 class RequestHandler {
-public:
+ public:
   explicit RequestHandler(native::Native *native);
   virtual ~RequestHandler() = default;
 
@@ -27,8 +27,8 @@ public:
   virtual void HandleGetProtocol(const HidState &);
   virtual void HandleSetProtocol(const SetupPacket &, HidState *);
 
-private:
+ private:
   native::Native *native_;
 };
-} // namespace usb
-} // namespace threeboard
+}  // namespace usb
+}  // namespace threeboard

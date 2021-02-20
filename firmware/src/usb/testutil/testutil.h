@@ -9,5 +9,5 @@ namespace testutil {
 
 void MockSendingSetupPacket(native::NativeMock *, const SetupPacket &);
 }
-} // namespace usb
-} // namespace threeboard
+}  // namespace usb
+}  // namespace threeboard

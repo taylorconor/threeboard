@@ -14,11 +14,13 @@ TwiMessage ParseTwiMessage(uint32_t value) {
   return v.u.twi;
 }
 
-} // namespace
+}  // namespace
 
 I2cEeprom::I2cEeprom(Simavr *simavr, uint32_t size_bytes, uint8_t address,
                      uint8_t address_mask)
-    : simavr_(simavr), size_bytes_(size_bytes), address_(address),
+    : simavr_(simavr),
+      size_bytes_(size_bytes),
+      address_(address),
       address_mask_(address_mask) {
   // Reserve and write all 1's to the EEPROM, which is the default initial
   // EEPROM configuration from the factory.
@@ -91,5 +93,5 @@ void I2cEeprom::HandleI2cMessage(uint32_t value) {
     }
   }
 }
-} // namespace simulator
-} // namespace threeboard
+}  // namespace simulator
+}  // namespace threeboard

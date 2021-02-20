@@ -1,6 +1,7 @@
 #include "ui.h"
 
 #include <curses.h>
+
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -130,27 +131,27 @@ std::string ParseCpuFreq(uint64_t ticks_per_sec) {
 
 std::string GetCpuStateName(int state) {
   switch (state) {
-  case 0:
-    return "LIMBO";
-  case 1:
-    return "STOPPED";
-  case 2:
-    return "RUNNING";
-  case 3:
-    return "SLEEPING";
-  case 4:
-    return "STEP";
-  case 5:
-    return "STEP_DONE";
-  case 6:
-    return "DONE";
-  case 7:
-    return "CRASHED";
-  default:
-    return "UNKNOWN";
+    case 0:
+      return "LIMBO";
+    case 1:
+      return "STOPPED";
+    case 2:
+      return "RUNNING";
+    case 3:
+      return "SLEEPING";
+    case 4:
+      return "STEP";
+    case 5:
+      return "STEP_DONE";
+    case 6:
+      return "DONE";
+    case 7:
+      return "CRASHED";
+    default:
+      return "UNKNOWN";
   }
 }
-} // namespace
+}  // namespace
 
 UI::UI(SimulatorDelegate *sim_delegate,
        FirmwareStateDelegate *firmware_state_delegate,
@@ -158,7 +159,8 @@ UI::UI(SimulatorDelegate *sim_delegate,
     : simulator_delegate_(sim_delegate),
       firmware_state_delegate_(firmware_state_delegate),
       screen_output_mutex_(std::make_unique<std::recursive_mutex>()),
-      is_running_(false), log_file_(log_file) {}
+      is_running_(false),
+      log_file_(log_file) {}
 
 UI::~UI() {
   if (is_running_) {
@@ -166,7 +168,7 @@ UI::~UI() {
     render_thread_->join();
     endwin();
   }
-} // namespace simulator
+}  // namespace simulator
 
 void UI::StartAsyncRenderLoop() {
   if (render_thread_) {
@@ -484,5 +486,5 @@ void UI::UpdateSramUsageBreakdownList() {
       "stack", firmware_state_delegate_->GetStackSize());
 }
 
-} // namespace simulator
-} // namespace threeboard
+}  // namespace simulator
+}  // namespace threeboard

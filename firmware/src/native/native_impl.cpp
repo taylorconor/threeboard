@@ -85,15 +85,15 @@ ISR(USB_COM_vect) {
       ->GetUsbInterruptHandlerDelegate()
       ->HandleEndpointInterrupt();
 }
-} // namespace
+}  // namespace
 
 Native *NativeImpl::Get() {
   static NativeImpl instance = NativeImpl();
   return &instance;
 }
 
-TimerInterruptHandlerDelegate *
-NativeImpl::GetTimerInterruptHandlerDelegate() const {
+TimerInterruptHandlerDelegate *NativeImpl::GetTimerInterruptHandlerDelegate()
+    const {
   return timer_delegate_;
 }
 
@@ -102,8 +102,8 @@ void NativeImpl::SetTimerInterruptHandlerDelegate(
   timer_delegate_ = delegate;
 }
 
-UsbInterruptHandlerDelegate *
-NativeImpl::GetUsbInterruptHandlerDelegate() const {
+UsbInterruptHandlerDelegate *NativeImpl::GetUsbInterruptHandlerDelegate()
+    const {
   return usb_delegate_;
 }
 
@@ -202,5 +202,5 @@ void NativeImpl::SetUDR1(uint8_t val) { UDR1 = val; }
 void NativeImpl::SetUBRR1H(uint8_t val) { UBRR1H = val; }
 void NativeImpl::SetUBRR1L(uint8_t val) { UBRR1L = val; }
 
-} // namespace native
-} // namespace threeboard
+}  // namespace native
+}  // namespace threeboard

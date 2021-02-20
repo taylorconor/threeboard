@@ -11,7 +11,7 @@ namespace {
 using LedState = LedController::LedState;
 
 class LedControllerTest : public ::testing::Test {
-public:
+ public:
   LedControllerTest() {
     EXPECT_CALL(native_mock_, EnableDDRB(0b01110000)).Times(1);
     EXPECT_CALL(native_mock_, EnableDDRC(0b01000000)).Times(1);
@@ -108,6 +108,6 @@ TEST_F(LedControllerTest, TestCorrectColumnPinsDisabled) {
   EXPECT_CALL(native_mock_, DisablePORTF(1 << native::PF4)).Times(1);
   controller_->ScanNextLine();
 }
-} // namespace
-} // namespace util
-} // namespace threeboard
+}  // namespace
+}  // namespace util
+}  // namespace threeboard

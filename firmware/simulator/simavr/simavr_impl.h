@@ -1,9 +1,9 @@
 #pragma once
 
+#include <memory>
+
 #include "simavr.h"
 #include "simavr/sim_irq.h"
-
-#include <memory>
 
 extern "C" {
 struct avr_t;
@@ -15,7 +15,7 @@ namespace simulator {
 // Concrete implementation of the Simavr interface. This is the only class with
 // a dependency on the simavr library.
 class SimavrImpl : public Simavr {
-public:
+ public:
   static std::unique_ptr<Simavr> Create(const std::string &);
 
   ~SimavrImpl() override = default;
@@ -29,12 +29,12 @@ public:
 
   int InvokeIoctl(uint32_t ioctl, void *param) override;
 
-  std::unique_ptr<Lifetime>
-  RegisterUsbAttachCallback(UsbAttachCallback *callback) override;
-  std::unique_ptr<Lifetime>
-  RegisterUartOutputCallback(UartOutputCallback *callback) override;
-  std::unique_ptr<Lifetime>
-  RegisterI2cMessageCallback(I2cMessageCallback *callback) override;
+  std::unique_ptr<Lifetime> RegisterUsbAttachCallback(
+      UsbAttachCallback *callback) override;
+  std::unique_ptr<Lifetime> RegisterUartOutputCallback(
+      UartOutputCallback *callback) override;
+  std::unique_ptr<Lifetime> RegisterI2cMessageCallback(
+      I2cMessageCallback *callback) override;
 
   void RaiseI2cIrq(uint8_t direction, uint32_t value) override;
 
@@ -53,7 +53,7 @@ public:
 
   uint32_t TwiIrqMsg(uint8_t msg, uint8_t addr, uint8_t data) const override;
 
-private:
+ private:
   SimavrImpl(std::unique_ptr<avr_t> avr, uint16_t bss_size, uint16_t data_size);
 
   std::unique_ptr<avr_t> avr_;
@@ -61,5 +61,5 @@ private:
   uint16_t data_size_;
   avr_irq_t *i2c_irq_;
 };
-} // namespace simulator
-} // namespace threeboard
+}  // namespace simulator
+}  // namespace threeboard

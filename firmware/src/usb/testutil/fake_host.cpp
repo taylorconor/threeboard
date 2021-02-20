@@ -1,7 +1,6 @@
 #include "fake_host.h"
 
 #include "gmock/gmock.h"
-
 #include "src/usb/shared/protocol.h"
 
 namespace threeboard {
@@ -33,7 +32,7 @@ void SetupEnumerationExpectations(native::NativeMock *native_mock) {
               SetUDIEN((1 << native::EORSTE) | (1 << native::SOFE)))
       .Times(1);
 }
-} // namespace
+}  // namespace
 
 FakeHost::FakeHost(native::NativeMock *native_mock, UsbImpl *usb_impl)
     : native_mock_(native_mock), usb_impl_(usb_impl) {}
@@ -72,6 +71,6 @@ void FakeHost::AddFakeEndpointExpectations(Request request) {
       .WillOnce(Return((uint8_t)(packet.wLength >> 8)));
 }
 
-} // namespace testutil
-} // namespace usb
-} // namespace threeboard
+}  // namespace testutil
+}  // namespace usb
+}  // namespace threeboard

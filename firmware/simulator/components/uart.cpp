@@ -28,5 +28,5 @@ void Uart::LogCharacterInputCallback(uint8_t value) {
     log_buffer_ += value;
   }
 }
-} // namespace simulator
-} // namespace threeboard
+}  // namespace simulator
+}  // namespace threeboard

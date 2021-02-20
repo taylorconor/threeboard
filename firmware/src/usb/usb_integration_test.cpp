@@ -1,9 +1,8 @@
-#include "usb_impl.h"
-
+#include "gmock/gmock.h"
 #include "src/delegates/usb_interrupt_handler_delegate.h"
 #include "src/native/native_mock.h"
 #include "src/usb/testutil/fake_host.h"
-#include "gmock/gmock.h"
+#include "usb_impl.h"
 
 namespace threeboard {
 namespace usb {
@@ -13,7 +12,7 @@ using ::testing::_;
 using ::testing::Return;
 
 class UsbImplTest : public ::testing::Test {
-public:
+ public:
   UsbImplTest() {
     EXPECT_CALL(native_mock_, SetUsbInterruptHandlerDelegate(_)).Times(1);
     usb_ = std::make_unique<UsbImpl>(&native_mock_);
@@ -35,6 +34,6 @@ public:
   VerifyEnumeration();
   EXPECT_TRUE(usb_->HasConfigured());
   }*/
-} // namespace
-} // namespace usb
-} // namespace threeboard
+}  // namespace
+}  // namespace usb
+}  // namespace threeboard

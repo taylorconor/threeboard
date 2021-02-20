@@ -3,11 +3,11 @@
 namespace threeboard {
 
 class UsbInterruptHandlerDelegate {
-public:
+ public:
   virtual void HandleGeneralInterrupt() = 0;
   virtual void HandleEndpointInterrupt() = 0;
 
-protected:
+ protected:
   virtual ~UsbInterruptHandlerDelegate() = default;
 };
-} // namespace threeboard
+}  // namespace threeboard

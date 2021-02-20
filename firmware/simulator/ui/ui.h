@@ -25,7 +25,7 @@ namespace simulator {
 // frame, to allow the owner to set the current state of the simulator in
 // the UI.
 class UI {
-public:
+ public:
   UI(SimulatorDelegate *, FirmwareStateDelegate *, const std::string &log_file);
   ~UI();
 
@@ -44,7 +44,7 @@ public:
   void SetBank0(bool, uint8_t);
   void SetBank1(bool, uint8_t);
 
-private:
+ private:
   void UpdateKeyState();
   void RenderLoop();
   std::string GetClockSpeedString();
@@ -105,5 +105,5 @@ private:
   uint8_t bank0_[8] = {};
   uint8_t bank1_[8] = {};
 };
-} // namespace simulator
-} // namespace threeboard
+}  // namespace simulator
+}  // namespace threeboard

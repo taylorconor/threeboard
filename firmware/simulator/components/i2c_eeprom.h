@@ -13,11 +13,11 @@ using I2cMessageCallback = std::function<void(uint32_t)>;
 // This class represents a simulated external EEPROM communicating with the main
 // MCU via i2c.
 class I2cEeprom {
-public:
+ public:
   I2cEeprom(Simavr *simavr, uint32_t size_bytes, uint8_t address,
             uint8_t address_mask);
 
-private:
+ private:
   // Determine if the provided message is addressed to this EEPROM.
   bool IsRelevant(const TwiMessage &message);
 
@@ -54,5 +54,5 @@ private:
   std::unique_ptr<I2cMessageCallback> i2c_message_callback_;
   std::unique_ptr<Lifetime> i2c_message_lifetime_;
 };
-} // namespace simulator
-} // namespace threeboard
+}  // namespace simulator
+}  // namespace threeboard

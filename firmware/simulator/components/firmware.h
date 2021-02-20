@@ -11,7 +11,7 @@ namespace threeboard {
 namespace simulator {
 
 class Firmware : public FirmwareStateDelegate {
-public:
+ public:
   explicit Firmware(Simavr *simavr);
   ~Firmware() override;
 
@@ -39,7 +39,7 @@ public:
   void EnableGdb(uint16_t port) const;
   void DisableGdb() const;
 
-private:
+ private:
   void RunDetached();
 
   Simavr *simavr_;
@@ -53,5 +53,5 @@ private:
   // True if we have been told to reset simavr on its next clock cycle.
   std::atomic<bool> should_reset_;
 };
-} // namespace simulator
-} // namespace threeboard
+}  // namespace simulator
+}  // namespace threeboard

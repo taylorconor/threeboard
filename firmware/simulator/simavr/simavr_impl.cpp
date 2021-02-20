@@ -27,7 +27,7 @@ static const char *_ee_irq_names[2] = {
     [TWI_IRQ_INPUT] = "8>eeprom.out",
     [TWI_IRQ_OUTPUT] = "32<eeprom.in",
 };
-} // namespace
+}  // namespace
 
 // static.
 std::unique_ptr<Simavr> SimavrImpl::Create(const std::string &firmware_file) {
@@ -70,8 +70,8 @@ int SimavrImpl::InvokeIoctl(uint32_t ioctl, void *param) {
   return avr_ioctl(avr_.get(), ioctl, param);
 }
 
-std::unique_ptr<Lifetime>
-SimavrImpl::RegisterUsbAttachCallback(UsbAttachCallback *callback) {
+std::unique_ptr<Lifetime> SimavrImpl::RegisterUsbAttachCallback(
+    UsbAttachCallback *callback) {
   auto *irq = avr_io_getirq(avr_.get(), AVR_IOCTL_USB_GETIRQ(), USB_IRQ_ATTACH);
   avr_irq_register_notify(irq, &CallbackTrampoline<UsbAttachCallback>,
                           (void *)callback);
@@ -81,8 +81,8 @@ SimavrImpl::RegisterUsbAttachCallback(UsbAttachCallback *callback) {
   });
 }
 
-std::unique_ptr<Lifetime>
-SimavrImpl::RegisterUartOutputCallback(UartOutputCallback *callback) {
+std::unique_ptr<Lifetime> SimavrImpl::RegisterUartOutputCallback(
+    UartOutputCallback *callback) {
   auto *irq =
       avr_io_getirq(avr_.get(), AVR_IOCTL_UART_GETIRQ('1'), UART_IRQ_OUTPUT);
   avr_irq_register_notify(irq, &CallbackTrampoline<UartOutputCallback>,
@@ -93,8 +93,8 @@ SimavrImpl::RegisterUartOutputCallback(UartOutputCallback *callback) {
   });
 }
 
-std::unique_ptr<Lifetime>
-SimavrImpl::RegisterI2cMessageCallback(I2cMessageCallback *callback) {
+std::unique_ptr<Lifetime> SimavrImpl::RegisterI2cMessageCallback(
+    I2cMessageCallback *callback) {
   i2c_irq_ = avr_alloc_irq(&avr_->irq_pool, 0, 2, _ee_irq_names);
   avr_irq_register_notify(i2c_irq_ + TWI_IRQ_OUTPUT,
                           &CallbackTrampoline<I2cMessageCallback>,
@@ -151,5 +151,5 @@ uint32_t SimavrImpl::TwiIrqMsg(uint8_t msg, uint8_t addr, uint8_t data) const {
   return avr_twi_irq_msg(msg, addr, data);
 }
 
-} // namespace simulator
-} // namespace threeboard
+}  // namespace simulator
+}  // namespace threeboard

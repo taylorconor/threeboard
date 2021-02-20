@@ -18,7 +18,7 @@ constexpr bool was_pressed(const uint8_t state, const uint8_t offset) {
   return state & (1 << offset);
 }
 
-} // namespace
+}  // namespace
 
 KeyController::KeyController(native::Native *native,
                              KeypressHandlerDelegate *keypress_handler)
@@ -62,4 +62,4 @@ void KeyController::PollKeyState() {
     key_mask_ = 0;
   }
 }
-} // namespace threeboard
+}  // namespace threeboard
