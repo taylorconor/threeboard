@@ -4,3 +4,4 @@ bazel-*
 .vscode
 *.db
 .clwb
+fp-info-cache
