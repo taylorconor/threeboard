@@ -7,9 +7,9 @@ namespace threeboard {
 
 class LayerG : public Layer {
  public:
-  LayerG(LedController *led_controller, usb::Usb *usb,
+  LayerG(LedState *led_state, usb::Usb *usb,
          LayerControllerDelegate *layer_controller_delegate)
-      : Layer(led_controller, usb),
+      : Layer(led_state, usb),
         layer_controller_delegate_(layer_controller_delegate) {}
 
   void HandleEvent(const Keypress &) override;

@@ -26,7 +26,7 @@ namespace native {
 
 class Native {
  public:
-  virtual ~Native() {}
+  virtual ~Native() = default;
 
   virtual TimerInterruptHandlerDelegate *GetTimerInterruptHandlerDelegate()
       const = 0;

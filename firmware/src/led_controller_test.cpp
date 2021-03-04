@@ -5,10 +5,7 @@
 #include "src/native/native_mock.h"
 
 namespace threeboard {
-namespace util {
 namespace {
-
-using LedState = LedController::LedState;
 
 class LedControllerTest : public ::testing::Test {
  public:
@@ -42,15 +39,15 @@ TEST_F(LedControllerTest, TestStatusAndErr) {
   // PD7 is the row enabled for row 0.
   EXPECT_CALL(native_mock_, EnablePORTB(1 << native::PB6)).Times(1);
   EXPECT_CALL(native_mock_, EnablePORTD(1 << native::PD7)).Times(1);
-  controller_->SetErr(LedState::ON);
+  controller_->GetLedState()->SetErr(LedState::ON);
   controller_->ScanNextLine();
 
   // PB4 is the row enabled for row 1.
   EXPECT_CALL(native_mock_, EnablePORTC(1 << native::PC6)).Times(1);
   EXPECT_CALL(native_mock_, DisablePORTB(1 << native::PB6)).Times(1);
   EXPECT_CALL(native_mock_, EnablePORTB(1 << native::PB4)).Times(1);
-  controller_->SetErr(LedState::OFF);
-  controller_->SetStatus(LedState::ON);
+  controller_->GetLedState()->SetErr(LedState::OFF);
+  controller_->GetLedState()->SetStatus(LedState::ON);
   controller_->ScanNextLine();
 }
 
@@ -80,9 +77,9 @@ TEST_F(LedControllerTest, TestCorrectRowPinsEnabled) {
 TEST_F(LedControllerTest, TestCorrectColumnPinsDisabled) {
   MockDefaultScanLine(6);
   MockDefaultStatusLEDs(1);
-  controller_->SetBank0(0b00100001);
-  controller_->SetBank1(0b10000100);
-  controller_->SetR(LedState::ON);
+  controller_->GetLedState()->SetBank0(0b00100001);
+  controller_->GetLedState()->SetBank1(0b10000100);
+  controller_->GetLedState()->SetR(LedState::ON);
   // Row 0.
   EXPECT_CALL(native_mock_, EnablePORTD(1 << native::PD7)).Times(1);
   EXPECT_CALL(native_mock_, DisablePORTF(1 << native::PF4)).Times(1);
@@ -109,5 +106,4 @@ TEST_F(LedControllerTest, TestCorrectColumnPinsDisabled) {
   controller_->ScanNextLine();
 }
 }  // namespace
-}  // namespace util
 }  // namespace threeboard

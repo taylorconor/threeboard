@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 
+#include "src/led_state.h"
 #include "src/native/native.h"
 
 namespace threeboard {
@@ -11,14 +12,6 @@ namespace threeboard {
 // provided by an interrupt handler polled by timer1 every 2ms.
 class LedController {
  public:
-  // State of individual addressable LEDs.
-  enum class LedState {
-    OFF = 0,
-    ON = 1,
-    BLINK = 2,
-    BLINK_FAST = 3,
-  };
-
   explicit LedController(native::Native *native);
 
   // Handles rendering of the next scan row. Called by the timer interrupt
@@ -29,30 +22,12 @@ class LedController {
   // 5ms.
   void UpdateBlinkStatus();
 
-  // Setters for all available addressable LEDs.
-  void SetBank0(uint8_t val);
-  void SetBank1(uint8_t val);
-  void SetR(LedState state);
-  void SetG(LedState state);
-  void SetB(LedState state);
-  void SetProg(LedState state);
-  void SetErr(LedState state);
-  void SetStatus(LedState state);
+  // state_ is guaranteed to live for the entire lifetime of the firmware.
+  LedState *GetLedState() { return &state_; }
 
  private:
   native::Native *native_;
-
-  // The state of all of the LEDs under the control of LedController. There are
-  // some wasted bits here which can be compressed into a bitset/bitfield in the
-  // future if we're tight on memory. But for now we have plenty.
-  uint8_t bank_0_ = 0;
-  uint8_t bank_1_ = 0;
-  LedState led_r_ = LedState::OFF;
-  LedState led_g_ = LedState::OFF;
-  LedState led_b_ = LedState::OFF;
-  LedState led_prog_ = LedState::OFF;
-  LedState led_err_ = LedState::OFF;
-  LedState led_status_ = LedState::OFF;
+  LedState state_;
 
   // The next LED line to scan.
   uint8_t next_scan_line_ = 0;
@@ -67,6 +42,6 @@ class LedController {
   void WriteColumns(uint8_t vals);
 
   void ApplyLedState(native::PortModFn port_mod_fn, uint8_t val,
-                     LedState state);
+                     LedState::State state);
 };
 }  // namespace threeboard

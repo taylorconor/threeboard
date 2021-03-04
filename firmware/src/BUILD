@@ -4,10 +4,16 @@ load("@rules_cc//cc:defs.bzl", "cc_test")
 package(default_visibility = ["//visibility:public"])
 
 avr_library(
+    name = "led_state",
+    hdrs = ["led_state.h"],
+)
+
+avr_library(
     name = "led_controller",
     srcs = ["led_controller.cpp"],
     hdrs = ["led_controller.h"],
     deps = [
+        ":led_state",
         ":logging",
         "//src/native",
     ],

@@ -6,7 +6,6 @@ package(default_visibility = ["//visibility:public"])
 avr_binary(
     name = "threeboard_sim_binary",
     srcs = ["//src:main.c"],
-    visibility = ["//visibility:private"],
     copts = select({
         "@bazel_tools//src/conditions:darwin": ["-DDARWIN"],
         "//conditions:default": ["-DLINUX"],
@@ -16,6 +15,7 @@ avr_binary(
         "-DTHREEBOARD_SIM",
         "-g",
     ],
+    visibility = ["//visibility:private"],
     deps = [
         "//src:bootstrap",
         "@third_party//:simavr_avr_hdrs",

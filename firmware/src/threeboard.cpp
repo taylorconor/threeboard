@@ -8,8 +8,6 @@ static_assert(false, "Unsupported compiler: threeboard requires avr-gcc >=9");
 
 namespace threeboard {
 
-using LedState = LedController::LedState;
-
 Threeboard::Threeboard(native::Native *native, usb::Usb *usb,
                        EventBuffer *event_buffer, LedController *led_controller,
                        KeyController *key_controller)
@@ -18,7 +16,7 @@ Threeboard::Threeboard(native::Native *native, usb::Usb *usb,
       event_buffer_(event_buffer),
       led_controller_(led_controller),
       key_controller_(key_controller),
-      layer_controller_(led_controller_, usb_) {
+      layer_controller_(led_controller_->GetLedState(), usb_) {
   // TODO: provide `this` as delegate to receive callback for success/error?
   usb_->Setup();
   native_->SetTimerInterruptHandlerDelegate(this);

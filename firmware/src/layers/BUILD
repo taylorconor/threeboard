@@ -27,7 +27,7 @@ avr_library(
     srcs = ["layer.cpp"],
     hdrs = ["layer.h"],
     deps = [
-        "//src:led_controller",
+        "//src:led_state",
         "//src/delegates:keypress_handler_delegate",
         "//src/layers:layer_id",
         "//src/usb",
@@ -40,7 +40,8 @@ avr_library(
     hdrs = ["default_layer.h"],
     deps = [
         ":layer",
-        "//src:led_controller",
+        "//src:led_state",
+        "//src:logging",
         "//src/delegates:layer_controller_delegate",
     ],
 )
@@ -51,7 +52,8 @@ avr_library(
     hdrs = ["layer_r.h"],
     deps = [
         ":layer",
-        "//src:led_controller",
+        "//src:led_state",
+        "//src:logging",
         "//src/delegates:layer_controller_delegate",
     ],
 )
@@ -62,7 +64,8 @@ avr_library(
     hdrs = ["layer_g.h"],
     deps = [
         ":layer",
-        "//src:led_controller",
+        "//src:led_state",
+        "//src:logging",
         "//src/delegates:layer_controller_delegate",
     ],
 )
@@ -73,7 +76,8 @@ avr_library(
     hdrs = ["layer_b.h"],
     deps = [
         ":layer",
-        "//src:led_controller",
+        "//src:led_state",
+        "//src:logging",
         "//src/delegates:layer_controller_delegate",
     ],
 )
