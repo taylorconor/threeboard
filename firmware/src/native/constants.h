@@ -43,8 +43,10 @@ constexpr uint8_t PF7 = 7;
 
 // UEINTX
 constexpr uint8_t TXINI = 0;
+constexpr uint8_t STALLEDI = 1;
 constexpr uint8_t RXOUTI = 2;
 constexpr uint8_t RXSTPI = 3;
+constexpr uint8_t NAKOUTI = 4;
 constexpr uint8_t RWAL = 5;
 
 // UECONX

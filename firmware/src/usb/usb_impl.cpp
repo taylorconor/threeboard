@@ -205,8 +205,9 @@ void UsbImpl::SendHidState() {
   for (uint8_t i = 0; i < 6; i++) {
     native_->SetUEDATX(hid_state_.keyboard_keys[i]);
   }
-  // TODO: remove magic number
-  native_->SetUEINTX(0x3A);
+  // Reset UEINTX after send
+  native_->SetUEINTX((1 << native::RWAL) | (1 << native::NAKOUTI) |
+                     (1 << native::RXSTPI) | (1 << native::STALLEDI));
 }
 
 }  // namespace usb
