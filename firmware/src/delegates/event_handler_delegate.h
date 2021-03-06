@@ -9,7 +9,7 @@ enum class Keypress : uint8_t {
   // active and inactive states in handler delegates. The KeypressHandler will
   // never be called with an INACTIVE keypress.
   INACTIVE = 0,
-  // Individual kepresses.
+  // Individual keypresses.
   Z = 1,
   Y = 2,
   X = 4,
@@ -21,13 +21,13 @@ enum class Keypress : uint8_t {
   XYZ = 7,
 };
 
-// An interface that defines the delegation of keypress handling, which is used
-// by the KeyController.
-class KeypressHandlerDelegate {
+// An interface that defines the methods needed to be implemented for event
+// handling.
+class EventHandlerDelegate {
  public:
   virtual void HandleKeypress(const Keypress &) = 0;
 
  protected:
-  virtual ~KeypressHandlerDelegate() = default;
+  virtual ~EventHandlerDelegate() = default;
 };
 }  // namespace threeboard

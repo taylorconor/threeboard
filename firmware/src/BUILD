@@ -36,7 +36,7 @@ avr_library(
     hdrs = ["key_controller.h"],
     deps = [
         "//src:logging",
-        "//src/delegates:keypress_handler_delegate",
+        "//src/delegates:event_handler_delegate",
         "//src/native",
         "//src/util",
     ],
@@ -47,7 +47,7 @@ cc_test(
     srcs = ["key_controller_test.cpp"],
     deps = [
         ":key_controller",
-        "//src/delegates:keypress_handler_delegate_mock",
+        "//src/delegates:event_handler_delegate_mock",
         "//src/native:native_mock",
         "@gtest",
         "@gtest//:gtest_main",
@@ -59,7 +59,7 @@ avr_library(
     srcs = ["event_buffer.cpp"],
     hdrs = ["event_buffer.h"],
     deps = [
-        "//src/delegates:keypress_handler_delegate",
+        "//src/delegates:event_handler_delegate",
     ],
 )
 

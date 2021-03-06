@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "src/delegates/keypress_handler_delegate_mock.h"
+#include "src/delegates/event_handler_delegate_mock.h"
 #include "src/native/native_mock.h"
 
 namespace threeboard {
@@ -21,7 +21,7 @@ class KeyControllerTest : public ::testing::Test {
   }
 
   native::NativeMock native_mock_;
-  KeypressHandlerDelegateMock delegate_mock_;
+  EventHandlerDelegateMock delegate_mock_;
   std::unique_ptr<KeyController> controller_;
 };
 

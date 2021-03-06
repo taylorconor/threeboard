@@ -4,13 +4,13 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 package(default_visibility = ["//visibility:public"])
 
 avr_library(
-    name = "keypress_handler_delegate",
-    hdrs = ["keypress_handler_delegate.h"],
+    name = "event_handler_delegate",
+    hdrs = ["event_handler_delegate.h"],
 )
 
 cc_library(
-    name = "keypress_handler_delegate_mock",
-    hdrs = ["keypress_handler_delegate_mock.h"],
+    name = "event_handler_delegate_mock",
+    hdrs = ["event_handler_delegate_mock.h"],
 )
 
 avr_library(

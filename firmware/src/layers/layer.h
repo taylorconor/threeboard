@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/delegates/keypress_handler_delegate.h"
+#include "src/delegates/event_handler_delegate.h"
 #include "src/layers/layer_id.h"
 #include "src/led_state.h"
 #include "src/usb/usb.h"

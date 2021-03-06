@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/delegates/keypress_handler_delegate.h"
+#include "src/delegates/event_handler_delegate.h"
 #include "src/native/native.h"
 
 namespace threeboard {
@@ -15,15 +15,14 @@ namespace threeboard {
 // - More intelligent key combo registration.
 class KeyController {
  public:
-  KeyController(native::Native *native,
-                KeypressHandlerDelegate *keypress_handler);
+  KeyController(native::Native *native, EventHandlerDelegate *keypress_handler);
 
   // Called by the timer 3 interrupt handler every 5ms.
   void PollKeyState();
 
  private:
   native::Native *native_;
-  KeypressHandlerDelegate *keypress_handler_;
+  EventHandlerDelegate *keypress_handler_;
 
   // The current and previous state of the keyboard. Used to store combos until
   // ready to pass to the keypress handler.

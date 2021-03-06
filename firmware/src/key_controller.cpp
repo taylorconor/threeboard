@@ -21,7 +21,7 @@ constexpr bool was_pressed(const uint8_t state, const uint8_t offset) {
 }  // namespace
 
 KeyController::KeyController(native::Native *native,
-                             KeypressHandlerDelegate *keypress_handler)
+                             EventHandlerDelegate *keypress_handler)
     : native_(native), keypress_handler_(keypress_handler) {
   // Initial state of the key mask is empty.
   key_mask_ = 0;

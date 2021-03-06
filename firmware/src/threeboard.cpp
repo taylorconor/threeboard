@@ -38,17 +38,18 @@ void Threeboard::RunEventLoop() {
     // Atomically check for new keyboard events, and either handle them or
     // sleep the CPU until the next interrupt.
     native_->DisableInterrupts();
-    auto event = event_buffer_->GetPendingEventIfAvailable();
-    if (event == Keypress::INACTIVE) {
+    if (!event_buffer_->HasEvent()) {
       // Sleep the CPU until another interrupt fires.
       native_->EnableCpuSleep();
       native_->EnableInterrupts();
       native_->SleepCpu();
       native_->DisableCpuSleep();
     } else {
-      // Re-enable interrupts and handle the keyboard event.
+      if (event_buffer_->HasKeypressEvent()) {
+        layer_controller_.HandleEvent(event_buffer_->GetKeypressEvent());
+      }
+      // Re-enable interrupts after handling the event.
       native_->EnableInterrupts();
-      layer_controller_.HandleEvent(event);
     }
   }
 }
