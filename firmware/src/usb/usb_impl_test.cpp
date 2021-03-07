@@ -7,7 +7,6 @@
 
 namespace threeboard {
 namespace usb {
-namespace {
 
 using ::testing::_;
 using ::testing::Return;
@@ -19,7 +18,7 @@ class UsbImplRequestHandlingTest : public ::testing::Test {
   UsbImplRequestHandlingTest() : handler_mock_(&native_mock_) {
     EXPECT_CALL(native_mock_, SetUsbInterruptHandlerDelegate(_)).Times(1);
     usb_ = std::make_unique<UsbImpl>(&native_mock_);
-    usb_->SetRequestHandler(&handler_mock_);
+    usb_->request_handler_ = &handler_mock_;
   }
 
   void SetupEndpointInterruptMocks() {
@@ -174,6 +173,5 @@ TEST_F(UsbImplRequestHandlingTest, HandleSetProtocolRequest) {
   EXPECT_CALL(handler_mock_, HandleSetProtocol(packet, _)).Times(1);
   usb_->HandleEndpointInterrupt();
 }
-}  // namespace
 }  // namespace usb
 }  // namespace threeboard

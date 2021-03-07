@@ -9,8 +9,8 @@ UsbImpl::UsbImpl(native::Native *native) : native_(native) {
   native_->SetUsbInterruptHandlerDelegate(this);
   // There's no reason to expose RequestHandler outside usb/internal, but we
   // also need to be able to inject a mock. Instead of exposing it, we compose
-  // it here and allow overwriting the pointer in SetRequestHandler for mock
-  // injection.
+  // it here and allow overwriting the pointer for tests using a friend
+  // declaration.
   static RequestHandler handler(native_);
   request_handler_ = &handler;
 }
@@ -159,11 +159,6 @@ void UsbImpl::HandleEndpointInterrupt() {
       }
     }
   }
-}
-
-// Test only.
-void UsbImpl::SetRequestHandler(RequestHandler *request_handler) {
-  request_handler_ = request_handler;
 }
 
 int8_t UsbImpl::SendKeypress() {

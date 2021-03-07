@@ -24,10 +24,9 @@ class UsbImpl : public Usb, public UsbInterruptHandlerDelegate {
   void HandleGeneralInterrupt() final;
   void HandleEndpointInterrupt() final;
 
-  // Test only.
-  void SetRequestHandler(RequestHandler *);
-
  private:
+  friend class UsbImplRequestHandlingTest;
+
   native::Native *native_;
   HidState hid_state_;
   RequestHandler *request_handler_;
