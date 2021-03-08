@@ -5,6 +5,7 @@
 #include "src/native/native_impl.h"
 #include "src/threeboard.h"
 #include "src/usb/usb_impl.h"
+#include "src/util/error_handler_proxy.h"
 
 using namespace threeboard;
 
@@ -17,10 +18,12 @@ void RunThreeboardEventLoop() {
   Logging::Init(native_impl);
   LOG("Native layer initialised");
 
+  util::ErrorHandlerProxy error_handler_proxy;
+
   // Similar to how we construct native_impl above, this is the only place where
   // UsbImpl is injected, so as to enable other components to be testable with a
   // mocked USB implementation.
-  auto usb_impl = usb::UsbImpl(native_impl);
+  auto usb_impl = usb::UsbImpl(native_impl, &error_handler_proxy);
 
   // Set up the remaining objects to inject into the Threeboard instance. These
   // could be constructed within the instance, but injecting them makes testing
@@ -44,6 +47,8 @@ void RunThreeboardEventLoop() {
   // all threeboard components composed into it.
   Threeboard threeboard(native_impl, &usb_impl, &event_buffer, &led_controller,
                         &key_controller);
+
+  error_handler_proxy.SetImpl(&threeboard);
 
   // Run the firmware event loop. This will run forever.
   threeboard.RunEventLoop();

@@ -93,6 +93,7 @@ avr_library(
         ":key_controller",
         ":led_controller",
         "//src/layers:layer_controller",
+        "//src/delegates:error_handler_delegate",
         "//src/native",
         "//src/usb",
     ],
@@ -107,6 +108,7 @@ avr_pure_library(
         ":threeboard_lib",
         "//src/native:i2c",
         "//src/native:native_impl",
+        "//src/util:error_handler_proxy",
         "//src/usb:usb_impl",
     ],
 )

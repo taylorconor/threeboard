@@ -1,11 +1,13 @@
 #include "usb_impl.h"
 
+#include "src/logging.h"
 #include "src/util/util.h"
 
 namespace threeboard {
 namespace usb {
 
-UsbImpl::UsbImpl(native::Native *native) : native_(native) {
+UsbImpl::UsbImpl(native::Native *native, ErrorHandlerDelegate *error_handler)
+    : native_(native), error_handler_(error_handler) {
   native_->SetUsbInterruptHandlerDelegate(this);
   // There's no reason to expose RequestHandler outside usb/internal, but we
   // also need to be able to inject a mock. Instead of exposing it, we compose
@@ -15,7 +17,7 @@ UsbImpl::UsbImpl(native::Native *native) : native_(native) {
   request_handler_ = &handler;
 }
 
-void UsbImpl::Setup() {
+bool UsbImpl::Setup() {
   // Enable the USB pad regulator (which uses the external 1uF UCap).
   native_->SetUHWCON(1 << native::UVREGE);
   // Enable USB and freeze the clock.
@@ -24,8 +26,15 @@ void UsbImpl::Setup() {
   // clock, and enable the PLL.
   native_->SetPLLCSR((1 << native::PINDIV) | (1 << native::PLLE));
   // Busy loop to wait for the PLL to lock to the 16MHz reference clock.
-  while (!(native_->GetPLLCSR() & (1 << native::PLOCK)))
-    ;
+  uint16_t iterations = 0;
+  while (!(native_->GetPLLCSR() & (1 << native::PLOCK))) {
+    if (iterations == UINT16_MAX) {
+      error_handler_->HandleUsbSetupError();
+      return false;
+    }
+    iterations += 1;
+  }
+
   // Enable USB and the VBUS pad.
   native_->SetUSBCON((1 << native::USBE) | (1 << native::OTGPADE));
   // Configure USB general interrupts (handled by the USB_GEN_vect routine). We
@@ -35,6 +44,7 @@ void UsbImpl::Setup() {
   // Connect internal pull-up attach resistor. This must be the final step in
   // the setup process because it indicates that the device is now ready.
   native_->SetUDCON(native_->GetUDCON() & ~(1 << native::DETACH));
+  return true;
 }
 
 bool UsbImpl::HasConfigured() { return hid_state_.configuration; }

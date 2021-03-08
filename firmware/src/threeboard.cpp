@@ -17,8 +17,6 @@ Threeboard::Threeboard(native::Native *native, usb::Usb *usb,
       led_controller_(led_controller),
       key_controller_(key_controller),
       layer_controller_(led_controller_->GetLedState(), usb_) {
-  // TODO: provide `this` as delegate to receive callback for success/error?
-  usb_->Setup();
   native_->SetTimerInterruptHandlerDelegate(this);
   native_->EnableTimer1();
   native_->EnableTimer3();
@@ -26,6 +24,16 @@ Threeboard::Threeboard(native::Native *native, usb::Usb *usb,
 
 void Threeboard::RunEventLoop() {
   native_->EnableInterrupts();
+
+  // Set up the MCU to enable its USB functionality.
+  while (!usb_->Setup()) {
+    led_controller_->GetLedState()->SetErr(LedState::BLINK_FAST);
+    // This is an unrecoverable error. We can either crash here, or delay before
+    // retrying USB setup from scratch repeatedly in the hopes that setup
+    // eventually succeeds. We choose not to crash.
+    native_->DelayMs(50);
+  }
+  led_controller_->GetLedState()->SetErr(LedState::OFF);
 
   // Wait until the USB stack has been configured before continuing the event
   // loop.
@@ -63,6 +71,10 @@ void Threeboard::HandleTimer3Interrupt() {
   LOG_ONCE("Timer 3 setup complete");
   key_controller_->PollKeyState();
   led_controller_->UpdateBlinkStatus();
+}
+
+void Threeboard::HandleUsbSetupError() {
+  LOG_ONCE("USB Setup error (likely fatal)");
 }
 
 }  // namespace threeboard

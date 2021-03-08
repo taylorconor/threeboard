@@ -33,6 +33,8 @@ class NativeImpl : public Native {
   void EnableTimer1() final;
   void EnableTimer3() final;
 
+  void DelayMs(uint8_t) final;
+
   uint16_t ReadPgmWord(const uint8_t *) const final;
   uint8_t ReadPgmByte(const uint8_t *) const final;
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/delegates/error_handler_delegate.h"
 #include "src/delegates/usb_interrupt_handler_delegate.h"
 #include "src/native/native.h"
 #include "src/usb/internal/hid_state.h"
@@ -16,8 +17,9 @@ namespace usb {
 // used and shouldn't affect functionality at all.
 class UsbImpl : public Usb, public UsbInterruptHandlerDelegate {
  public:
-  UsbImpl(native::Native *);
-  void Setup() final;
+  UsbImpl(native::Native *, ErrorHandlerDelegate *);
+
+  bool Setup() final;
   bool HasConfigured() final;
   void SendKeypress(uint8_t key, uint8_t mod) final;
 
@@ -28,6 +30,7 @@ class UsbImpl : public Usb, public UsbInterruptHandlerDelegate {
   friend class UsbImplRequestHandlingTest;
 
   native::Native *native_;
+  ErrorHandlerDelegate *error_handler_;
   HidState hid_state_;
   RequestHandler *request_handler_;
 

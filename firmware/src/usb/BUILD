@@ -14,6 +14,8 @@ avr_library(
     hdrs = ["usb_impl.h"],
     deps = [
         ":usb",
+        "//src:logging",
+        "//src/delegates:error_handler_delegate",
         "//src/delegates:usb_interrupt_handler_delegate",
         "//src/native",
         "//src/usb/internal:descriptors",

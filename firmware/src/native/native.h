@@ -46,6 +46,8 @@ class Native {
   virtual void EnableTimer1() = 0;
   virtual void EnableTimer3() = 0;
 
+  virtual void DelayMs(uint8_t) = 0;
+
   virtual uint16_t ReadPgmWord(const uint8_t *) const = 0;
   virtual uint8_t ReadPgmByte(const uint8_t *) const = 0;
 

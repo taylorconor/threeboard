@@ -29,6 +29,8 @@ class DefaultNativeMock : public Native {
   MOCK_METHOD(void, EnableTimer1, (), (override));
   MOCK_METHOD(void, EnableTimer3, (), (override));
 
+  MOCK_METHOD(void, DelayMs, (uint8_t), (override));
+
   // There's more value in implementing these as real methods here than there is
   // in mocking them.
   uint16_t ReadPgmWord(const uint8_t *ptr) const override {

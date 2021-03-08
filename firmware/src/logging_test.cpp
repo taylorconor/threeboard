@@ -5,7 +5,6 @@
 #include "src/native/native_mock.h"
 
 namespace threeboard {
-namespace util {
 namespace {
 
 class LoggingTest : public ::testing::Test {
@@ -16,5 +15,4 @@ class LoggingTest : public ::testing::Test {
 TEST_F(LoggingTest, FakeTest) {}
 
 }  // namespace
-}  // namespace util
 }  // namespace threeboard
