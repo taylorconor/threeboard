@@ -6,6 +6,8 @@
 namespace threeboard {
 namespace usb {
 
+constexpr uint8_t kFrameTimeout = 50;
+
 UsbImpl::UsbImpl(native::Native *native, ErrorHandlerDelegate *error_handler)
     : native_(native), error_handler_(error_handler) {
   native_->SetUsbInterruptHandlerDelegate(this);
@@ -171,7 +173,7 @@ void UsbImpl::HandleEndpointInterrupt() {
 bool UsbImpl::SendKeypress() {
   uint8_t intr_state = native_->GetSREG();
   native_->DisableInterrupts();
-  uint8_t timeout = native_->GetUDFNUML() + 50;
+  uint8_t initial_frame_num = native_->GetUDFNUML();
   while (true) {
     native_->SetUENUM(kKeyboardEndpoint);
     native_->EnableInterrupts();
@@ -182,12 +184,9 @@ bool UsbImpl::SendKeypress() {
     }
     native_->SetSREG(intr_state);
     // Ensure the device is still configured.
-    if (!hid_state_.configuration) {
-      return false;
-    }
+    RETURN_IF_ERROR(hid_state_.configuration);
     // Only continue polling RWAL for 50 frames (50ms on our full-speed bus).
-    // TODO: what happens when this overflows? i think there's a subtle bug here
-    if (native_->GetUDFNUML() >= timeout) {
+    if ((native_->GetUDFNUML() - initial_frame_num) >= kFrameTimeout) {
       return false;
     }
     intr_state = native_->GetSREG();

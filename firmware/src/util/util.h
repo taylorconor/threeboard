@@ -4,10 +4,12 @@
 
 #define __force_inline inline __attribute__((__always_inline__))
 
-#define RETURN_IF_ERROR(x) \
-  if (!(x)) {              \
-    return false;          \
-  }
+#define RETURN_IF_ERROR(x)         \
+  if (!(x)) {                      \
+    return false;                  \
+  }                                \
+  /* enforce trailing semicolon */ \
+  static_assert(true, "")
 
 namespace threeboard {
 namespace util {
