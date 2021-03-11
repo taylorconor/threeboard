@@ -1,5 +1,7 @@
 #include "src/layers/layer.h"
 
+#include "src/logging.h"
+
 namespace threeboard {
 
 void Layer::UpdateLedState(LayerId layer_id) {
@@ -29,6 +31,14 @@ void Layer::UpdateLedState(LayerId layer_id) {
   led_state_->SetBank1(bank1_);
 }
 
-void Layer::FlushToHost() { usb_->SendKeypress(bank0_, bank1_); }
+void Layer::FlushToHost() {
+  bool success = usb_->SendKeypress(bank0_, bank1_);
+  if (!success) {
+    LOG("Failed to flush to host");
+    led_state_->SetErr(LedState::ON);
+  } else {
+    led_state_->SetErr(LedState::OFF);
+  }
+}
 
 }  // namespace threeboard

@@ -30,6 +30,7 @@ cc_test(
     linkstatic = 1,
     deps = [
         ":usb_impl",
+        "//src/delegates:error_handler_delegate_mock",
         "//src/native:native_mock",
         "//src/usb/internal:request_handler_mock",
         "//src/usb/testutil",
@@ -43,6 +44,7 @@ cc_test(
     srcs = ["usb_integration_test.cpp"],
     deps = [
         ":usb_impl",
+        "//src/delegates:error_handler_delegate_mock",
         "//src/delegates:usb_interrupt_handler_delegate",
         "//src/native:native_mock",
         "//src/usb/testutil:fake_host",

@@ -29,7 +29,7 @@ bool UsbImpl::Setup() {
   uint16_t iterations = 0;
   while (!(native_->GetPLLCSR() & (1 << native::PLOCK))) {
     if (iterations == UINT16_MAX) {
-      error_handler_->HandleUsbSetupError();
+      LOG_ONCE("USB Setup error (likely fatal)");
       return false;
     }
     iterations += 1;
@@ -49,18 +49,17 @@ bool UsbImpl::Setup() {
 
 bool UsbImpl::HasConfigured() { return hid_state_.configuration; }
 
-void UsbImpl::SendKeypress(const uint8_t key, const uint8_t mod) {
+bool UsbImpl::SendKeypress(const uint8_t key, const uint8_t mod) {
   hid_state_.modifier_keys = mod;
   // Currently we only support sending a single key at a time, even though this
   // USB implementation supports the full 6 keys. Functionality of the
   // threeboard may change in future to send multiple keys.
   hid_state_.keyboard_keys[0] = key;
-  // TODO: capture errors
-  SendKeypress();
+  RETURN_IF_ERROR(SendKeypress());
   hid_state_.modifier_keys = 0;
   hid_state_.keyboard_keys[0] = 0;
-  // TODO: capture errors
-  SendKeypress();
+  RETURN_IF_ERROR(SendKeypress());
+  return true;
 }
 
 void UsbImpl::HandleGeneralInterrupt() {
@@ -119,8 +118,6 @@ void UsbImpl::HandleEndpointInterrupt() {
     return;
   }
 
-  // TODO: refactor device_handler into a class so it can be injected here and
-  // tested.
   // Call the appropriate device handlers for device requests.
   if (packet.bRequest == Request::GET_STATUS) {
     request_handler_->HandleGetStatus();
@@ -171,7 +168,7 @@ void UsbImpl::HandleEndpointInterrupt() {
   }
 }
 
-int8_t UsbImpl::SendKeypress() {
+bool UsbImpl::SendKeypress() {
   uint8_t intr_state = native_->GetSREG();
   native_->DisableInterrupts();
   uint8_t timeout = native_->GetUDFNUML() + 50;
@@ -186,12 +183,12 @@ int8_t UsbImpl::SendKeypress() {
     native_->SetSREG(intr_state);
     // Ensure the device is still configured.
     if (!hid_state_.configuration) {
-      return -1;
+      return false;
     }
     // Only continue polling RWAL for 50 frames (50ms on our full-speed bus).
     // TODO: what happens when this overflows? i think there's a subtle bug here
     if (native_->GetUDFNUML() >= timeout) {
-      return -1;
+      return false;
     }
     intr_state = native_->GetSREG();
     native_->DisableInterrupts();
@@ -199,7 +196,7 @@ int8_t UsbImpl::SendKeypress() {
 
   SendHidState();
   native_->SetSREG(intr_state);
-  return 0;
+  return true;
 }
 
 // Send the state of the HID device to the bus.

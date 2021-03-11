@@ -21,7 +21,7 @@ class UsbImpl : public Usb, public UsbInterruptHandlerDelegate {
 
   bool Setup() final;
   bool HasConfigured() final;
-  void SendKeypress(uint8_t key, uint8_t mod) final;
+  bool SendKeypress(uint8_t key, uint8_t mod) final;
 
   void HandleGeneralInterrupt() final;
   void HandleEndpointInterrupt() final;
@@ -29,13 +29,13 @@ class UsbImpl : public Usb, public UsbInterruptHandlerDelegate {
  private:
   friend class UsbImplRequestHandlingTest;
 
+  bool SendKeypress();
+  void SendHidState();
+
   native::Native *native_;
   ErrorHandlerDelegate *error_handler_;
   HidState hid_state_;
   RequestHandler *request_handler_;
-
-  int8_t SendKeypress();
-  void SendHidState();
 };
 }  // namespace usb
 }  // namespace threeboard

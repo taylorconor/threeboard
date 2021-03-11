@@ -4,6 +4,11 @@
 
 #define __force_inline inline __attribute__((__always_inline__))
 
+#define RETURN_IF_ERROR(x) \
+  if (!(x)) {              \
+    return false;          \
+  }
+
 namespace threeboard {
 namespace util {
 __force_inline constexpr uint16_t min(uint16_t a, uint16_t b) {

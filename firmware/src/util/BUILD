@@ -8,7 +8,7 @@ avr_library(
     hdrs = ["error_handler_proxy.h"],
     deps = [
         "//src/delegates:error_handler_delegate",
-    ]
+    ],
 )
 
 avr_library(

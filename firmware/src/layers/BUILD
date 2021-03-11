@@ -28,6 +28,7 @@ avr_library(
     hdrs = ["layer.h"],
     deps = [
         "//src:led_state",
+        "//src:logging",
         "//src/delegates:event_handler_delegate",
         "//src/layers:layer_id",
         "//src/usb",

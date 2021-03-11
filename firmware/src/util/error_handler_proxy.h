@@ -8,7 +8,6 @@ namespace util {
 class ErrorHandlerProxy : public ErrorHandlerDelegate {
  public:
   void SetImpl(ErrorHandlerDelegate* impl) { impl_ = impl; }
-  void HandleUsbSetupError() override { impl_->HandleUsbSetupError(); }
 
  private:
   ErrorHandlerDelegate* impl_;

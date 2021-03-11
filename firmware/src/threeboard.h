@@ -28,9 +28,6 @@ class Threeboard : public TimerInterruptHandlerDelegate,
   void HandleTimer1Interrupt() final;
   void HandleTimer3Interrupt() final;
 
-  // Implement the ErrorHandlerDelegate overrides;
-  void HandleUsbSetupError() final;
-
  private:
   // All of the components composed into this class which we need to coordinate.
   native::Native *native_;

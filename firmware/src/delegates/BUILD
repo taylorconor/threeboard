@@ -8,6 +8,14 @@ avr_library(
     hdrs = ["error_handler_delegate.h"],
 )
 
+cc_library(
+    name = "error_handler_delegate_mock",
+    hdrs = ["error_handler_delegate_mock.h"],
+    deps = [
+        "@gtest",
+    ],
+)
+
 avr_library(
     name = "event_handler_delegate",
     hdrs = ["event_handler_delegate.h"],
@@ -18,7 +26,7 @@ cc_library(
     hdrs = ["event_handler_delegate_mock.h"],
     deps = [
         "@gtest",
-    ]
+    ],
 )
 
 avr_library(

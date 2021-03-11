@@ -36,10 +36,19 @@ void Threeboard::RunEventLoop() {
   led_controller_->GetLedState()->SetErr(LedState::OFF);
 
   // Wait until the USB stack has been configured before continuing the event
-  // loop.
-  // TODO: add error handling.
-  while (!usb_->HasConfigured())
-    ;
+  // loop. It will busy loop until configuration succeeds. If this never happens
+  // it will continuously loop and blink the error LED.
+  {
+    uint16_t iterations = 0;
+    while (!usb_->HasConfigured()) {
+      iterations += 1;
+      if (iterations == UINT16_MAX) {
+        LOG_ONCE("Failed to configure USB, continuing to retry");
+        led_controller_->GetLedState()->SetErr(LedState::BLINK_FAST);
+      }
+    }
+    led_controller_->GetLedState()->SetErr(LedState::OFF);
+  }
 
   // Main event loop.
   while (true) {
@@ -71,10 +80,6 @@ void Threeboard::HandleTimer3Interrupt() {
   LOG_ONCE("Timer 3 setup complete");
   key_controller_->PollKeyState();
   led_controller_->UpdateBlinkStatus();
-}
-
-void Threeboard::HandleUsbSetupError() {
-  LOG_ONCE("USB Setup error (likely fatal)");
 }
 
 }  // namespace threeboard
