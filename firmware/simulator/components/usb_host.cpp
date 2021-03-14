@@ -53,13 +53,13 @@ void UsbHost::DeviceControlLoop() {
     // If the device has not configured yet (i.e. it has not yet set its
     // endpoint number, stored in UENUM, to the keyboard endpoint), configure
     // its keyboard endpoint here.
-    if (simavr_->GetData(UENUM) != usb::kKeyboardEndpoint) {
+    if (simavr_->GetData(UENUM) != usb::descriptor::kKeyboardEndpoint) {
       usb::SetupPacket packet;
       packet.bmRequestType = RequestType(RequestType::Direction::HOST_TO_DEVICE,
                                          RequestType::Type::CLASS,
                                          RequestType::Recipient::ENDPOINT);
       packet.bRequest = usb::Request::SET_CONFIGURATION;
-      packet.wValue = usb::kKeyboardConfigurationValue;
+      packet.wValue = usb::descriptor::kConfigurationValue;
       // TODO: handle error
       UsbPacketBuffer packet_buffer = {.endpoint = 0,
                                        .size = sizeof(usb::SetupPacket),
@@ -67,9 +67,10 @@ void UsbHost::DeviceControlLoop() {
       simavr_->InvokeIoctl(USB_SETUP, &packet_buffer);
     } else {
       uint8_t read_buffer[8];
-      UsbPacketBuffer packet_buffer = {.endpoint = usb::kKeyboardEndpoint,
-                                       .size = 8,
-                                       .buffer = (uint8_t *)&read_buffer};
+      UsbPacketBuffer packet_buffer = {
+          .endpoint = usb::descriptor::kKeyboardEndpoint,
+          .size = 8,
+          .buffer = (uint8_t *)&read_buffer};
       int ret = simavr_->InvokeIoctl(USB_READ, &packet_buffer);
       if (ret == 0) {
         // Keypress changes are sent for two reasons: first when the key is

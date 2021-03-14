@@ -26,11 +26,11 @@ struct __attribute__((__packed__)) DescriptorContainer {
 static constexpr DeviceDescriptor PROGMEM device_descriptor = {
     .bLength = 18,
     .bDescriptorType = DescriptorType::DEVICE,
-    .bcdUSB = kUsbSpecificationReleaseNumber,
-    .bDeviceClass = kDeviceClassCode,
-    .bDeviceSubClass = kDeviceSubclassCode,
-    .bDeviceProtocol = kFullSpeedDeviceProtocol,
-    .bMaxPacketSize0 = kEndpoint32ByteBank,
+    .bcdUSB = descriptor::kUsbSpecificationReleaseNumber,
+    .bDeviceClass = descriptor::kBaseDeviceClassCode,
+    .bDeviceSubClass = descriptor::kBaseDeviceSubclassCode,
+    .bDeviceProtocol = descriptor::kBaseDeviceProtocol,
+    .bMaxPacketSize0 = k32BytePacketSize,
     .idVendor = kVendorId,
     .idProduct = kProductId,
     .bcdDevice = 1,
@@ -96,16 +96,16 @@ static constexpr CombinedDescriptor PROGMEM combined_descriptor = {
             .bDescriptorType = DescriptorType::CONFIGURATION,
             .wTotalLength = sizeof(CombinedDescriptor),
             .bNumInterfaces = hid::kNumInterfaces,
-            .bConfigurationValue = kKeyboardConfigurationValue,
+            .bConfigurationValue = descriptor::kConfigurationValue,
             .iConfiguration = 0,
-            .bmAttributes = kConfigurationAttributeSelfPowered,
-            .bMaxPower = 50,
+            .bmAttributes = descriptor::kConfigurationAttributes,
+            .bMaxPower = descriptor::kConfigurationMaxPower,
         },
     .interface_descriptor =
         {
             .bLength = 9,
             .bDescriptorType = DescriptorType::INTERFACE,
-            .bInterfaceNumber = kKeyboardInterface,
+            .bInterfaceNumber = descriptor::kKeyboardInterfaceIndex,
             .bAlternateSetting = 0,
             .bNumEndpoints = 1,
             .bInterfaceClass = hid::kHidClassCode,
@@ -126,20 +126,21 @@ static constexpr CombinedDescriptor PROGMEM combined_descriptor = {
     .endpoint_descriptor = {
         .bLength = 7,
         .bDescriptorType = DescriptorType::ENDPOINT,
-        .bEndpointAddress = kKeyboardEndpoint | kEndpointPipeTypeIn,
-        .bmAttributes = kKeyboardEndpointTransferType,
-        .wMaxPacketSize = kKeyboardMaxPacketSize,
+        .bEndpointAddress =
+            descriptor::kKeyboardEndpoint | descriptor::kEndpointPipeTypeIn,
+        .bmAttributes = descriptor::kKeyboardEndpointAttributes,
+        .wMaxPacketSize = descriptor::kKeyboardEndpointMaxPacketSize,
         .bInterval = 1}};
 
 // Define all of the string descriptors we send from this device. The
-// supported_languages decriptor is mandatory, the others are just so the host
-// receives a human-redable device identifier string, and can be removed if
+// supported_languages descriptor is mandatory, the others are just so the host
+// receives a human-readable device identifier string, and can be removed if
 // necessary.
 // TODO: Don't think we need the null terminator in here.
 static constexpr UnicodeStringDescriptor<1> PROGMEM supported_languages = {
     .bLength = 4,
     .bDescriptorType = DescriptorType::STRING,
-    .bString = {kLanguageIdEnglish}};
+    .bString = {descriptor::kLanguageIdEnglish}};
 static constexpr UnicodeStringDescriptor<15> PROGMEM manufacturer = {
     .bLength = 30,
     .bDescriptorType = DescriptorType::STRING,
@@ -163,11 +164,11 @@ static const DescriptorContainer PROGMEM descriptor_list[] = {
      .data = (uint8_t *)&combined_descriptor,
      .length = sizeof(combined_descriptor)},
     {.id = DescriptorType::HID_REPORT,
-     .index = kKeyboardInterface,
+     .index = descriptor::kKeyboardInterfaceIndex,
      .data = hid_report,
      .length = sizeof(hid_report)},
     {.id = DescriptorType::HID,
-     .index = kKeyboardInterface,
+     .index = descriptor::kKeyboardInterfaceIndex,
      // TODO: i'm 99% sure this is UB. But it works.
      .data = (uint8_t *)(void *)&combined_descriptor.hid_descriptor,
      .length = combined_descriptor.hid_descriptor.bLength},
@@ -176,11 +177,11 @@ static const DescriptorContainer PROGMEM descriptor_list[] = {
      .data = (uint8_t *)&supported_languages,
      .length = supported_languages.bLength},
     {.id = {DescriptorType::STRING, 1},
-     .index = kLanguageIdEnglish,
+     .index = descriptor::kLanguageIdEnglish,
      .data = (uint8_t *)&manufacturer,
      .length = manufacturer.bLength},
     {.id = {DescriptorType::STRING, 2},
-     .index = kLanguageIdEnglish,
+     .index = descriptor::kLanguageIdEnglish,
      .data = (uint8_t *)&product,
      .length = product.bLength}};
 

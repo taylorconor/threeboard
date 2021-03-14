@@ -76,7 +76,7 @@ void UsbImpl::HandleGeneralInterrupt() {
     // Set Endpoint 0's type as a control endpoint.
     native_->SetUECFG0X(0);
     // Set Endpoint 0's size as 32 bytes, single bank allocated.
-    native_->SetUECFG1X(kEndpoint32ByteBank | kEndpointSingleBank);
+    native_->SetUECFG1X(k32BytePacketSize | kEndpointAlloc);
     // Configure an endpoint interrupt when RXSTPI is sent (i.e. when the
     // current bank contains a new valid SETUP packet).
     native_->SetUEIENX(1 << native::RXSTPE);
@@ -89,7 +89,7 @@ void UsbImpl::HandleGeneralInterrupt() {
   if ((device_interrupt & (1 << native::SOFI)) &&
       !(native_->GetUDMFN() & (1 << native::FNCERR)) &&
       hid_state_.configuration && hid_state_.idle_config) {
-    native_->SetUENUM(kKeyboardEndpoint);
+    native_->SetUENUM(descriptor::kKeyboardEndpoint);
     // Check we're allowed to write out to USB FIFO.
     if (native_->GetUEINTX() & (1 << native::RWAL)) {
       hid_state_.idle_count++;
@@ -142,7 +142,7 @@ void UsbImpl::HandleEndpointInterrupt() {
   }
 
   // Call the appropriate HID handlers for HID requests.
-  if (packet.wIndex == kKeyboardInterface &&
+  if (packet.wIndex == descriptor::kKeyboardInterfaceIndex &&
       packet.bmRequestType.GetType() == RequestType::Type::CLASS &&
       packet.bmRequestType.GetRecipient() ==
           RequestType::Recipient::INTERFACE) {
@@ -175,7 +175,8 @@ bool UsbImpl::SendKeypress() {
   native_->DisableInterrupts();
   uint8_t initial_frame_num = native_->GetUDFNUML();
   while (true) {
-    native_->SetUENUM(kKeyboardEndpoint);
+    // Switch to keyboard endpoint.
+    native_->SetUENUM(descriptor::kKeyboardEndpoint);
     native_->EnableInterrupts();
     // Check if we're allowed to push data into the FIFO. If we are, we can
     // immediately break and begin transmitting.

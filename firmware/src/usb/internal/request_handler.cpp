@@ -96,10 +96,10 @@ void RequestHandler::HandleGetDescriptor(const SetupPacket &packet) {
       util::min(util::min(packet.wLength, 255), container.length);
   uint16_t current_frame_length = 0;
   while (remaining_packet_length > 0 ||
-         current_frame_length == kEndpoint32ByteBank) {
+         current_frame_length == k32BytePacketSize) {
     AwaitTransmitterReady(native_);
     current_frame_length =
-        util::min(remaining_packet_length, kEndpoint32ByteBank);
+        util::min(remaining_packet_length, k32BytePacketSize);
     for (uint16_t i = current_frame_length; i > 0; i--) {
       native_->SetUEDATX(native_->ReadPgmByte(container.data++));
     }
@@ -123,19 +123,19 @@ void RequestHandler::HandleSetConfiguration(const SetupPacket &packet,
 
   // Make sure the host isn't trying to set us in a configuration we don't
   // support.
-  if (hid_state->configuration != kKeyboardConfigurationValue) {
+  if (hid_state->configuration != descriptor::kConfigurationValue) {
     return;
   }
 
   // Configure the only endpoint needed for the threeboard, the
   // interrupt-based keyboard endpoint.
-  native_->SetUENUM(kKeyboardEndpoint);
+  native_->SetUENUM(descriptor::kKeyboardEndpoint);
   native_->SetUECONX(1 << native::EPEN);
   native_->SetUECFG0X(kEndpointTypeInterrupt | kEndpointDirectionIn);
-  native_->SetUECFG1X(kEndpointDoubleBank);
+  native_->SetUECFG1X(kEndpointDoubleBank | kEndpointAlloc);
 
   // Reset the keyboard endpoint to enable it.
-  native_->SetUERST(1 << kKeyboardEndpoint);
+  native_->SetUERST(1 << descriptor::kKeyboardEndpoint);
   native_->SetUERST(0);
 }
 
