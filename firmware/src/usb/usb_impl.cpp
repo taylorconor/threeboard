@@ -28,15 +28,8 @@ bool UsbImpl::Setup() {
   // clock, and enable the PLL.
   native_->SetPLLCSR((1 << native::PINDIV) | (1 << native::PLLE));
   // Busy loop to wait for the PLL to lock to the 16MHz reference clock.
-  uint16_t iterations = 0;
-  while (!(native_->GetPLLCSR() & (1 << native::PLOCK))) {
-    if (iterations == UINT16_MAX) {
-      LOG_ONCE("USB Setup error (likely fatal)");
-      return false;
-    }
-    iterations += 1;
-  }
-
+  WAIT_OR_RETURN(!(native_->GetPLLCSR() & (1 << native::PLOCK)), UINT16_MAX,
+                 "USB Setup error (likely fatal)");
   // Enable USB and the VBUS pad.
   native_->SetUSBCON((1 << native::USBE) | (1 << native::OTGPADE));
   // Configure USB general interrupts (handled by the USB_GEN_vect routine). We

@@ -11,6 +11,18 @@
   /* enforce trailing semicolon */ \
   static_assert(true, "")
 
+#define WAIT_OR_RETURN(cond, max, err) \
+  uint16_t iterations = 0;             \
+  while ((cond)) {                     \
+    if (iterations == (max)) {         \
+      LOG((err));                      \
+      return false;                    \
+    }                                  \
+    iterations += 1;                   \
+  }                                    \
+  /* enforce trailing semicolon */     \
+  static_assert(true, "")
+
 namespace threeboard {
 namespace util {
 __force_inline constexpr uint16_t min(uint16_t a, uint16_t b) {

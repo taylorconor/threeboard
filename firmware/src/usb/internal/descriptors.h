@@ -136,7 +136,6 @@ static constexpr CombinedDescriptor PROGMEM combined_descriptor = {
 // supported_languages descriptor is mandatory, the others are just so the host
 // receives a human-readable device identifier string, and can be removed if
 // necessary.
-// TODO: Don't think we need the null terminator in here.
 static constexpr UnicodeStringDescriptor<1> PROGMEM supported_languages = {
     .bLength = 4,
     .bDescriptorType = DescriptorType::STRING,
