@@ -4,7 +4,7 @@ TRAVIS_ROOT=`pwd`
 
 # build simavr from source
 sudo apt-get update
-sudo apt-get install git gcc-avr binutils-avr avr-libc libelf-dev
+sudo apt-get install git gcc-avr binutils-avr avr-libc libelf-dev libncurses5-dev libncursesw5-dev
 git clone https://github.com/buserror/simavr.git
 cd simavr
 sudo chmod -R a+w /usr/local
