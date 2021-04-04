@@ -1,7 +1,5 @@
 #pragma once
 
-#include <iostream>
-
 #include "gmock/gmock.h"
 #include "native.h"
 

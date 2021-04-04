@@ -16,9 +16,15 @@ namespace threeboard {
 class KeyController {
  public:
   KeyController(native::Native *native, EventHandlerDelegate *keypress_handler);
+  virtual ~KeyController() = default;
 
   // Called by the timer 3 interrupt handler every 5ms.
-  void PollKeyState();
+  virtual void PollKeyState();
+
+ protected:
+  // A default constructor used by the KeyControllerMock to avoid the
+  // Native-dependent public constructor.
+  KeyController() = default;
 
  private:
   native::Native *native_;

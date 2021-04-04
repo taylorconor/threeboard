@@ -1,1 +1,1 @@
-build --cxxopt='-std=c++17'
+build --test_output=all --cxxopt='-std=c++17'

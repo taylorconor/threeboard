@@ -13,17 +13,23 @@ namespace threeboard {
 class LedController {
  public:
   explicit LedController(native::Native *native);
+  virtual ~LedController() = default;
 
   // Handles rendering of the next scan row. Called by the timer interrupt
   // handler every 2ms.
-  void ScanNextLine();
+  virtual void ScanNextLine();
 
   // Handles timing of LED blinking. Called by the timer interrupt handler every
   // 5ms.
-  void UpdateBlinkStatus();
+  virtual void UpdateBlinkStatus();
 
   // state_ is guaranteed to live for the entire lifetime of the firmware.
-  LedState *GetLedState() { return &state_; }
+  virtual LedState *GetLedState() { return &state_; }
+
+ protected:
+  // A default constructor used by the LedControllerMock to avoid the
+  // Native-dependent public constructor.
+  LedController() = default;
 
  private:
   native::Native *native_;

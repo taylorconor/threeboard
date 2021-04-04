@@ -8,6 +8,15 @@ avr_library(
     hdrs = ["usb.h"],
 )
 
+cc_library(
+    name = "usb_mock",
+    hdrs = ["usb_mock.h"],
+    deps = [
+        ":usb",
+        "@gtest",
+    ],
+)
+
 avr_library(
     name = "usb_impl",
     srcs = ["usb_impl.cpp"],

@@ -19,6 +19,15 @@ avr_library(
     ],
 )
 
+cc_library(
+    name = "led_controller_mock",
+    hdrs = ["led_controller_mock.h"],
+    deps = [
+        ":led_controller",
+        "@gtest",
+    ],
+)
+
 cc_test(
     name = "led_controller_test",
     srcs = ["led_controller_test.cpp"],
@@ -39,6 +48,15 @@ avr_library(
         "//src/delegates:event_handler_delegate",
         "//src/native",
         "//src/util",
+    ],
+)
+
+cc_library(
+    name = "key_controller_mock",
+    hdrs = ["key_controller_mock.h"],
+    deps = [
+        ":key_controller",
+        "@gtest",
     ],
 )
 
@@ -85,7 +103,7 @@ cc_test(
 )
 
 avr_library(
-    name = "threeboard_lib",
+    name = "threeboard",
     srcs = ["threeboard.cpp"],
     hdrs = ["threeboard.h"],
     deps = [
@@ -99,13 +117,28 @@ avr_library(
     ],
 )
 
+cc_test(
+    name = "threeboard_test",
+    srcs = ["threeboard_test.cpp"],
+    deps = [
+        ":threeboard",
+        ":led_controller_mock",
+        ":key_controller_mock",
+        "//src/native:native_mock",
+        "//src/usb:usb_mock",
+        "//src:event_buffer",
+        "@gtest",
+        "@gtest//:gtest_main",
+    ],
+)
+
 avr_pure_library(
     name = "bootstrap",
     srcs = ["bootstrap.cpp"],
     hdrs = ["bootstrap.h"],
     deps = [
         ":logging",
-        ":threeboard_lib",
+        ":threeboard",
         "//src/native:i2c",
         "//src/native:native_impl",
         "//src/usb:usb_impl",
@@ -123,6 +156,6 @@ avr_binary(
 )
 
 avr_hex(
-    name = "threeboard",
+    name = "threeboard_hex",
     src = ":threeboard_bin",
 )
