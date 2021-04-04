@@ -23,11 +23,35 @@ class LedControllerTest : public ::testing::Test {
     EXPECT_CALL(native_mock_, EnablePORTF(0b00110011)).Times(times);
   }
 
+  void RunAndExpectFullScanWithErrState(bool enabled) {
+    MockDefaultScanLine(5);
+    EXPECT_CALL(native_mock_, DisablePORTC(1 << native::PC6)).Times(1);
+
+    // Row 0.
+    EXPECT_CALL(native_mock_, EnablePORTB(1 << native::PB6))
+        .Times(enabled ? 1 : 0);
+    EXPECT_CALL(native_mock_, EnablePORTD(1 << native::PD7)).Times(1);
+    controller_->ScanNextLine();
+    // Row 1.
+    EXPECT_CALL(native_mock_, DisablePORTB(1 << native::PB6)).Times(1);
+    EXPECT_CALL(native_mock_, EnablePORTB(1 << native::PB4)).Times(1);
+    controller_->ScanNextLine();
+    // Row 2.
+    EXPECT_CALL(native_mock_, EnablePORTD(1 << native::PD6)).Times(1);
+    controller_->ScanNextLine();
+    // Row 3.
+    EXPECT_CALL(native_mock_, EnablePORTD(1 << native::PD4)).Times(1);
+    controller_->ScanNextLine();
+    // Row 4.
+    EXPECT_CALL(native_mock_, EnablePORTB(1 << native::PB5)).Times(1);
+    controller_->ScanNextLine();
+  }
+
   void MockDefaultStatusLEDs(int full_refreshes) {
     EXPECT_CALL(native_mock_, DisablePORTB(1 << native::PB6))
         .Times(full_refreshes);
     EXPECT_CALL(native_mock_, DisablePORTC(1 << native::PC6))
-        .Times(full_refreshes * 3);
+        .Times(full_refreshes);
   }
 
   native::NativeMock native_mock_;
@@ -104,6 +128,60 @@ TEST_F(LedControllerTest, TestCorrectColumnPinsDisabled) {
   EXPECT_CALL(native_mock_, EnablePORTD(1 << native::PD7)).Times(1);
   EXPECT_CALL(native_mock_, DisablePORTF(1 << native::PF4)).Times(1);
   controller_->ScanNextLine();
+}
+
+TEST_F(LedControllerTest, TestBlink) {
+  // Increment blink status to just below the blink threshold.
+  for (int i = 0; i < 0x7F; i++) {
+    controller_->UpdateBlinkStatus();
+  }
+
+  // Setting to BLINK will initially cause the LED to turn off, since the
+  // blink_state starts below the threshold.
+  controller_->GetLedState()->SetErr(LedState::BLINK);
+  RunAndExpectFullScanWithErrState(false);
+
+  // Increment Blink status to 0x80 (the blink threshold).
+  controller_->UpdateBlinkStatus();
+
+  // Now scan line 0 will produce a state of ON for the ERR LED.
+  RunAndExpectFullScanWithErrState(true);
+
+  // Increment the blink status another 0x80 so it's out of the blink threshold
+  // again.
+  for (int i = 0; i < 0x80; i++) {
+    controller_->UpdateBlinkStatus();
+  }
+
+  // Now scan line 0 will produce a state of OFF again for the ERR LED.
+  RunAndExpectFullScanWithErrState(false);
+}
+
+TEST_F(LedControllerTest, TestBlinkFast) {
+  // Increment blink status to just below the fast blink threshold.
+  for (int i = 0; i < 0x3F; i++) {
+    controller_->UpdateBlinkStatus();
+  }
+
+  // Setting to BLINK will initially cause the LED to turn off, since the
+  // blink_state starts below the threshold.
+  controller_->GetLedState()->SetErr(LedState::BLINK_FAST);
+  RunAndExpectFullScanWithErrState(false);
+
+  // Increment Blink status to 0x40 (the fast blink threshold).
+  controller_->UpdateBlinkStatus();
+
+  // Now scan line 0 will produce a state of ON for the ERR LED.
+  RunAndExpectFullScanWithErrState(true);
+
+  // Increment the blink status another 0x40 so it's out of the blink threshold
+  // again.
+  for (int i = 0; i < 0x40; i++) {
+    controller_->UpdateBlinkStatus();
+  }
+
+  // Now scan line 0 will produce a state of OFF again for the ERR LED.
+  RunAndExpectFullScanWithErrState(false);
 }
 }  // namespace
 }  // namespace threeboard

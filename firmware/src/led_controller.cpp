@@ -54,7 +54,7 @@ void LedController::WriteStateToPins(uint8_t row) {
     native_->DisablePORTB(1 << native::PB6);
     ApplyLedState(&native::Native::EnablePORTC, 1 << native::PC6,
                   state_.GetStatus());
-  } else {
+  } else if (row == 3) {
     // Disable both ERR and STATUS until the row scanner starts again.
     native_->DisablePORTC(1 << native::PC6);
   }
