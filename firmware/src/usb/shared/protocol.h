@@ -31,13 +31,12 @@ class RequestType {
     OTHER = 3,
   };
 
-  constexpr RequestType(const uint8_t value) { value_ = value; }
+  constexpr RequestType(const uint8_t value) : value_(value) {}
   constexpr RequestType(const Direction direction,
                         const Type type = Type::STANDARD,
-                        const Recipient recipient = Recipient::DEVICE) {
-    value_ =
-        (uint8_t)recipient | ((uint8_t)type << 5) | ((uint8_t)direction << 7);
-  }
+                        const Recipient recipient = Recipient::DEVICE)
+      : value_((uint8_t)recipient | ((uint8_t)type << 5) |
+               ((uint8_t)direction << 7)) {}
 
   __force_inline Direction GetDirection() const {
     return (Direction)(value_ >> 7);
