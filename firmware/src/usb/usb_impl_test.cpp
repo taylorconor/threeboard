@@ -132,7 +132,7 @@ TEST_F(UsbImplRequestHandlingTest, HandleGetReportRequest) {
       Request::HID_GET_REPORT,
       {RequestType::Direction::DEVICE_TO_HOST, RequestType::Type::CLASS,
        RequestType::Recipient::INTERFACE},
-      kKeyboardInterface);
+      descriptor::kKeyboardInterfaceIndex);
   EXPECT_CALL(handler_mock_, HandleGetReport(_)).Times(1);
   usb_->HandleEndpointInterrupt();
 }
@@ -142,7 +142,7 @@ TEST_F(UsbImplRequestHandlingTest, HandleGetIdleRequest) {
       Request::HID_GET_IDLE,
       {RequestType::Direction::DEVICE_TO_HOST, RequestType::Type::CLASS,
        RequestType::Recipient::INTERFACE},
-      kKeyboardInterface);
+      descriptor::kKeyboardInterfaceIndex);
   EXPECT_CALL(handler_mock_, HandleGetIdle(_)).Times(1);
   usb_->HandleEndpointInterrupt();
 }
@@ -152,7 +152,7 @@ TEST_F(UsbImplRequestHandlingTest, HandleGetProtocolRequest) {
       Request::HID_GET_PROTOCOL,
       {RequestType::Direction::DEVICE_TO_HOST, RequestType::Type::CLASS,
        RequestType::Recipient::INTERFACE},
-      kKeyboardInterface);
+      descriptor::kKeyboardInterfaceIndex);
   EXPECT_CALL(handler_mock_, HandleGetProtocol(_)).Times(1);
   usb_->HandleEndpointInterrupt();
 }
@@ -162,7 +162,7 @@ TEST_F(UsbImplRequestHandlingTest, HandleSetIdleRequest) {
       Request::HID_SET_IDLE,
       {RequestType::Direction::HOST_TO_DEVICE, RequestType::Type::CLASS,
        RequestType::Recipient::INTERFACE},
-      kKeyboardInterface);
+      descriptor::kKeyboardInterfaceIndex);
   EXPECT_CALL(handler_mock_, HandleSetIdle(packet, _)).Times(1);
   usb_->HandleEndpointInterrupt();
 }
@@ -172,7 +172,7 @@ TEST_F(UsbImplRequestHandlingTest, HandleSetProtocolRequest) {
       Request::HID_SET_PROTOCOL,
       {RequestType::Direction::HOST_TO_DEVICE, RequestType::Type::CLASS,
        RequestType::Recipient::INTERFACE},
-      kKeyboardInterface);
+      descriptor::kKeyboardInterfaceIndex);
   EXPECT_CALL(handler_mock_, HandleSetProtocol(packet, _)).Times(1);
   usb_->HandleEndpointInterrupt();
 }
