@@ -153,6 +153,18 @@ TEST_F(KeyControllerTest, HandleConsecutiveKeypressesAsIndependent) {
   EXPECT_CALL(native_mock_, GetPINB()).Times(1).WillOnce(Return(0xFF));
   EXPECT_CALL(delegate_mock_, HandleKeypress(Keypress::Y)).Times(1);
   controller_->PollKeyState();
+
+  // Press key Z for the duration of 10 keystate polls.
+  EXPECT_CALL(native_mock_, GetPINB())
+      .Times(10)
+      .WillRepeatedly(Return(~(1 << native::PB1)));
+  for (int i = 0; i < 10; i++) {
+    controller_->PollKeyState();
+  }
+  // Release key Y.
+  EXPECT_CALL(native_mock_, GetPINB()).Times(1).WillOnce(Return(0xFF));
+  EXPECT_CALL(delegate_mock_, HandleKeypress(Keypress::Z)).Times(1);
+  controller_->PollKeyState();
 }
 }  // namespace
 }  // namespace threeboard
