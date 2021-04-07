@@ -37,6 +37,17 @@ class Threeboard : public TimerInterruptHandlerDelegate,
   KeyController *key_controller_;
 
   LayerController layer_controller_;
+
+  // Because RunEventLoop() is an infinite loop, it's not fully testable.
+  // Instead the main parts of the event loop are broken out into smaller
+  // functions with no infinite loop. These functions are internal to the
+  // Threeboard class and shouldn't be exposed publicly, so to test them
+  // properly we declare a friend relationship with the ThreeboardTest fixture.
+  friend class ThreeboardTest;
+
+  void WaitForUsbSetup();
+  void WaitForUsbConfiguration();
+  void RunEventLoopIteration();
 };
 
 }  // namespace threeboard
