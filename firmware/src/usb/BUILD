@@ -43,6 +43,7 @@ cc_test(
         "//src/native:native_mock",
         "//src/usb/internal:request_handler_mock",
         "//src/usb/testutil",
+        "//src:logging_fake",
         "@gtest",
         "@gtest//:gtest_main",
     ],

@@ -14,11 +14,11 @@
 #define WAIT_OR_RETURN(cond, max, err) \
   uint16_t iterations = 0;             \
   while ((cond)) {                     \
+    iterations += 1;                   \
     if (iterations == (max)) {         \
       LOG((err));                      \
       return false;                    \
     }                                  \
-    iterations += 1;                   \
   }                                    \
   /* enforce trailing semicolon */     \
   static_assert(true, "")

@@ -27,7 +27,7 @@ class UsbImpl : public Usb, public UsbInterruptHandlerDelegate {
   void HandleEndpointInterrupt() final;
 
  private:
-  friend class UsbImplRequestHandlingTest;
+  friend class UsbImplTest;
 
   bool SendKeypress();
   void SendHidState();

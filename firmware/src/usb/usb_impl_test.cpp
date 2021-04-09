@@ -1,7 +1,7 @@
 #include "usb_impl.h"
 
 #include "src/delegates/error_handler_delegate_mock.h"
-#include "src/delegates/usb_interrupt_handler_delegate.h"
+#include "src/logging_fake.h"
 #include "src/native/native_mock.h"
 #include "src/usb/internal/request_handler_mock.h"
 #include "src/usb/testutil/testutil.h"
@@ -10,13 +10,12 @@ namespace threeboard {
 namespace usb {
 
 using ::testing::_;
+using ::testing::Invoke;
 using ::testing::Return;
 
-// Basic tests to prove that SetupPacket requests are handled by the correct
-// handler.
-class UsbImplRequestHandlingTest : public ::testing::Test {
+class UsbImplTest : public ::testing::Test {
  public:
-  UsbImplRequestHandlingTest() : handler_mock_(&native_mock_) {
+  UsbImplTest() : handler_mock_(&native_mock_) {
     EXPECT_CALL(native_mock_, SetUsbInterruptHandlerDelegate(_)).Times(1);
     usb_ =
         std::make_unique<UsbImpl>(&native_mock_, &error_handler_delegate_mock_);
@@ -60,10 +59,45 @@ class UsbImplRequestHandlingTest : public ::testing::Test {
   native::NativeMock native_mock_;
   RequestHandlerMock handler_mock_;
   ErrorHandlerDelegateMock error_handler_delegate_mock_;
+  LoggingFake logging_fake_;
   std::unique_ptr<UsbImpl> usb_;
 };
 
-TEST_F(UsbImplRequestHandlingTest, DoesNothingOnInvalidSetupPacket) {
+TEST_F(UsbImplTest, SetupFailsOnPllLockFailure) {
+  EXPECT_CALL(native_mock_, SetUHWCON(1 << native::UVREGE)).Times(1);
+  EXPECT_CALL(native_mock_,
+              SetUSBCON((1 << native::USBE) | (1 << native::FRZCLK)))
+      .Times(1);
+  EXPECT_CALL(native_mock_,
+              SetPLLCSR((1 << native::PINDIV) | (1 << native::PLLE)))
+      .Times(1);
+  EXPECT_CALL(native_mock_, GetPLLCSR())
+      .Times(UINT16_MAX)
+      .WillRepeatedly(Return(0));
+  EXPECT_EQ(usb_->Setup(), false);
+}
+
+TEST_F(UsbImplTest, SetupSuccess) {
+  EXPECT_CALL(native_mock_, SetUHWCON(1 << native::UVREGE)).Times(1);
+  EXPECT_CALL(native_mock_,
+              SetUSBCON((1 << native::USBE) | (1 << native::FRZCLK)))
+      .Times(1);
+  EXPECT_CALL(native_mock_,
+              SetPLLCSR((1 << native::PINDIV) | (1 << native::PLLE)))
+      .Times(1);
+  EXPECT_CALL(native_mock_, GetPLLCSR()).WillOnce(Return(1 << native::PLOCK));
+  EXPECT_CALL(native_mock_,
+              SetUSBCON((1 << native::USBE) | (1 << native::OTGPADE)))
+      .Times(1);
+  EXPECT_CALL(native_mock_,
+              SetUDIEN((1 << native::EORSTE) | (1 << native::SOFE)))
+      .Times(1);
+  EXPECT_CALL(native_mock_, GetUDCON()).WillOnce(Return(42));
+  EXPECT_CALL(native_mock_, SetUDCON(42 & ~(1 << native::DETACH))).Times(1);
+  EXPECT_EQ(usb_->Setup(), true);
+}
+
+TEST_F(UsbImplTest, DoesNothingOnInvalidSetupPacket) {
   SetupEndpointInterruptMocks();
   EXPECT_CALL(native_mock_, GetUEDATX())
       .Times(8)
@@ -73,7 +107,7 @@ TEST_F(UsbImplRequestHandlingTest, DoesNothingOnInvalidSetupPacket) {
   usb_->HandleEndpointInterrupt();
 }
 
-TEST_F(UsbImplRequestHandlingTest, StallsWithoutInterrupt) {
+TEST_F(UsbImplTest, StallsWithoutInterrupt) {
   EXPECT_CALL(native_mock_, GetUEINTX())
       .Times(2)
       .WillOnce(Return(0))
@@ -94,32 +128,32 @@ TEST_F(UsbImplRequestHandlingTest, StallsWithoutInterrupt) {
 }
 
 // Device requests.
-TEST_F(UsbImplRequestHandlingTest, HandlesGetStatusRequest) {
+TEST_F(UsbImplTest, HandlesGetStatusRequest) {
   MockEndpointInterrupt(Request::GET_STATUS);
   EXPECT_CALL(handler_mock_, HandleGetStatus()).Times(1);
   usb_->HandleEndpointInterrupt();
 }
 
-TEST_F(UsbImplRequestHandlingTest, HandleSetAddressRequest) {
+TEST_F(UsbImplTest, HandleSetAddressRequest) {
   auto packet = MockEndpointInterrupt(Request::SET_ADDRESS);
   EXPECT_CALL(handler_mock_, HandleSetAddress(packet)).Times(1);
   usb_->HandleEndpointInterrupt();
 }
 
-TEST_F(UsbImplRequestHandlingTest, HandleGetDescriptorRequest) {
+TEST_F(UsbImplTest, HandleGetDescriptorRequest) {
   auto packet = MockEndpointInterrupt(Request::GET_DESCRIPTOR);
   EXPECT_CALL(handler_mock_, HandleGetDescriptor(packet)).Times(1);
   usb_->HandleEndpointInterrupt();
 }
 
-TEST_F(UsbImplRequestHandlingTest, HandleGetConfigurationRequest) {
+TEST_F(UsbImplTest, HandleGetConfigurationRequest) {
   MockEndpointInterrupt(Request::GET_CONFIGURATION,
                         {RequestType::Direction::DEVICE_TO_HOST});
   EXPECT_CALL(handler_mock_, HandleGetConfiguration(_)).Times(1);
   usb_->HandleEndpointInterrupt();
 }
 
-TEST_F(UsbImplRequestHandlingTest, HandleSetConfigurationRequest) {
+TEST_F(UsbImplTest, HandleSetConfigurationRequest) {
   auto packet = MockEndpointInterrupt(Request::SET_CONFIGURATION,
                                       {RequestType::Direction::HOST_TO_DEVICE});
   EXPECT_CALL(handler_mock_, HandleSetConfiguration(packet, _)).Times(1);
@@ -127,7 +161,7 @@ TEST_F(UsbImplRequestHandlingTest, HandleSetConfigurationRequest) {
 }
 
 // HID requests.
-TEST_F(UsbImplRequestHandlingTest, HandleGetReportRequest) {
+TEST_F(UsbImplTest, HandleGetReportRequest) {
   MockEndpointInterrupt(
       Request::HID_GET_REPORT,
       {RequestType::Direction::DEVICE_TO_HOST, RequestType::Type::CLASS,
@@ -137,7 +171,7 @@ TEST_F(UsbImplRequestHandlingTest, HandleGetReportRequest) {
   usb_->HandleEndpointInterrupt();
 }
 
-TEST_F(UsbImplRequestHandlingTest, HandleGetIdleRequest) {
+TEST_F(UsbImplTest, HandleGetIdleRequest) {
   MockEndpointInterrupt(
       Request::HID_GET_IDLE,
       {RequestType::Direction::DEVICE_TO_HOST, RequestType::Type::CLASS,
@@ -147,7 +181,7 @@ TEST_F(UsbImplRequestHandlingTest, HandleGetIdleRequest) {
   usb_->HandleEndpointInterrupt();
 }
 
-TEST_F(UsbImplRequestHandlingTest, HandleGetProtocolRequest) {
+TEST_F(UsbImplTest, HandleGetProtocolRequest) {
   MockEndpointInterrupt(
       Request::HID_GET_PROTOCOL,
       {RequestType::Direction::DEVICE_TO_HOST, RequestType::Type::CLASS,
@@ -157,7 +191,7 @@ TEST_F(UsbImplRequestHandlingTest, HandleGetProtocolRequest) {
   usb_->HandleEndpointInterrupt();
 }
 
-TEST_F(UsbImplRequestHandlingTest, HandleSetIdleRequest) {
+TEST_F(UsbImplTest, HandleSetIdleRequest) {
   auto packet = MockEndpointInterrupt(
       Request::HID_SET_IDLE,
       {RequestType::Direction::HOST_TO_DEVICE, RequestType::Type::CLASS,
@@ -167,7 +201,7 @@ TEST_F(UsbImplRequestHandlingTest, HandleSetIdleRequest) {
   usb_->HandleEndpointInterrupt();
 }
 
-TEST_F(UsbImplRequestHandlingTest, HandleSetProtocolRequest) {
+TEST_F(UsbImplTest, HandleSetProtocolRequest) {
   auto packet = MockEndpointInterrupt(
       Request::HID_SET_PROTOCOL,
       {RequestType::Direction::HOST_TO_DEVICE, RequestType::Type::CLASS,
