@@ -144,10 +144,10 @@ static constexpr UnicodeStringDescriptor<15> PROGMEM manufacturer = {
     .bLength = 30,
     .bDescriptorType = DescriptorType::STRING,
     .bString = L"threeboard.dev"};
-static constexpr UnicodeStringDescriptor<16> PROGMEM product = {
-    .bLength = 32,
+static constexpr UnicodeStringDescriptor<14> PROGMEM product = {
+    .bLength = 28,
     .bDescriptorType = DescriptorType::STRING,
-    .bString = L"threeboard v0.1"};
+    .bString = L"threeboard v1"};
 
 // This table defines which descriptor data is sent for each specific
 // GetDescriptor request from the host, for a given DescriptorValue.
