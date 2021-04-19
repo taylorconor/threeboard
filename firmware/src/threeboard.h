@@ -38,6 +38,13 @@ class Threeboard : public TimerInterruptHandlerDelegate,
 
   LayerController layer_controller_;
 
+  // A small bit-packed struct to store the state of the LED boot indicator
+  // sequence in a single byte.
+  struct {
+    unsigned status : 3;
+    unsigned counter : 5;
+  } boot_indicator_state_;
+
   // Because RunEventLoop() is an infinite loop, it's not fully testable.
   // Instead the main parts of the event loop are broken out into smaller
   // functions with no infinite loop. These functions are internal to the
@@ -47,6 +54,8 @@ class Threeboard : public TimerInterruptHandlerDelegate,
 
   void WaitForUsbSetup();
   void WaitForUsbConfiguration();
+  void DisplayBootIndicator();
+  void PollBootIndicator();
   void RunEventLoopIteration();
 };
 

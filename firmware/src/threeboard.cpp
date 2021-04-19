@@ -31,6 +31,12 @@ void Threeboard::RunEventLoop() {
   // Busy loop until USB configuration succeeds.
   WaitForUsbConfiguration();
 
+  // Display the "boot indicator" (the lighting of LEDs R, G and then B in
+  // sequence) to show that the threeboard has booted. This method blocks until
+  // the boot indicator sequence has finished (250ms) so it doesn't overwrite
+  // any LED states that may be set in the event loop.
+  DisplayBootIndicator();
+
   // Main event loop.
   while (true) {
     RunEventLoopIteration();
@@ -46,6 +52,10 @@ void Threeboard::HandleTimer3Interrupt() {
   LOG_ONCE("Timer 3 setup complete");
   key_controller_->PollKeyState();
   led_controller_->UpdateBlinkStatus();
+
+  if (boot_indicator_state_.status > 0) {
+    PollBootIndicator();
+  }
 }
 
 void Threeboard::WaitForUsbSetup() {
@@ -60,17 +70,46 @@ void Threeboard::WaitForUsbSetup() {
 }
 
 void Threeboard::WaitForUsbConfiguration() {
-  // Loop until the USB stack configures. If this never happens it will continue
-  // to loop infinitely, but also blink the error LED.
-  uint16_t iterations = 0;
+  // Fast busy loop until the USB stack configures. If this never happens it
+  // will continue to loop infinitely, but also blink the error LED.
+  uint32_t iterations = 0;
   while (!usb_->HasConfigured()) {
     iterations += 1;
-    if (iterations == UINT16_MAX) {
+    if (iterations == UINT32_MAX) {
       LOG_ONCE("Failed to configure USB, continuing to retry");
       led_controller_->GetLedState()->SetErr(LedState::BLINK_FAST);
     }
+    native_->DelayMs(1);
   }
   led_controller_->GetLedState()->SetErr(LedState::OFF);
+}
+
+void Threeboard::DisplayBootIndicator() {
+  boot_indicator_state_.status = 1;
+  native_->DelayMs(255);
+}
+
+void Threeboard::PollBootIndicator() {
+  boot_indicator_state_.counter += 1;
+
+  if (boot_indicator_state_.counter > 16) {
+    boot_indicator_state_.counter = 0;
+    boot_indicator_state_.status += 1;
+    if (boot_indicator_state_.status > 4) {
+      boot_indicator_state_.status = 0;
+      led_controller_->GetLedState()->SetB(LedState::OFF);
+    } else {
+      if (boot_indicator_state_.status == 2) {
+        led_controller_->GetLedState()->SetR(LedState::ON);
+      } else if (boot_indicator_state_.status == 3) {
+        led_controller_->GetLedState()->SetR(LedState::OFF);
+        led_controller_->GetLedState()->SetG(LedState::ON);
+      } else if (boot_indicator_state_.status == 4) {
+        led_controller_->GetLedState()->SetG(LedState::OFF);
+        led_controller_->GetLedState()->SetB(LedState::ON);
+      }
+    }
+  }
 }
 
 void Threeboard::RunEventLoopIteration() {

@@ -74,16 +74,14 @@ TEST_F(ThreeboardTest, RetryOnUsbSetupFailure) {
 
 TEST_F(ThreeboardTest, RetryOnUsbConfigureFailure) {
   Sequence seq;
-  EXPECT_CALL(usb_mock_, HasConfigured())
-      .Times(UINT16_MAX)
-      .InSequence(seq)
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(native_mock_, DelayMs(1)).WillRepeatedly(Return());
+  EXPECT_CALL(usb_mock_, HasConfigured()).WillRepeatedly(Return(false));
   EXPECT_CALL(usb_mock_, HasConfigured())
       .InSequence(seq)
       .WillOnce(Return(true));
 
   EXPECT_CALL(led_controller_mock_, GetLedState())
-      .Times(2)
+      .Times(1)
       .WillRepeatedly(Return(&led_state_));
 
   WaitForUsbConfiguration();
