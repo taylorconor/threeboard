@@ -4,8 +4,8 @@ namespace threeboard {
 
 /**
    Pin mappings:
-   STATUS (status1) - 31 - PC6
-   ERR (status0) - 30 - PB6
+   ERR (status1) - 31 - PC6
+   STATUS (status0) - 30 - PB6
    row0 - 27 - PD7
    row1 - 28 - PB4
    row2 - 26 - PD6
@@ -48,13 +48,13 @@ void LedController::WriteStateToPins(uint8_t row) {
   // they have each been assigned their own scan line.
   if (row == 0) {
     ApplyLedState(&native::Native::EnablePORTB, 1 << native::PB6,
-                  state_.GetErr());
+                  state_.GetStatus());
   } else if (row == 1) {
-    // ERR must be disabled to allow STATUS to be enabled.
+    // STATUS must be disabled to allow ERR to be enabled.
     native_->DisablePORTB(1 << native::PB6);
     ApplyLedState(&native::Native::EnablePORTC, 1 << native::PC6,
-                  state_.GetStatus());
-  } else if (row == 3) {
+                  state_.GetErr());
+  } else if (row == 2) {
     // Disable both ERR and STATUS until the row scanner starts again.
     native_->DisablePORTC(1 << native::PC6);
   }

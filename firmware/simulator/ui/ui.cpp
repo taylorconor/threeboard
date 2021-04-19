@@ -55,7 +55,7 @@ void DrawBorder() {
   // Draw the labels for the LEDs.
   move(kRootY + 3, kRootX + 3);
   printw(
-      ('R' + S(4, ' ') + 'G' + S(4, ' ') + 'B' + S(13, ' ') + "PROG ERR STATUS")
+      ('R' + S(4, ' ') + 'G' + S(4, ' ') + 'B' + S(12, ' ') + "PROG STATUS ERR")
           .c_str());
   for (int i = 0; i < 2; i++) {
     move(kRootY + 5 + (i * 2), kRootX + 3);

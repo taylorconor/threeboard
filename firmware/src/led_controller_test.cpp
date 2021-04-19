@@ -25,18 +25,17 @@ class LedControllerTest : public ::testing::Test {
 
   void RunAndExpectFullScanWithErrState(bool enabled) {
     MockDefaultScanLine(5);
-    EXPECT_CALL(native_mock_, DisablePORTC(1 << native::PC6)).Times(1);
-
     // Row 0.
-    EXPECT_CALL(native_mock_, EnablePORTB(1 << native::PB6))
-        .Times(enabled ? 1 : 0);
     EXPECT_CALL(native_mock_, EnablePORTD(1 << native::PD7)).Times(1);
     controller_->ScanNextLine();
     // Row 1.
-    EXPECT_CALL(native_mock_, DisablePORTB(1 << native::PB6)).Times(1);
     EXPECT_CALL(native_mock_, EnablePORTB(1 << native::PB4)).Times(1);
+    EXPECT_CALL(native_mock_, DisablePORTB(1 << native::PB6)).Times(1);
+    EXPECT_CALL(native_mock_, EnablePORTC(1 << native::PC6))
+        .Times(enabled ? 1 : 0);
     controller_->ScanNextLine();
     // Row 2.
+    EXPECT_CALL(native_mock_, DisablePORTC(1 << native::PC6)).Times(1);
     EXPECT_CALL(native_mock_, EnablePORTD(1 << native::PD6)).Times(1);
     controller_->ScanNextLine();
     // Row 3.
@@ -63,15 +62,15 @@ TEST_F(LedControllerTest, TestStatusAndErr) {
   // PD7 is the row enabled for row 0.
   EXPECT_CALL(native_mock_, EnablePORTB(1 << native::PB6)).Times(1);
   EXPECT_CALL(native_mock_, EnablePORTD(1 << native::PD7)).Times(1);
-  controller_->GetLedState()->SetErr(LedState::ON);
+  controller_->GetLedState()->SetStatus(LedState::ON);
   controller_->ScanNextLine();
 
   // PB4 is the row enabled for row 1.
   EXPECT_CALL(native_mock_, EnablePORTC(1 << native::PC6)).Times(1);
   EXPECT_CALL(native_mock_, DisablePORTB(1 << native::PB6)).Times(1);
   EXPECT_CALL(native_mock_, EnablePORTB(1 << native::PB4)).Times(1);
-  controller_->GetLedState()->SetErr(LedState::OFF);
-  controller_->GetLedState()->SetStatus(LedState::ON);
+  controller_->GetLedState()->SetStatus(LedState::OFF);
+  controller_->GetLedState()->SetErr(LedState::ON);
   controller_->ScanNextLine();
 }
 
