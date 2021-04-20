@@ -43,7 +43,7 @@ class Threeboard : public TimerInterruptHandlerDelegate,
   struct {
     unsigned status : 3;
     unsigned counter : 5;
-  } boot_indicator_state_;
+  } boot_indicator_state_{0, 0};
 
   // Because RunEventLoop() is an infinite loop, it's not fully testable.
   // Instead the main parts of the event loop are broken out into smaller
