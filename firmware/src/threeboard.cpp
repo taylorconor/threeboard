@@ -72,14 +72,15 @@ void Threeboard::WaitForUsbSetup() {
 void Threeboard::WaitForUsbConfiguration() {
   // Fast busy loop until the USB stack configures. If this never happens it
   // will continue to loop infinitely, but also blink the error LED.
-  uint32_t iterations = 0;
+  uint8_t iterations = 0;
   while (!usb_->HasConfigured()) {
     iterations += 1;
-    if (iterations == UINT32_MAX) {
+    // After 2.5 seconds, begin flashing the ERR LED.
+    if (iterations > 250) {
       LOG_ONCE("Failed to configure USB, continuing to retry");
       led_controller_->GetLedState()->SetErr(LedState::BLINK_FAST);
     }
-    native_->DelayMs(1);
+    native_->DelayMs(10);
   }
   led_controller_->GetLedState()->SetErr(LedState::OFF);
 }
@@ -92,6 +93,7 @@ void Threeboard::DisplayBootIndicator() {
 void Threeboard::PollBootIndicator() {
   boot_indicator_state_.counter += 1;
 
+  // This method is polled every 5ms. Each LED is lit for 80ms in sequence.
   if (boot_indicator_state_.counter > 16) {
     boot_indicator_state_.counter = 0;
     boot_indicator_state_.status += 1;
