@@ -101,7 +101,37 @@ constexpr uint8_t UCSZ11 = 2;
 constexpr uint8_t TWEN = 2;
 constexpr uint8_t TWSTO = 4;
 constexpr uint8_t TWSTA = 5;
+constexpr uint8_t TWEA = 6;
 constexpr uint8_t TWINT = 7;
+
+// TWSR
+constexpr uint8_t TW_START = 0x08;
+constexpr uint8_t TW_REP_START = 0x10;
+constexpr uint8_t TW_MT_SLA_ACK = 0x18;
+constexpr uint8_t TW_MT_SLA_NACK = 0x20;
+constexpr uint8_t TW_MT_DATA_ACK = 0x28;
+constexpr uint8_t TW_MT_DATA_NACK = 0x30;
+constexpr uint8_t TW_MT_ARB_LOST = 0x38;
+constexpr uint8_t TW_MR_ARB_LOST = 0x38;
+constexpr uint8_t TW_MR_SLA_ACK = 0x40;
+constexpr uint8_t TW_MR_SLA_NACK = 0x48;
+constexpr uint8_t TW_MR_DATA_ACK = 0x50;
+constexpr uint8_t TW_MR_DATA_NACK = 0x58;
+constexpr uint8_t TW_ST_SLA_ACK = 0xA8;
+constexpr uint8_t TW_ST_ARB_LOST_SLA_ACK = 0xB0;
+constexpr uint8_t TW_ST_DATA_ACK = 0xB8;
+constexpr uint8_t TW_ST_DATA_NACK = 0xC0;
+constexpr uint8_t TW_ST_LAST_DATA = 0xC8;
+constexpr uint8_t TW_SR_SLA_ACK = 0x60;
+constexpr uint8_t TW_SR_ARB_LOST_SLA_ACK = 0x68;
+constexpr uint8_t TW_SR_GCALL_ACK = 0x70;
+constexpr uint8_t TW_SR_ARB_LOST_GCALL_ACK = 0x78;
+constexpr uint8_t TW_SR_DATA_ACK = 0x80;
+constexpr uint8_t TW_SR_DATA_NACK = 0x88;
+constexpr uint8_t TW_SR_GCALL_DATA_ACK = 0x90;
+constexpr uint8_t TW_SR_GCALL_DATA_NACK = 0x98;
+constexpr uint8_t TW_SR_STOP = 0xA0;
+constexpr uint8_t TW_NO_INFO = 0xF8;
 
 }  // namespace native
 }  // namespace threeboard

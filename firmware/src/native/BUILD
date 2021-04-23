@@ -50,5 +50,7 @@ avr_pure_library(
     hdrs = ["i2c.h"],
     deps = [
         ":native",
+        ":mcu",
+        "//src/util:util",
     ],
 )

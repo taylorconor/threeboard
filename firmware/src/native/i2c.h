@@ -9,22 +9,34 @@ class I2C {
  public:
   explicit I2C(native::Native *native);
 
-  // TODO: return status?
-  void Write(uint8_t address, const uint32_t &offset, uint8_t *data,
-             const uint32_t &length);
-  void Read(uint8_t address, const uint32_t &offset, uint8_t *data,
-            const uint32_t &length);
+  enum Device {
+    EEPROM_0 = 0,
+    EEPROM_1 = 1,
+  };
+
+  enum Operation {
+    WRITE = 0,
+    READ = 1,
+  };
+
+  // Perform a sequential read as defined by the the 24LC512 data sheet,
+  // section 8.3.
+  bool Read(Device device, const uint16_t &byte_offset, uint8_t *data,
+            const uint16_t &length);
+
+  // Perform a page write as defined by the 24LC512 data sheet, section 6.2.
+  bool Write(Device device, const uint16_t &byte_offset, uint8_t *data,
+             const uint16_t &length);
 
  private:
   native::Native *native_;
 
-  void SendStart();
-  void SendStop();
-  void WriteByte(uint8_t data);
-  uint8_t ReadByte();
-  void StartTransaction(uint8_t address, uint8_t mask, const uint32_t &offset);
-  void StartWriteTransaction(uint8_t address, const uint32_t &offset);
-  void StartReadTransaction(uint8_t address, const uint32_t &offset);
+  bool Start(Device device, Operation operation, uint16_t byte_offset = 0);
+  void Stop();
+  uint8_t GetStatusBits();
+
+  bool WriteByte(uint8_t data);
+  uint8_t ReadByte(bool is_final_byte);
 };
 }  // namespace native
 }  // namespace threeboard
