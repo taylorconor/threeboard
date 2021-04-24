@@ -3,11 +3,12 @@
 #include "src/native/native.h"
 
 namespace threeboard {
-namespace native {
+namespace storage {
 
-class I2C {
+// TODO: this doesn't work yet!
+class I2cEeprom {
  public:
-  explicit I2C(native::Native *native);
+  explicit I2cEeprom(native::Native *native);
 
   enum Device {
     EEPROM_0 = 0,
@@ -38,5 +39,5 @@ class I2C {
   bool WriteByte(uint8_t data);
   uint8_t ReadByte(bool is_final_byte);
 };
-}  // namespace native
+}  // namespace storage
 }  // namespace threeboard

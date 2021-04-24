@@ -43,14 +43,3 @@ avr_pure_library(
         "//src/delegates:timer_interrupt_handler_delegate",
     ],
 )
-
-avr_pure_library(
-    name = "i2c",
-    srcs = ["i2c.cpp"],
-    hdrs = ["i2c.h"],
-    deps = [
-        ":native",
-        ":mcu",
-        "//src/util:util",
-    ],
-)

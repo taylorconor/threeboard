@@ -150,7 +150,6 @@ avr_pure_library(
     deps = [
         ":logging",
         ":threeboard",
-        "//src/native:i2c",
         "//src/native:native_impl",
         "//src/usb:usb_impl",
         "//src/util:error_handler_proxy",

@@ -1,27 +1,28 @@
-#include "i2c.h"
+#include "i2c_eeprom.h"
 
 #include "src/native/mcu.h"
 #include "src/util/util.h"
 
 namespace threeboard {
-namespace native {
+namespace storage {
 namespace {
 
-uint8_t CreateControlByte(I2C::Device device, I2C::Operation operation) {
+uint8_t CreateControlByte(I2cEeprom::Device device,
+                          I2cEeprom::Operation operation) {
   return 0b10100000 | ((device & 7) << 1) | (operation & 1);
 }
 
 }  // namespace
 
-I2C::I2C(native::Native *native) : native_(native) {
+I2cEeprom::I2cEeprom(native::Native *native) : native_(native) {
   // Set the TWI prescaler to 0.
   native_->SetTWSR(native_->GetTWSR() & ~3);
   // Set the SCL clock frequency for the TWI interface to 100kHz.
   native_->SetTWBR(((F_CPU / 100000) - 16) / 2);
 }
 
-bool I2C::Read(Device device, const uint16_t &byte_offset, uint8_t *data,
-               const uint16_t &length) {
+bool I2cEeprom::Read(Device device, const uint16_t &byte_offset, uint8_t *data,
+                     const uint16_t &length) {
   // First write the byte offset to the specified device to update its internal
   // address pointer before we begin the sequential read.
   RETURN_IF_ERROR(Start(device, Operation::WRITE, byte_offset), Stop());
@@ -36,8 +37,8 @@ bool I2C::Read(Device device, const uint16_t &byte_offset, uint8_t *data,
   return true;
 }
 
-bool I2C::Write(Device device, const uint16_t &byte_offset, uint8_t *data,
-                const uint16_t &length) {
+bool I2cEeprom::Write(Device device, const uint16_t &byte_offset, uint8_t *data,
+                      const uint16_t &length) {
   // A page write can contain up to 128 bytes in total. So we split the write
   // into 128-bit chunks to increase throughput.
   uint16_t i = 0;
@@ -52,7 +53,8 @@ bool I2C::Write(Device device, const uint16_t &byte_offset, uint8_t *data,
   return true;
 }
 
-bool I2C::Start(Device device, Operation operation, uint16_t byte_offset) {
+bool I2cEeprom::Start(Device device, Operation operation,
+                      uint16_t byte_offset) {
   // Send START and wait for it to complete.
   native_->SetTWCR((1 << native::TWINT) | (1 << native::TWSTA) |
                    (1 << native::TWEN));
@@ -92,7 +94,7 @@ bool I2C::Start(Device device, Operation operation, uint16_t byte_offset) {
   return true;
 }
 
-void I2C::Stop() {
+void I2cEeprom::Stop() {
   // Send STOP and wait for it to complete.
   native_->SetTWCR((1 << native::TWINT) | (1 << native::TWEN) |
                    (1 << native::TWSTO));
@@ -100,12 +102,12 @@ void I2C::Stop() {
     ;
 }
 
-uint8_t I2C::GetStatusBits() {
+uint8_t I2cEeprom::GetStatusBits() {
   // Mask out non-status bits of the TWI status register.
   return native_->GetTWSR() & 0xF8;
 }
 
-bool I2C::WriteByte(uint8_t data) {
+bool I2cEeprom::WriteByte(uint8_t data) {
   native_->SetTWDR(data);
   native_->SetTWCR((1 << native::TWINT) | (1 << native::TWEN));
   while (!(native_->GetTWCR() & (1 << native::TWINT)))
@@ -116,7 +118,7 @@ bool I2C::WriteByte(uint8_t data) {
   return true;
 }
 
-uint8_t I2C::ReadByte(bool is_final_byte) {
+uint8_t I2cEeprom::ReadByte(bool is_final_byte) {
   uint8_t twcr = (1 << native::TWINT) | (1 << native::TWEN);
   if (!is_final_byte) {
     twcr |= (1 << native::TWEA);
@@ -126,5 +128,5 @@ uint8_t I2C::ReadByte(bool is_final_byte) {
     ;
   return native_->GetTWDR();
 }
-}  // namespace native
+}  // namespace storage
 }  // namespace threeboard
