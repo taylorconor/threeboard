@@ -1,7 +1,7 @@
 #pragma once
 
 #include "src/native/native.h"
-#include "src/storage/eeprom.h"
+#include "src/storage/internal/eeprom.h"
 
 namespace threeboard {
 namespace storage {
