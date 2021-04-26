@@ -93,12 +93,12 @@ avr_library(
 
 cc_library(
     name = "logging_fake",
+    testonly = 1,
     hdrs = ["logging_fake.h"],
     deps = [
         ":logging",
         "//src/native:native_mock",
     ],
-    testonly = 1,
 )
 
 cc_test(
@@ -131,13 +131,13 @@ cc_test(
     name = "threeboard_test",
     srcs = ["threeboard_test.cpp"],
     deps = [
-        ":threeboard",
-        ":led_controller_mock",
         ":key_controller_mock",
+        ":led_controller_mock",
         ":logging_fake",
+        ":threeboard",
+        "//src:event_buffer",
         "//src/native:native_mock",
         "//src/usb:usb_mock",
-        "//src:event_buffer",
         "@gtest",
         "@gtest//:gtest_main",
     ],

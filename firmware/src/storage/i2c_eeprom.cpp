@@ -7,26 +7,29 @@ namespace threeboard {
 namespace storage {
 namespace {
 
-uint8_t CreateControlByte(I2cEeprom::Device device,
-                          I2cEeprom::Operation operation) {
+constexpr uint8_t kWriteBit = 0;
+constexpr uint8_t kReadBit = 1;
+
+uint8_t CreateControlByte(I2cEeprom::Device device, uint8_t operation) {
   return 0b10100000 | ((device & 7) << 1) | (operation & 1);
 }
 
 }  // namespace
 
-I2cEeprom::I2cEeprom(native::Native *native) : native_(native) {
+I2cEeprom::I2cEeprom(native::Native *native, Device device)
+    : native_(native), device_(device) {
   // Set the TWI prescaler to 0.
   native_->SetTWSR(native_->GetTWSR() & ~3);
   // Set the SCL clock frequency for the TWI interface to 100kHz.
   native_->SetTWBR(((F_CPU / 100000) - 16) / 2);
 }
 
-bool I2cEeprom::Read(Device device, const uint16_t &byte_offset, uint8_t *data,
+bool I2cEeprom::Read(const uint16_t &byte_offset, uint8_t *data,
                      const uint16_t &length) {
   // First write the byte offset to the specified device to update its internal
   // address pointer before we begin the sequential read.
-  RETURN_IF_ERROR(Start(device, Operation::WRITE, byte_offset), Stop());
-  RETURN_IF_ERROR(Start(device, Operation::READ), Stop());
+  RETURN_IF_ERROR(Start(kWriteBit, byte_offset), Stop());
+  RETURN_IF_ERROR(Start(kReadBit), Stop());
 
   uint32_t i;
   for (i = 0; i < length - 1; i++) {
@@ -37,14 +40,13 @@ bool I2cEeprom::Read(Device device, const uint16_t &byte_offset, uint8_t *data,
   return true;
 }
 
-bool I2cEeprom::Write(Device device, const uint16_t &byte_offset, uint8_t *data,
+bool I2cEeprom::Write(const uint16_t &byte_offset, uint8_t *data,
                       const uint16_t &length) {
   // A page write can contain up to 128 bytes in total. So we split the write
   // into 128-bit chunks to increase throughput.
   uint16_t i = 0;
   for (uint16_t page_id = 0; page_id < length / 128; ++page_id) {
-    RETURN_IF_ERROR(
-        Start(device, Operation::WRITE, byte_offset + (page_id * 128)));
+    RETURN_IF_ERROR(Start(kWriteBit, byte_offset + (page_id * 128)));
     for (; i < length; i++) {
       RETURN_IF_ERROR(WriteByte(*(data + i)));
     }
@@ -53,8 +55,7 @@ bool I2cEeprom::Write(Device device, const uint16_t &byte_offset, uint8_t *data,
   return true;
 }
 
-bool I2cEeprom::Start(Device device, Operation operation,
-                      uint16_t byte_offset) {
+bool I2cEeprom::Start(uint8_t operation, uint16_t byte_offset) {
   // Send START and wait for it to complete.
   native_->SetTWCR((1 << native::TWINT) | (1 << native::TWSTA) |
                    (1 << native::TWEN));
@@ -71,7 +72,7 @@ bool I2cEeprom::Start(Device device, Operation operation,
 
   // The first byte the 24LC512 EEPROM should receive after the START condition
   // is a device-specific control byte.
-  WriteByte(CreateControlByte(device, operation));
+  WriteByte(CreateControlByte(device_, operation));
 
   // The 24LC512 outputs an ACK signal on the SDA line after the first byte of
   // the address sequence (the control byte). If this doesn't happen, something
@@ -81,7 +82,7 @@ bool I2cEeprom::Start(Device device, Operation operation,
     return false;
   }
 
-  if (operation == Operation::WRITE) {
+  if (operation == kWriteBit) {
     // The next two bytes are the byte offset (address) of the first data byte
     // to be written/read in this operation. This only happens for WRITE
     // operations because a READ will first issue a WRITE to set the address

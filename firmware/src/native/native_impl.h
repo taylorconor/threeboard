@@ -38,6 +38,10 @@ class NativeImpl : public Native {
   uint16_t ReadPgmWord(const uint8_t *) const final;
   uint8_t ReadPgmByte(const uint8_t *) const final;
 
+  virtual void EepromWrite(const uint16_t &, uint8_t *, const uint16_t &) final;
+  virtual void EepromRead(const uint16_t &, uint8_t *,
+                          const uint16_t &) const final;
+
   void EnableDDRB(uint8_t) final;
   void DisableDDRB(uint8_t) final;
   void EnableDDRC(uint8_t) final;

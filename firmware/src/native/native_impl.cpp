@@ -6,6 +6,7 @@
 // parameters.
 #define __DELAY_BACKWARD_COMPATIBLE__
 
+#include <avr/eeprom.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include <avr/sleep.h>
@@ -148,6 +149,16 @@ uint16_t NativeImpl::ReadPgmWord(const uint8_t *ptr) const {
 
 uint8_t NativeImpl::ReadPgmByte(const uint8_t *ptr) const {
   return pgm_read_byte(ptr);
+}
+
+void NativeImpl::EepromWrite(const uint16_t &byte_offset, uint8_t *data,
+                             const uint16_t &length) {
+  eeprom_write_block(data, (void *)byte_offset, length);
+}
+
+void NativeImpl::EepromRead(const uint16_t &byte_offset, uint8_t *data,
+                            const uint16_t &length) const {
+  eeprom_read_block(data, (void *)byte_offset, length);
 }
 
 void NativeImpl::EnableDDRB(const uint8_t val) { DDRB |= val; }

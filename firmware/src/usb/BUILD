@@ -39,11 +39,11 @@ cc_test(
     linkstatic = 1,
     deps = [
         ":usb_impl",
+        "//src:logging_fake",
         "//src/delegates:error_handler_delegate_mock",
         "//src/native:native_mock",
         "//src/usb/internal:request_handler_mock",
         "//src/usb/testutil",
-        "//src:logging_fake",
         "@gtest",
         "@gtest//:gtest_main",
     ],
