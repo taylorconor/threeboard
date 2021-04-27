@@ -7,7 +7,7 @@
 #include "src/led_controller_mock.h"
 #include "src/logging_fake.h"
 #include "src/native/native_mock.h"
-#include "src/usb/usb_mock.h"
+#include "src/usb/usb_controller_mock.h"
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -26,8 +26,8 @@ class ThreeboardTest : public ::testing::Test {
     EXPECT_CALL(led_controller_mock_, GetLedState())
         .WillOnce(Return(&led_state_));
     threeboard_ = std::make_unique<Threeboard>(
-        &native_mock_, &usb_mock_, &event_buffer_, &led_controller_mock_,
-        &key_controller_mock_, nullptr);
+        &native_mock_, &event_buffer_, &usb_controller_mock_, nullptr,
+        &led_controller_mock_, &key_controller_mock_);
   }
 
   void WaitForUsbSetup() { threeboard_->WaitForUsbSetup(); }
@@ -35,7 +35,7 @@ class ThreeboardTest : public ::testing::Test {
   void RunEventLoopIteration() { threeboard_->RunEventLoopIteration(); }
 
   native::NativeMock native_mock_;
-  usb::UsbMock usb_mock_;
+  usb::UsbControllerMock usb_controller_mock_;
   EventBuffer event_buffer_;
   LedControllerMock led_controller_mock_;
   KeyControllerMock key_controller_mock_;
@@ -58,7 +58,7 @@ TEST_F(ThreeboardTest, CorrectlyHandleTimer3Interrupt) {
 TEST_F(ThreeboardTest, RetryOnUsbSetupFailure) {
   // Fail the first two iterations of Setup(), and return true (success) on the
   // third iteration.
-  EXPECT_CALL(usb_mock_, Setup())
+  EXPECT_CALL(usb_controller_mock_, Setup())
       .WillOnce(Return(false))
       .WillOnce(Return(false))
       .WillOnce(Return(true));
@@ -75,8 +75,9 @@ TEST_F(ThreeboardTest, RetryOnUsbSetupFailure) {
 TEST_F(ThreeboardTest, RetryOnUsbConfigureFailure) {
   Sequence seq;
   EXPECT_CALL(native_mock_, DelayMs(1)).WillRepeatedly(Return());
-  EXPECT_CALL(usb_mock_, HasConfigured()).WillRepeatedly(Return(false));
-  EXPECT_CALL(usb_mock_, HasConfigured())
+  EXPECT_CALL(usb_controller_mock_, HasConfigured())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(usb_controller_mock_, HasConfigured())
       .InSequence(seq)
       .WillOnce(Return(true));
 

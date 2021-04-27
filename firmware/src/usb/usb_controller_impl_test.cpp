@@ -1,4 +1,4 @@
-#include "usb_impl.h"
+#include "usb_controller_impl.h"
 
 #include "src/delegates/error_handler_delegate_mock.h"
 #include "src/logging_fake.h"
@@ -17,9 +17,9 @@ class UsbImplTest : public ::testing::Test {
  public:
   UsbImplTest() : handler_mock_(&native_mock_) {
     EXPECT_CALL(native_mock_, SetUsbInterruptHandlerDelegate(_)).Times(1);
-    usb_ =
-        std::make_unique<UsbImpl>(&native_mock_, &error_handler_delegate_mock_);
-    usb_->request_handler_ = &handler_mock_;
+    usb_controller_ = std::make_unique<UsbControllerImpl>(
+        &native_mock_, &error_handler_delegate_mock_);
+    usb_controller_->request_handler_ = &handler_mock_;
   }
 
   void SetupEndpointInterruptMocks() {
@@ -60,7 +60,7 @@ class UsbImplTest : public ::testing::Test {
   RequestHandlerMock handler_mock_;
   ErrorHandlerDelegateMock error_handler_delegate_mock_;
   LoggingFake logging_fake_;
-  std::unique_ptr<UsbImpl> usb_;
+  std::unique_ptr<UsbControllerImpl> usb_controller_;
 };
 
 TEST_F(UsbImplTest, SetupFailsOnPllLockFailure) {
@@ -74,7 +74,7 @@ TEST_F(UsbImplTest, SetupFailsOnPllLockFailure) {
   EXPECT_CALL(native_mock_, GetPLLCSR())
       .Times(UINT16_MAX)
       .WillRepeatedly(Return(0));
-  EXPECT_EQ(usb_->Setup(), false);
+  EXPECT_EQ(usb_controller_->Setup(), false);
 }
 
 TEST_F(UsbImplTest, SetupSuccess) {
@@ -94,7 +94,7 @@ TEST_F(UsbImplTest, SetupSuccess) {
       .Times(1);
   EXPECT_CALL(native_mock_, GetUDCON()).WillOnce(Return(42));
   EXPECT_CALL(native_mock_, SetUDCON(42 & ~(1 << native::DETACH))).Times(1);
-  EXPECT_EQ(usb_->Setup(), true);
+  EXPECT_EQ(usb_controller_->Setup(), true);
 }
 
 TEST_F(UsbImplTest, DoesNothingOnInvalidSetupPacket) {
@@ -104,7 +104,7 @@ TEST_F(UsbImplTest, DoesNothingOnInvalidSetupPacket) {
       .WillOnce(Return(0))    // bmRequestType
       .WillOnce(Return(255))  // bRequest
       .WillRepeatedly(Return(0));
-  usb_->HandleEndpointInterrupt();
+  usb_controller_->HandleEndpointInterrupt();
 }
 
 TEST_F(UsbImplTest, StallsWithoutInterrupt) {
@@ -124,40 +124,40 @@ TEST_F(UsbImplTest, StallsWithoutInterrupt) {
   // packet on interrupt. Do we still need to do this?
   SetupPacket packet;
   testutil::MockSendingSetupPacket(&native_mock_, packet);
-  usb_->HandleEndpointInterrupt();
+  usb_controller_->HandleEndpointInterrupt();
 }
 
 // Device requests.
 TEST_F(UsbImplTest, HandlesGetStatusRequest) {
   MockEndpointInterrupt(Request::GET_STATUS);
   EXPECT_CALL(handler_mock_, HandleGetStatus()).Times(1);
-  usb_->HandleEndpointInterrupt();
+  usb_controller_->HandleEndpointInterrupt();
 }
 
 TEST_F(UsbImplTest, HandleSetAddressRequest) {
   auto packet = MockEndpointInterrupt(Request::SET_ADDRESS);
   EXPECT_CALL(handler_mock_, HandleSetAddress(packet)).Times(1);
-  usb_->HandleEndpointInterrupt();
+  usb_controller_->HandleEndpointInterrupt();
 }
 
 TEST_F(UsbImplTest, HandleGetDescriptorRequest) {
   auto packet = MockEndpointInterrupt(Request::GET_DESCRIPTOR);
   EXPECT_CALL(handler_mock_, HandleGetDescriptor(packet)).Times(1);
-  usb_->HandleEndpointInterrupt();
+  usb_controller_->HandleEndpointInterrupt();
 }
 
 TEST_F(UsbImplTest, HandleGetConfigurationRequest) {
   MockEndpointInterrupt(Request::GET_CONFIGURATION,
                         {RequestType::Direction::DEVICE_TO_HOST});
   EXPECT_CALL(handler_mock_, HandleGetConfiguration(_)).Times(1);
-  usb_->HandleEndpointInterrupt();
+  usb_controller_->HandleEndpointInterrupt();
 }
 
 TEST_F(UsbImplTest, HandleSetConfigurationRequest) {
   auto packet = MockEndpointInterrupt(Request::SET_CONFIGURATION,
                                       {RequestType::Direction::HOST_TO_DEVICE});
   EXPECT_CALL(handler_mock_, HandleSetConfiguration(packet, _)).Times(1);
-  usb_->HandleEndpointInterrupt();
+  usb_controller_->HandleEndpointInterrupt();
 }
 
 // HID requests.
@@ -168,7 +168,7 @@ TEST_F(UsbImplTest, HandleGetReportRequest) {
        RequestType::Recipient::INTERFACE},
       descriptor::kKeyboardInterfaceIndex);
   EXPECT_CALL(handler_mock_, HandleGetReport(_)).Times(1);
-  usb_->HandleEndpointInterrupt();
+  usb_controller_->HandleEndpointInterrupt();
 }
 
 TEST_F(UsbImplTest, HandleGetIdleRequest) {
@@ -178,7 +178,7 @@ TEST_F(UsbImplTest, HandleGetIdleRequest) {
        RequestType::Recipient::INTERFACE},
       descriptor::kKeyboardInterfaceIndex);
   EXPECT_CALL(handler_mock_, HandleGetIdle(_)).Times(1);
-  usb_->HandleEndpointInterrupt();
+  usb_controller_->HandleEndpointInterrupt();
 }
 
 TEST_F(UsbImplTest, HandleGetProtocolRequest) {
@@ -188,7 +188,7 @@ TEST_F(UsbImplTest, HandleGetProtocolRequest) {
        RequestType::Recipient::INTERFACE},
       descriptor::kKeyboardInterfaceIndex);
   EXPECT_CALL(handler_mock_, HandleGetProtocol(_)).Times(1);
-  usb_->HandleEndpointInterrupt();
+  usb_controller_->HandleEndpointInterrupt();
 }
 
 TEST_F(UsbImplTest, HandleSetIdleRequest) {
@@ -198,7 +198,7 @@ TEST_F(UsbImplTest, HandleSetIdleRequest) {
        RequestType::Recipient::INTERFACE},
       descriptor::kKeyboardInterfaceIndex);
   EXPECT_CALL(handler_mock_, HandleSetIdle(packet, _)).Times(1);
-  usb_->HandleEndpointInterrupt();
+  usb_controller_->HandleEndpointInterrupt();
 }
 
 TEST_F(UsbImplTest, HandleSetProtocolRequest) {
@@ -208,7 +208,7 @@ TEST_F(UsbImplTest, HandleSetProtocolRequest) {
        RequestType::Recipient::INTERFACE},
       descriptor::kKeyboardInterfaceIndex);
   EXPECT_CALL(handler_mock_, HandleSetProtocol(packet, _)).Times(1);
-  usb_->HandleEndpointInterrupt();
+  usb_controller_->HandleEndpointInterrupt();
 }
 }  // namespace usb
 }  // namespace threeboard

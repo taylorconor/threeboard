@@ -3,7 +3,7 @@
 #include "src/delegates/usb_interrupt_handler_delegate.h"
 #include "src/native/native_mock.h"
 #include "src/usb/testutil/fake_host.h"
-#include "usb_impl.h"
+#include "usb_controller_impl.h"
 
 namespace threeboard {
 namespace usb {
@@ -16,26 +16,26 @@ class UsbImplTest : public ::testing::Test {
  public:
   UsbImplTest() {
     EXPECT_CALL(native_mock_, SetUsbInterruptHandlerDelegate(_)).Times(1);
-    usb_ =
-        std::make_unique<UsbImpl>(&native_mock_, &error_handler_delegate_mock_);
-    fake_host_ =
-        std::make_unique<testutil::FakeHost>(&native_mock_, usb_.get());
+    usb_controller_ = std::make_unique<UsbControllerImpl>(
+        &native_mock_, &error_handler_delegate_mock_);
+    fake_host_ = std::make_unique<testutil::FakeHost>(&native_mock_,
+                                                      usb_controller_.get());
   }
 
   void VerifyEnumeration() {
     fake_host_->HandleDeviceEnumeration();
-    usb_->Setup();
+    usb_controller_->Setup();
   }
 
   native::NativeMock native_mock_;
   std::unique_ptr<testutil::FakeHost> fake_host_;
-  std::unique_ptr<UsbImpl> usb_;
+  std::unique_ptr<UsbControllerImpl> usb_controller_;
   ErrorHandlerDelegateMock error_handler_delegate_mock_;
 };
 
 /*TEST_F(UsbImplTest, EnumeratesCorrectly) {
   VerifyEnumeration();
-  EXPECT_TRUE(usb_->HasConfigured());
+  EXPECT_TRUE(usb_controller_->HasConfigured());
   }*/
 }  // namespace
 }  // namespace usb

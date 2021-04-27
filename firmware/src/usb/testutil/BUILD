@@ -20,7 +20,7 @@ cc_library(
     hdrs = ["fake_host.h"],
     deps = [
         "//src/native:native_mock",
-        "//src/usb:usb_impl",
+        "//src/usb:usb_controller_impl",
         "//src/usb/shared:protocol",
     ],
 )

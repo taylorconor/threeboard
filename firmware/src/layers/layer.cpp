@@ -32,7 +32,7 @@ void Layer::UpdateLedState(LayerId layer_id) {
 }
 
 void Layer::FlushToHost() {
-  bool success = usb_->SendKeypress(bank0_, bank1_);
+  bool success = usb_controller_->SendKeypress(bank0_, bank1_);
   if (!success) {
     LOG("Failed to flush to host");
     led_state_->SetErr(LedState::ON);

@@ -124,7 +124,7 @@ avr_library(
         "//src/delegates:error_handler_delegate",
         "//src/layers:layer_controller",
         "//src/native",
-        "//src/usb",
+        "//src/usb:usb_controller",
     ],
 )
 
@@ -138,7 +138,7 @@ cc_test(
         ":threeboard",
         "//src:event_buffer",
         "//src/native:native_mock",
-        "//src/usb:usb_mock",
+        "//src/usb:usb_controller_mock",
         "@gtest",
         "@gtest//:gtest_main",
     ],
@@ -152,7 +152,7 @@ avr_pure_library(
         ":logging",
         ":threeboard",
         "//src/native:native_impl",
-        "//src/usb:usb_impl",
+        "//src/usb:usb_controller_impl",
         "//src/util:error_handler_proxy",
     ],
 )

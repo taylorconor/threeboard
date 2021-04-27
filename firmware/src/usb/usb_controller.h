@@ -5,9 +5,9 @@
 namespace threeboard {
 namespace usb {
 
-class Usb {
+class UsbController {
  public:
-  virtual ~Usb() = default;
+  virtual ~UsbController() = default;
 
   // Setup the USB hardware to begin connection to the host. This method blocks
   // until the device hardware is correctly set up. If this method returns false

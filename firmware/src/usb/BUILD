@@ -4,25 +4,25 @@ load("@rules_cc//cc:defs.bzl", "cc_test")
 package(default_visibility = ["//visibility:public"])
 
 avr_library(
-    name = "usb",
-    hdrs = ["usb.h"],
+    name = "usb_controller",
+    hdrs = ["usb_controller.h"],
 )
 
 cc_library(
-    name = "usb_mock",
-    hdrs = ["usb_mock.h"],
+    name = "usb_controller_mock",
+    hdrs = ["usb_controller_mock.h"],
     deps = [
-        ":usb",
+        ":usb_controller",
         "@gtest",
     ],
 )
 
 avr_library(
-    name = "usb_impl",
-    srcs = ["usb_impl.cpp"],
-    hdrs = ["usb_impl.h"],
+    name = "usb_controller_impl",
+    srcs = ["usb_controller_impl.cpp"],
+    hdrs = ["usb_controller_impl.h"],
     deps = [
-        ":usb",
+        ":usb_controller",
         "//src:logging",
         "//src/delegates:error_handler_delegate",
         "//src/delegates:usb_interrupt_handler_delegate",
@@ -34,11 +34,11 @@ avr_library(
 )
 
 cc_test(
-    name = "usb_impl_test",
-    srcs = ["usb_impl_test.cpp"],
+    name = "usb_controller_impl_test",
+    srcs = ["usb_controller_impl_test.cpp"],
     linkstatic = 1,
     deps = [
-        ":usb_impl",
+        ":usb_controller_impl",
         "//src:logging_fake",
         "//src/delegates:error_handler_delegate_mock",
         "//src/native:native_mock",
@@ -53,7 +53,7 @@ cc_test(
     name = "usb_integration_test",
     srcs = ["usb_integration_test.cpp"],
     deps = [
-        ":usb_impl",
+        ":usb_controller_impl",
         "//src/delegates:error_handler_delegate_mock",
         "//src/delegates:usb_interrupt_handler_delegate",
         "//src/native:native_mock",

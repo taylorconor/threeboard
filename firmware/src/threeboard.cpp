@@ -8,17 +8,18 @@ static_assert(false, "Unsupported compiler: threeboard requires avr-gcc >=9");
 
 namespace threeboard {
 
-Threeboard::Threeboard(native::Native *native, usb::Usb *usb,
-                       EventBuffer *event_buffer, LedController *led_controller,
-                       KeyController *key_controller,
-                       storage::StorageController *storage_controller)
+Threeboard::Threeboard(native::Native *native, EventBuffer *event_buffer,
+                       usb::UsbController *usb_controller,
+                       storage::StorageController *storage_controller,
+                       LedController *led_controller,
+                       KeyController *key_controller)
     : native_(native),
-      usb_(usb),
       event_buffer_(event_buffer),
+      usb_controller_(usb_controller),
+      storage_controller_(storage_controller),
       led_controller_(led_controller),
       key_controller_(key_controller),
-      storage_controller_(storage_controller),
-      layer_controller_(led_controller_->GetLedState(), usb_) {
+      layer_controller_(led_controller_->GetLedState(), usb_controller_) {
   native_->SetTimerInterruptHandlerDelegate(this);
   native_->EnableTimer1();
   native_->EnableTimer3();
@@ -65,7 +66,7 @@ void Threeboard::HandleTimer3Interrupt() {
 }
 
 void Threeboard::WaitForUsbSetup() {
-  while (!usb_->Setup()) {
+  while (!usb_controller_->Setup()) {
     led_controller_->GetLedState()->SetErr(LedState::BLINK_FAST);
     // This is an unrecoverable error. We can either crash here, or delay before
     // retrying USB setup from scratch repeatedly in the hopes that setup
@@ -79,7 +80,7 @@ void Threeboard::WaitForUsbConfiguration() {
   // Fast busy loop until the USB stack configures. If this never happens it
   // will continue to loop infinitely, but also blink the error LED.
   uint8_t iterations = 0;
-  while (!usb_->HasConfigured()) {
+  while (!usb_controller_->HasConfigured()) {
     iterations += 1;
     // After 2.5 seconds, begin flashing the ERR LED.
     if (iterations > 250) {
