@@ -120,6 +120,7 @@ avr_library(
         ":event_buffer",
         ":key_controller",
         ":led_controller",
+        "//src/storage:storage_controller",
         "//src/delegates:error_handler_delegate",
         "//src/layers:layer_controller",
         "//src/native",
