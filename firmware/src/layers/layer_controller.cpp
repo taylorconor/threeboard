@@ -2,7 +2,7 @@
 
 namespace threeboard {
 
-LayerController::LayerController(LedState *led_state, usb::Usb *usb)
+LayerController::LayerController(LedState *led_state, usb::UsbController *usb)
     : layer_default_(led_state, usb, this),
       layer_r_(led_state, usb, this),
       layer_g_(led_state, usb, this),

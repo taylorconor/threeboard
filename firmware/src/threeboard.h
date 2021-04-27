@@ -7,7 +7,7 @@
 #include "src/led_controller.h"
 #include "src/native/native.h"
 #include "src/storage/storage_controller.h"
-#include "src/usb/usb.h"
+#include "src/usb/usb_controller.h"
 
 namespace threeboard {
 
@@ -16,9 +16,10 @@ namespace threeboard {
 class Threeboard : public TimerInterruptHandlerDelegate,
                    public ErrorHandlerDelegate {
  public:
-  Threeboard(native::Native *native, usb::Usb *usb, EventBuffer *event_buffer,
-             LedController *led_controller, KeyController *key_controller,
-             storage::StorageController *storage_controller);
+  Threeboard(native::Native *native, EventBuffer *event_buffer,
+             usb::UsbController *usb_controller,
+             storage::StorageController *storage_controller,
+             LedController *led_controller, KeyController *key_controller);
   ~Threeboard() override = default;
 
   // Main application event loop.
@@ -33,11 +34,11 @@ class Threeboard : public TimerInterruptHandlerDelegate,
  private:
   // All of the components composed into this class which we need to coordinate.
   native::Native *native_;
-  usb::Usb *usb_;
   EventBuffer *event_buffer_;
+  usb::UsbController *usb_controller_;
+  storage::StorageController *storage_controller_;
   LedController *led_controller_;
   KeyController *key_controller_;
-  storage::StorageController *storage_controller_;
 
   LayerController layer_controller_;
 

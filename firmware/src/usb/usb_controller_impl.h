@@ -5,7 +5,7 @@
 #include "src/native/native.h"
 #include "src/usb/internal/hid_state.h"
 #include "src/usb/internal/request_handler.h"
-#include "src/usb/usb.h"
+#include "src/usb/usb_controller.h"
 
 namespace threeboard {
 namespace usb {
@@ -15,9 +15,10 @@ namespace usb {
 // (https://github.com/technomancy/atreus-firmware).
 // It explicitly does not support the ENDPOINT_HALT feature, since it's rarely
 // used and shouldn't affect functionality at all.
-class UsbImpl : public Usb, public UsbInterruptHandlerDelegate {
+class UsbControllerImpl : public UsbController,
+                          public UsbInterruptHandlerDelegate {
  public:
-  UsbImpl(native::Native *, ErrorHandlerDelegate *);
+  UsbControllerImpl(native::Native *, ErrorHandlerDelegate *);
 
   bool Setup() final;
   bool HasConfigured() final;

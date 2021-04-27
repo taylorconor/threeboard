@@ -1,4 +1,4 @@
-#include "usb_impl.h"
+#include "usb_controller_impl.h"
 
 #include "src/logging.h"
 #include "src/util/util.h"
@@ -8,7 +8,8 @@ namespace usb {
 
 constexpr uint8_t kFrameTimeout = 50;
 
-UsbImpl::UsbImpl(native::Native *native, ErrorHandlerDelegate *error_handler)
+UsbControllerImpl::UsbControllerImpl(native::Native *native,
+                                     ErrorHandlerDelegate *error_handler)
     : native_(native), error_handler_(error_handler) {
   native_->SetUsbInterruptHandlerDelegate(this);
   // There's no reason to expose RequestHandler outside usb/internal, but we
@@ -19,7 +20,7 @@ UsbImpl::UsbImpl(native::Native *native, ErrorHandlerDelegate *error_handler)
   request_handler_ = &handler;
 }
 
-bool UsbImpl::Setup() {
+bool UsbControllerImpl::Setup() {
   // Enable the USB pad regulator (which uses the external 1uF UCap).
   native_->SetUHWCON(1 << native::UVREGE);
   // Enable USB and freeze the clock.
@@ -42,9 +43,9 @@ bool UsbImpl::Setup() {
   return true;
 }
 
-bool UsbImpl::HasConfigured() { return hid_state_.configuration; }
+bool UsbControllerImpl::HasConfigured() { return hid_state_.configuration; }
 
-bool UsbImpl::SendKeypress(const uint8_t key, const uint8_t mod) {
+bool UsbControllerImpl::SendKeypress(const uint8_t key, const uint8_t mod) {
   hid_state_.modifier_keys = mod;
   // Currently we only support sending a single key at a time, even though this
   // USB implementation supports the full 6 keys. Functionality of the
@@ -57,7 +58,7 @@ bool UsbImpl::SendKeypress(const uint8_t key, const uint8_t mod) {
   return true;
 }
 
-void UsbImpl::HandleGeneralInterrupt() {
+void UsbControllerImpl::HandleGeneralInterrupt() {
   uint8_t device_interrupt = native_->GetUDINT();
   native_->SetUDINT(0);
   // Detect end of reset interrupt, and configure Endpoint 0.
@@ -95,7 +96,7 @@ void UsbImpl::HandleGeneralInterrupt() {
   }
 }
 
-void UsbImpl::HandleEndpointInterrupt() {
+void UsbControllerImpl::HandleEndpointInterrupt() {
   // Immediately parse incoming data into a SETUP packet. If there's an issue
   // with the interrupt type it'll be handled afterwards.
   SetupPacket packet = SetupPacket::ParseFromUsbEndpoint(native_);
@@ -163,7 +164,7 @@ void UsbImpl::HandleEndpointInterrupt() {
   }
 }
 
-bool UsbImpl::SendKeypress() {
+bool UsbControllerImpl::SendKeypress() {
   uint8_t intr_state = native_->GetSREG();
   native_->DisableInterrupts();
   uint8_t initial_frame_num = native_->GetUDFNUML();
@@ -193,7 +194,7 @@ bool UsbImpl::SendKeypress() {
 }
 
 // Send the state of the HID device to the bus.
-void UsbImpl::SendHidState() {
+void UsbControllerImpl::SendHidState() {
   hid_state_.idle_count = 0;
   native_->SetUEDATX(hid_state_.modifier_keys);
   native_->SetUEDATX(0);

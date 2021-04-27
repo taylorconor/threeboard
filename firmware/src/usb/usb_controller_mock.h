@@ -1,13 +1,13 @@
 #pragma once
 
 #include "gmock/gmock.h"
-#include "usb.h"
+#include "usb_controller.h"
 
 namespace threeboard {
 namespace usb {
 namespace detail {
 
-class DefaultUsbMock : public Usb {
+class DefaultUsbControllerMock : public UsbController {
  public:
   MOCK_METHOD(bool, Setup, (), (override));
   MOCK_METHOD(bool, HasConfigured, (), (override));
@@ -15,7 +15,8 @@ class DefaultUsbMock : public Usb {
 };
 }  // namespace detail
 
-using UsbMock = ::testing::StrictMock<detail::DefaultUsbMock>;
+using UsbControllerMock =
+    ::testing::StrictMock<detail::DefaultUsbControllerMock>;
 
 }  // namespace usb
 }  // namespace threeboard

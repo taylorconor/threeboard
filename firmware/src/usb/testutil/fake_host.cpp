@@ -34,8 +34,9 @@ void SetupEnumerationExpectations(native::NativeMock *native_mock) {
 }
 }  // namespace
 
-FakeHost::FakeHost(native::NativeMock *native_mock, UsbImpl *usb_impl)
-    : native_mock_(native_mock), usb_impl_(usb_impl) {}
+FakeHost::FakeHost(native::NativeMock *native_mock,
+                   UsbControllerImpl *usb_controller_impl)
+    : native_mock_(native_mock), usb_controller_impl_(usb_controller_impl) {}
 
 void FakeHost::HandleDeviceEnumeration() {
   SetupEnumerationExpectations(native_mock_);
@@ -48,7 +49,7 @@ void FakeHost::HandleDeviceEnumeration() {
                                (1 << native::TXINI))))
       .Times(1);
   AddFakeEndpointExpectations(Request::GET_DESCRIPTOR);
-  usb_impl_->HandleEndpointInterrupt();
+  usb_controller_impl_->HandleEndpointInterrupt();
 }
 
 void FakeHost::AddFakeEndpointExpectations(Request request) {

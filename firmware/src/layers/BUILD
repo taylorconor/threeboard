@@ -18,7 +18,7 @@ avr_library(
         ":layer_g",
         ":layer_r",
         "//src/delegates:layer_controller_delegate",
-        "//src/usb",
+        "//src/usb:usb_controller",
     ],
 )
 
@@ -31,7 +31,7 @@ avr_library(
         "//src:logging",
         "//src/delegates:event_handler_delegate",
         "//src/layers:layer_id",
-        "//src/usb",
+        "//src/usb:usb_controller",
     ],
 )
 
