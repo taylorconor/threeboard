@@ -10,12 +10,14 @@ namespace threeboard {
 
 Threeboard::Threeboard(native::Native *native, usb::Usb *usb,
                        EventBuffer *event_buffer, LedController *led_controller,
-                       KeyController *key_controller)
+                       KeyController *key_controller,
+                       storage::StorageController *storage_controller)
     : native_(native),
       usb_(usb),
       event_buffer_(event_buffer),
       led_controller_(led_controller),
       key_controller_(key_controller),
+      storage_controller_(storage_controller),
       layer_controller_(led_controller_->GetLedState(), usb_) {
   native_->SetTimerInterruptHandlerDelegate(this);
   native_->EnableTimer1();
@@ -30,6 +32,10 @@ void Threeboard::RunEventLoop() {
 
   // Busy loop until USB configuration succeeds.
   WaitForUsbConfiguration();
+
+  // Initialize the storage controller, handle initialization errors and retry
+  // as necessary.
+  InitializeStorageController();
 
   // Display the "boot indicator" (the lighting of LEDs R, G and then B in
   // sequence) to show that the threeboard has booted. This method blocks until
@@ -83,6 +89,17 @@ void Threeboard::WaitForUsbConfiguration() {
     native_->DelayMs(10);
   }
   led_controller_->GetLedState()->SetErr(LedState::OFF);
+}
+
+void Threeboard::InitializeStorageController() {
+  bool status = storage_controller_->InitializeManifest();
+  // This is likely fatal. Blink both ERR and STATUS LEDs (to distinguish from a
+  // USB failure where only the ERR LED blinks) and keep retrying.
+  while (!status) {
+    led_controller_->GetLedState()->SetErr(LedState::BLINK_FAST);
+    led_controller_->GetLedState()->SetStatus(LedState::BLINK_FAST);
+    status = storage_controller_->InitializeManifest();
+  }
 }
 
 void Threeboard::DisplayBootIndicator() {

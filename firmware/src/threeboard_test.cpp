@@ -27,7 +27,7 @@ class ThreeboardTest : public ::testing::Test {
         .WillOnce(Return(&led_state_));
     threeboard_ = std::make_unique<Threeboard>(
         &native_mock_, &usb_mock_, &event_buffer_, &led_controller_mock_,
-        &key_controller_mock_);
+        &key_controller_mock_, nullptr);
   }
 
   void WaitForUsbSetup() { threeboard_->WaitForUsbSetup(); }

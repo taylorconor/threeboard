@@ -9,5 +9,8 @@ avr_library(
     srcs = ["storage_controller.cpp"],
     deps = [
         "//src/storage/internal:eeprom",
+        "//src/storage/internal:internal_eeprom",
+        "//src/storage/internal:i2c_eeprom",
+        "//src/native:native",
     ],
 )

@@ -6,6 +6,7 @@
 #include "src/layers/layer_controller.h"
 #include "src/led_controller.h"
 #include "src/native/native.h"
+#include "src/storage/storage_controller.h"
 #include "src/usb/usb.h"
 
 namespace threeboard {
@@ -16,7 +17,8 @@ class Threeboard : public TimerInterruptHandlerDelegate,
                    public ErrorHandlerDelegate {
  public:
   Threeboard(native::Native *native, usb::Usb *usb, EventBuffer *event_buffer,
-             LedController *led_controller, KeyController *key_controller);
+             LedController *led_controller, KeyController *key_controller,
+             storage::StorageController *storage_controller);
   ~Threeboard() override = default;
 
   // Main application event loop.
@@ -35,6 +37,7 @@ class Threeboard : public TimerInterruptHandlerDelegate,
   EventBuffer *event_buffer_;
   LedController *led_controller_;
   KeyController *key_controller_;
+  storage::StorageController *storage_controller_;
 
   LayerController layer_controller_;
 
@@ -54,6 +57,7 @@ class Threeboard : public TimerInterruptHandlerDelegate,
 
   void WaitForUsbSetup();
   void WaitForUsbConfiguration();
+  void InitializeStorageController();
   void DisplayBootIndicator();
   void PollBootIndicator();
   void RunEventLoopIteration();
