@@ -8,16 +8,14 @@ namespace {
 
 using namespace std::placeholders;
 
-// TODO: this can be made configurable later if needed.
-constexpr uint16_t kGdbPort = 1234;
-
 // Used to test a single pin in a register.
 bool IsEnabled(uint8_t reg, uint8_t pin) { return reg & (1 << pin); }
 
 }  // namespace
 
-Simulator::Simulator(Simavr *simavr)
-    : simavr_(simavr),
+Simulator::Simulator(Flags *flags, Simavr *simavr)
+    : flags_(flags),
+      simavr_(simavr),
       is_running_(false),
       firmware_(simavr_),
       usb_host_(simavr_, this),
@@ -43,11 +41,14 @@ void Simulator::Run() {
     std::cout << "Attempted to run a running simulator instance!" << std::endl;
     exit(0);
   }
-  firmware_.Reset();
   ui_ = std::make_unique<UI>(this, &firmware_, log_file_path_);
   ui_->StartAsyncRenderLoop();
 
   is_running_ = true;
+  // Check if we need to enable GDB on program start.
+  if (flags_->GetGdbBreakStart()) {
+    firmware_.EnableGdb(flags_->GetGdbPort());
+  }
   firmware_.RunAsync();
   std::unique_lock<std::mutex> lock(mutex_);
   while (is_running_) {
@@ -122,7 +123,7 @@ void Simulator::HandlePhysicalKeypress(char key, bool state) {
     if (firmware_.IsGdbEnabled()) {
       firmware_.DisableGdb();
     } else {
-      firmware_.EnableGdb(GetGdbPort());
+      firmware_.EnableGdb(flags_->GetGdbPort());
     }
   }
 
@@ -172,7 +173,7 @@ void Simulator::HandleUartLogLine(const std::string &log_line) {
   ui_->DisplayLogLine(cycle, log_line);
 }
 
-uint16_t Simulator::GetGdbPort() { return kGdbPort; }
+Flags *Simulator::GetFlags() { return flags_; }
 
 bool Simulator::IsUsbAttached() { return usb_host_.IsAttached(); }
 

@@ -9,6 +9,7 @@
 #include "simulator/components/i2c_eeprom.h"
 #include "simulator/components/uart.h"
 #include "simulator/components/usb_host.h"
+#include "simulator/flags.h"
 #include "simulator/simavr/simavr.h"
 #include "simulator/simulator_delegate.h"
 #include "simulator/ui/ui.h"
@@ -17,7 +18,7 @@ namespace threeboard {
 namespace simulator {
 class Simulator : public SimulatorDelegate {
  public:
-  explicit Simulator(Simavr *simavr);
+  Simulator(Flags *flags, Simavr *simavr);
   ~Simulator() override;
 
   void Run();
@@ -27,9 +28,10 @@ class Simulator : public SimulatorDelegate {
   void HandlePhysicalKeypress(char key, bool state) final;
   void HandleVirtualKeypress(uint8_t mod_code, uint8_t key_code) final;
   void HandleUartLogLine(const std::string &log_line) final;
-  uint16_t GetGdbPort() final;
+  Flags *GetFlags() final;
   bool IsUsbAttached() final;
 
+  Flags *flags_;
   Simavr *simavr_;
   std::atomic<bool> is_running_;
   Firmware firmware_;

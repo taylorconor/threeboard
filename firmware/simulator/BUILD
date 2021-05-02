@@ -3,6 +3,13 @@ load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "flags",
+    hdrs = ["flags.h"],
+    srcs = ["flags.cpp"],
+    deps = ["//simulator/third_party:cxxopts"],
+)
+
+cc_library(
     name = "lifetime",
     hdrs = ["lifetime.h"],
 )
@@ -10,6 +17,7 @@ cc_library(
 cc_library(
     name = "simulator_delegate",
     hdrs = ["simulator_delegate.h"],
+    deps = [":flags"],
 )
 
 cc_library(
@@ -26,6 +34,7 @@ cc_library(
     srcs = ["simulator.cpp"],
     hdrs = ["simulator.h"],
     deps = [
+        ":flags",
         ":simulator_delegate",
         "//simulator/components:firmware",
         "//simulator/components:i2c_eeprom",
@@ -41,6 +50,7 @@ cc_binary(
     srcs = ["main.cpp"],
     deps = [
         ":simulator_lib",
+        ":flags",
         "//simulator/simavr:simavr_impl",
     ],
 )

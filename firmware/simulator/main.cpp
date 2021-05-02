@@ -1,5 +1,6 @@
-#include "simulator.h"
+#include "simulator/flags.h"
 #include "simulator/simavr/simavr_impl.h"
+#include "simulator/simulator.h"
 
 using namespace threeboard::simulator;
 
@@ -10,6 +11,7 @@ const std::string kFirmwareFile =
 
 int main(int argc, char *argv[]) {
   auto simavr = SimavrImpl::Create(kFirmwareFile);
-  Simulator simulator(simavr.get());
+  auto flags = Flags::ParseFromArgs(argc, argv);
+  Simulator simulator(&flags, simavr.get());
   simulator.Run();
 }

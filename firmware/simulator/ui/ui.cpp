@@ -392,7 +392,7 @@ void UI::DrawStatusText() {
   printw("gdb: %s",
          firmware_state_delegate_->IsGdbEnabled() ? "enabled" : "disabled");
   if (firmware_state_delegate_->IsGdbEnabled()) {
-    printw(" (port %d)", simulator_delegate_->GetGdbPort());
+    printw(" (port %d)", simulator_delegate_->GetFlags()->GetGdbPort());
   }
 
   // USB attach status monitor.
