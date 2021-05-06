@@ -92,14 +92,6 @@ ISR(USB_COM_vect) {
       ->GetUsbInterruptHandlerDelegate()
       ->HandleEndpointInterrupt();
 }
-
-// ISR for i2c interrupts.
-ISR(TWI_vect) {
-  int *x = nullptr;
-  if (*x == 4) {
-    return;
-  }
-}
 }  // namespace
 
 Native *NativeImpl::Get() {
