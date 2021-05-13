@@ -13,7 +13,7 @@ class DefaultSimulatorDelegateMock : public SimulatorDelegate {
   MOCK_METHOD(void, HandlePhysicalKeypress, (char, bool), (override));
   MOCK_METHOD(void, HandleVirtualKeypress, (uint8_t, uint8_t), (override));
   MOCK_METHOD(void, HandleUartLogLine, (const std::string &), (override));
-  MOCK_METHOD(uint16_t, GetGdbPort, (), (override));
+  MOCK_METHOD(Flags *, GetFlags, (), (override));
   MOCK_METHOD(bool, IsUsbAttached, (), (override));
 };
 }  // namespace detail
