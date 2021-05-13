@@ -1,1 +1,2 @@
 build --cxxopt='-std=c++17'
+test --cxxopt="-fsanitize=undefined" --cxxopt="-fno-sanitize=vptr"
