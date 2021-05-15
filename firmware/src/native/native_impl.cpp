@@ -64,33 +64,33 @@ void Timer3Init() {
   TIMSK3 |= (1 << OCIE3A);
 }
 
+static NativeImpl *native_impl;
+
 // Define the interrupt service registers (ISRs) for timers 1 and 3 (the
 // atmega32u4 has no timer2, and timer0 is used for the system clock). The
 // interrupt handlers are guaranteed to be defined because individual timer
 // interrupts are enabled in the SetTimerNInterruptHandler methods which set the
 // handler before enabling interrupts for that timer.
 ISR(TIMER1_COMPA_vect) {
-  NativeImpl::impl->GetTimerInterruptHandlerDelegate()->HandleTimer1Interrupt();
+  native_impl->GetTimerInterruptHandlerDelegate()->HandleTimer1Interrupt();
 }
 
 ISR(TIMER3_COMPA_vect) {
-  NativeImpl::impl->GetTimerInterruptHandlerDelegate()->HandleTimer3Interrupt();
+  native_impl->GetTimerInterruptHandlerDelegate()->HandleTimer3Interrupt();
 }
 
 // ISR for USB general interrupts.
 ISR(USB_GEN_vect) {
-  NativeImpl::impl->GetUsbInterruptHandlerDelegate()->HandleGeneralInterrupt();
+  native_impl->GetUsbInterruptHandlerDelegate()->HandleGeneralInterrupt();
 }
 
 // ISR for USB endpoint interrupts.
 ISR(USB_COM_vect) {
-  NativeImpl::impl->GetUsbInterruptHandlerDelegate()->HandleEndpointInterrupt();
+  native_impl->GetUsbInterruptHandlerDelegate()->HandleEndpointInterrupt();
 }
 }  // namespace
 
-NativeImpl *NativeImpl::impl;
-
-NativeImpl::NativeImpl() { impl = this; }
+NativeImpl::NativeImpl() { native_impl = this; }
 
 TimerInterruptHandlerDelegate *NativeImpl::GetTimerInterruptHandlerDelegate()
     const {
