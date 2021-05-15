@@ -16,7 +16,7 @@ namespace native {
 
 class NativeImpl : public Native {
  public:
-  static Native *Get();
+  NativeImpl();
   ~NativeImpl() override = default;
 
   TimerInterruptHandlerDelegate *GetTimerInterruptHandlerDelegate() const final;
@@ -108,9 +108,9 @@ class NativeImpl : public Native {
   void SetUBRR1H(uint8_t) final;
   void SetUBRR1L(uint8_t) final;
 
- private:
-  NativeImpl() = default;
+  static NativeImpl *impl;
 
+ private:
   TimerInterruptHandlerDelegate *timer_delegate_;
   UsbInterruptHandlerDelegate *usb_delegate_;
 };

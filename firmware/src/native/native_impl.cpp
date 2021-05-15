@@ -70,34 +70,27 @@ void Timer3Init() {
 // interrupts are enabled in the SetTimerNInterruptHandler methods which set the
 // handler before enabling interrupts for that timer.
 ISR(TIMER1_COMPA_vect) {
-  NativeImpl::Get()
-      ->GetTimerInterruptHandlerDelegate()
-      ->HandleTimer1Interrupt();
+  NativeImpl::impl->GetTimerInterruptHandlerDelegate()->HandleTimer1Interrupt();
 }
 
 ISR(TIMER3_COMPA_vect) {
-  NativeImpl::Get()
-      ->GetTimerInterruptHandlerDelegate()
-      ->HandleTimer3Interrupt();
+  NativeImpl::impl->GetTimerInterruptHandlerDelegate()->HandleTimer3Interrupt();
 }
 
 // ISR for USB general interrupts.
 ISR(USB_GEN_vect) {
-  NativeImpl::Get()->GetUsbInterruptHandlerDelegate()->HandleGeneralInterrupt();
+  NativeImpl::impl->GetUsbInterruptHandlerDelegate()->HandleGeneralInterrupt();
 }
 
 // ISR for USB endpoint interrupts.
 ISR(USB_COM_vect) {
-  NativeImpl::Get()
-      ->GetUsbInterruptHandlerDelegate()
-      ->HandleEndpointInterrupt();
+  NativeImpl::impl->GetUsbInterruptHandlerDelegate()->HandleEndpointInterrupt();
 }
 }  // namespace
 
-Native *NativeImpl::Get() {
-  static NativeImpl instance = NativeImpl();
-  return &instance;
-}
+NativeImpl *NativeImpl::impl;
+
+NativeImpl::NativeImpl() { impl = this; }
 
 TimerInterruptHandlerDelegate *NativeImpl::GetTimerInterruptHandlerDelegate()
     const {
