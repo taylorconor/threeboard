@@ -54,7 +54,10 @@ std::unique_ptr<Simavr> SimavrImpl::Create(const std::string &firmware_file) {
 
 SimavrImpl::SimavrImpl(std::unique_ptr<avr_t> avr, uint16_t bss_size,
                        uint16_t data_size)
-    : avr_(std::move(avr)), bss_size_(bss_size), data_size_(data_size) {}
+    : avr_(std::move(avr)),
+      bss_size_(bss_size),
+      data_size_(data_size),
+      i2c_irq_(nullptr) {}
 
 void SimavrImpl::Run() { avr_run(avr_.get()); }
 

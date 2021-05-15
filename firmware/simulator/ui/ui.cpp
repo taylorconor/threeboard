@@ -158,6 +158,7 @@ UI::UI(SimulatorDelegate *sim_delegate,
        const std::string &log_file)
     : simulator_delegate_(sim_delegate),
       firmware_state_delegate_(firmware_state_delegate),
+      window_(nullptr),
       screen_output_mutex_(std::make_unique<std::recursive_mutex>()),
       is_running_(false),
       log_file_(log_file) {}
