@@ -20,7 +20,7 @@ cc_library(
     ],
     deps = [
         ":pad",
-        "//simulator:simulator_delegate",
         "//simulator:firmware_state_delegate",
+        "//simulator:simulator_delegate",
     ],
 )

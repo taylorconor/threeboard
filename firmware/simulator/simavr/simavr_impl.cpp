@@ -8,11 +8,15 @@
 #include "simavr/avr_usb.h"
 #include "simavr/sim_elf.h"
 #include "simavr/sim_gdb.h"
-#include "simulator/lifetime.h"
+#include "simulator/util/lifetime.h"
 
 namespace threeboard {
 namespace simulator {
 namespace {
+
+// Firmware file path, relative to threeboard/firmware. Bazel will guarantee
+// this is built since it's listed as a dependency.
+const std::string kFirmwareFile = "simulator/native/threeboard_sim_binary.elf";
 
 // C-style trampoline function to bounce the avr_irq_register_notify callback to
 // an instance of the provided callback type defined in T, which is assumed to
@@ -30,14 +34,14 @@ static const char *_ee_irq_names[2] = {
 }  // namespace
 
 // static.
-std::unique_ptr<Simavr> SimavrImpl::Create(const std::string &firmware_file) {
+std::unique_ptr<Simavr> SimavrImpl::Create() {
   elf_firmware_t f;
-  if (elf_read_firmware(firmware_file.c_str(), &f)) {
-    std::cout << "Failed to read ELF firmware '" << firmware_file << "'"
+  if (elf_read_firmware(kFirmwareFile.c_str(), &f)) {
+    std::cout << "Failed to read ELF firmware '" << kFirmwareFile << "'"
               << std::endl;
     exit(1);
   }
-  std::cout << "Loaded firmware '" << firmware_file << "'" << std::endl;
+  std::cout << "Loaded firmware '" << kFirmwareFile << "'" << std::endl;
 
   avr_t *avr = avr_make_mcu_by_name(f.mmcu);
   if (!avr) {

@@ -30,21 +30,9 @@ cc_test(
 )
 
 cc_library(
-    name = "flags",
-    hdrs = ["flags.h"],
-    srcs = ["flags.cpp"],
-    deps = ["//simulator/third_party:cxxopts"],
-)
-
-cc_library(
-    name = "lifetime",
-    hdrs = ["lifetime.h"],
-)
-
-cc_library(
     name = "simulator_delegate",
     hdrs = ["simulator_delegate.h"],
-    deps = [":flags"],
+    deps = ["//simulator/util:flags"],
 )
 
 cc_library(
@@ -61,7 +49,6 @@ cc_library(
     srcs = ["simulator.cpp"],
     hdrs = ["simulator.h"],
     deps = [
-        ":flags",
         ":simulator_delegate",
         "//simulator:firmware",
         "//simulator/components:i2c_eeprom",
@@ -69,6 +56,7 @@ cc_library(
         "//simulator/components:usb_host",
         "//simulator/simavr",
         "//simulator/ui",
+        "//simulator/util:flags",
     ],
 )
 
@@ -77,7 +65,7 @@ cc_binary(
     srcs = ["main.cpp"],
     deps = [
         ":simulator_lib",
-        ":flags",
         "//simulator/simavr:simavr_impl",
+        "//simulator/util:flags",
     ],
 )

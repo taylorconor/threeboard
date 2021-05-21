@@ -5,8 +5,8 @@
 #include <functional>
 #include <memory>
 
-#include "simulator/lifetime.h"
 #include "simulator/simavr/internal/iom32u4.h"
+#include "simulator/util/lifetime.h"
 
 // TODO: Remove asap!
 extern "C" {

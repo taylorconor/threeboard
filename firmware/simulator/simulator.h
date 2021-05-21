@@ -9,10 +9,10 @@
 #include "simulator/components/uart.h"
 #include "simulator/components/usb_host.h"
 #include "simulator/firmware.h"
-#include "simulator/flags.h"
 #include "simulator/simavr/simavr.h"
 #include "simulator/simulator_delegate.h"
 #include "simulator/ui/ui.h"
+#include "simulator/util/flags.h"
 
 namespace threeboard {
 namespace simulator {
