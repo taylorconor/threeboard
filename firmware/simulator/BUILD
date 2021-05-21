@@ -11,7 +11,6 @@ cc_library(
     name = "firmware",
     srcs = ["firmware.cpp"],
     hdrs = ["firmware.h"],
-    data = ["//simulator/native:threeboard_sim_binary"],
     deps = [
         ":firmware_state_delegate",
         "//simulator/simavr",
