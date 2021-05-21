@@ -16,7 +16,7 @@ namespace simulator {
 // a dependency on the simavr library.
 class SimavrImpl : public Simavr {
  public:
-  static std::unique_ptr<Simavr> Create(const std::string &);
+  static std::unique_ptr<Simavr> Create();
 
   ~SimavrImpl() override = default;
 

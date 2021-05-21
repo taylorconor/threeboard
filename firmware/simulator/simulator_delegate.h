@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "simulator/flags.h"
+#include "simulator/util/flags.h"
 
 namespace threeboard {
 namespace simulator {
