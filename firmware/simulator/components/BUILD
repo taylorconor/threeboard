@@ -1,53 +1,6 @@
-load("@avr-bazel//:avr.bzl", "avr_binary")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
-
-avr_binary(
-    name = "threeboard_sim_binary",
-    srcs = ["//src:main.c"],
-    copts = select({
-        "@bazel_tools//src/conditions:darwin": ["-DDARWIN"],
-        "//conditions:default": ["-DLINUX"],
-    }) + [
-        # This flag enables simavr-specific sections to be added to the
-        # firmware file for parsing by simavr.
-        "-DTHREEBOARD_SIM",
-        "-g",
-    ],
-    visibility = ["//visibility:private"],
-    deps = [
-        "//src:bootstrap",
-        "@third_party//:simavr_avr_hdrs",
-    ],
-)
-
-cc_library(
-    name = "firmware_state_delegate",
-    hdrs = ["firmware_state_delegate.h"],
-)
-
-cc_library(
-    name = "firmware",
-    srcs = ["firmware.cpp"],
-    hdrs = ["firmware.h"],
-    data = [":threeboard_sim_binary"],
-    deps = [
-        ":firmware_state_delegate",
-        "//simulator/simavr",
-    ],
-)
-
-cc_test(
-    name = "firmware_test",
-    srcs = ["firmware_test.cpp"],
-    deps = [
-        ":firmware",
-        "//simulator/simavr:simavr_mock",
-        "@gtest",
-        "@gtest//:gtest_main",
-    ],
-)
 
 cc_library(
     name = "i2c_eeprom",

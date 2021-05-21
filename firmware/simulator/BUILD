@@ -3,6 +3,33 @@ load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "firmware_state_delegate",
+    hdrs = ["firmware_state_delegate.h"],
+)
+
+cc_library(
+    name = "firmware",
+    srcs = ["firmware.cpp"],
+    hdrs = ["firmware.h"],
+    data = ["//simulator/native:threeboard_sim_binary"],
+    deps = [
+        ":firmware_state_delegate",
+        "//simulator/simavr",
+    ],
+)
+
+cc_test(
+    name = "firmware_test",
+    srcs = ["firmware_test.cpp"],
+    deps = [
+        ":firmware",
+        "//simulator/simavr:simavr_mock",
+        "@gtest",
+        "@gtest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "flags",
     hdrs = ["flags.h"],
     srcs = ["flags.cpp"],
@@ -36,7 +63,7 @@ cc_library(
     deps = [
         ":flags",
         ":simulator_delegate",
-        "//simulator/components:firmware",
+        "//simulator:firmware",
         "//simulator/components:i2c_eeprom",
         "//simulator/components:uart",
         "//simulator/components:usb_host",
