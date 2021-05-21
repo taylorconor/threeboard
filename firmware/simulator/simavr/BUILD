@@ -1,4 +1,4 @@
-package(default_visibility = ["//simulator:__subpackages__"])
+package(default_visibility = ["//simulator:__subpackages__", "//integration:__subpackages__"])
 
 cc_library(
     name = "simavr",

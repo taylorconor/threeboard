@@ -13,12 +13,3 @@ cc_library(
     name = "lifetime",
     hdrs = ["lifetime.h"],
 )
-
-cc_library(
-    name = "simulated_test_base",
-    hdrs = ["simulated_test_base.h"],
-    deps = [
-        "@gtest",
-    ],
-    testonly = 1,
-)
