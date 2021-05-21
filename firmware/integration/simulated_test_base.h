@@ -1,5 +1,7 @@
 #pragma once
 
+#include <chrono>
+
 #include "gtest/gtest.h"
 #include "simulator/simavr/simavr_impl.h"
 
