@@ -8,6 +8,7 @@ cc_library(
         "@gtest//:gtest_main",
         "//simulator/simavr:simavr_impl",
     ],
+    alwayslink = 1,
     testonly = 1,
 )
 
