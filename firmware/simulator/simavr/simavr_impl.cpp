@@ -63,7 +63,10 @@ SimavrImpl::SimavrImpl(std::unique_ptr<avr_t> avr, uint16_t bss_size,
       data_size_(data_size),
       i2c_irq_(nullptr) {}
 
-void SimavrImpl::Run() { avr_run(avr_.get()); }
+void SimavrImpl::Run() {
+  prev_pc_ = avr_->pc;
+  avr_run(avr_.get());
+}
 
 void SimavrImpl::InitGdb() { avr_gdb_init(avr_.get()); }
 
@@ -143,6 +146,10 @@ uint8_t SimavrImpl::GetData(uint8_t idx) const { return avr_->data[idx]; };
 uint8_t SimavrImpl::GetState() const { return avr_->state; }
 
 uint64_t SimavrImpl::GetCycle() const { return avr_->cycle; }
+
+uint32_t SimavrImpl::GetProgramCounter() const { return avr_->pc; }
+
+uint32_t SimavrImpl::GetPrevProgramCounter() const { return prev_pc_; }
 
 uint16_t SimavrImpl::GetStackPointer() const {
   return avr_->data[R_SPL] | (avr_->data[R_SPH] << 8);

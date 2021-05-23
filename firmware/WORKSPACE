@@ -11,11 +11,18 @@ load("@avr-bazel//:avr.bzl", "avr_tools_repository")
 
 avr_tools_repository()
 
-# google test and google mock
+# google test and google mock.
 git_repository(
     name = "gtest",
     commit = "703bd9caab50b139428cea1aaff9974ebee5742e",
     remote = "https://github.com/google/googletest",
+)
+
+# google abseil library.
+git_repository(
+    name = "abseil",
+    remote = "https://github.com/abseil/abseil-cpp",
+    branch = "20210324.1",
 )
 
 # a local repo representing the third party library locations (e.g. for simavr).

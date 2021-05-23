@@ -116,6 +116,8 @@ class Simavr {
   virtual uint8_t GetState() const = 0;
   virtual uint8_t GetGdbPort() const = 0;
   virtual uint64_t GetCycle() const = 0;
+  virtual uint32_t GetProgramCounter() const = 0;
+  virtual uint32_t GetPrevProgramCounter() const = 0;
   virtual uint16_t GetStackPointer() const = 0;
   virtual uint16_t GetBssSectionSize() const = 0;
   virtual uint16_t GetDataSectionSize() const = 0;
