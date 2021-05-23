@@ -6,7 +6,7 @@ cc_library(
     name = "flags",
     srcs = ["flags.cpp"],
     hdrs = ["flags.h"],
-    deps = ["//simulator/third_party:cxxopts"],
+    deps = ["//third_party:cxxopts"],
 )
 
 cc_library(

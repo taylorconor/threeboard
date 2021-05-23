@@ -1,6 +1,6 @@
 #include "flags.h"
 
-#include "simulator/third_party/cxxopts.hpp"
+#include "third_party/cxxopts.hpp"
 
 namespace threeboard {
 namespace simulator {
