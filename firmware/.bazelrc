@@ -1,2 +1,2 @@
-build --cxxopt='-std=c++17'
+build --cxxopt='-std=c++17' --features=-supports_dynamic_linker
 test --cxxopt="-fsanitize=undefined" --cxxopt="-fno-sanitize=vptr"

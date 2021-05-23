@@ -35,6 +35,8 @@ class DefaultSimavrMock : public Simavr {
   MOCK_METHOD(uint8_t, GetState, (), (const override));
   MOCK_METHOD(uint8_t, GetGdbPort, (), (const override));
   MOCK_METHOD(uint64_t, GetCycle, (), (const override));
+  MOCK_METHOD(uint32_t, GetProgramCounter, (), (const override));
+  MOCK_METHOD(uint32_t, GetPrevProgramCounter, (), (const override));
   MOCK_METHOD(uint16_t, GetStackPointer, (), (const override));
   MOCK_METHOD(uint16_t, GetBssSectionSize, (), (const override));
   MOCK_METHOD(uint16_t, GetDataSectionSize, (), (const override));
