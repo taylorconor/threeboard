@@ -10,7 +10,13 @@ class IntegrationTest : public integration::SimulatedTestBase {
   IntegrationTest() {}
 };
 
-TEST_F(IntegrationTest, FakeTest) {}
+TEST_F(IntegrationTest, StartupTest) {
+  // Run until the thereboard has successfully started up and is running the
+  // event loop. This means it has already run the 250ms blocking boot sequence
+  // indicator, so we set the timeout generously here to avoid flakiness.
+  EXPECT_TRUE(RunUntil("threeboard::Threeboard::RunEventLoopIteration",
+                       std::chrono::milliseconds(500)));
+}
 }  // namespace
 }  // namespace integration
 }  // namespace threeboard
