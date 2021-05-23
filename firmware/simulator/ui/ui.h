@@ -7,7 +7,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "simulator/components/firmware_state_delegate.h"
+#include "simulator/firmware_state_delegate.h"
 #include "simulator/simulator_delegate.h"
 #include "simulator/ui/pad.h"
 

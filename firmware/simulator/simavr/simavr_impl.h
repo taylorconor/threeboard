@@ -16,7 +16,7 @@ namespace simulator {
 // a dependency on the simavr library.
 class SimavrImpl : public Simavr {
  public:
-  static std::unique_ptr<Simavr> Create(const std::string &);
+  static std::unique_ptr<Simavr> Create();
 
   ~SimavrImpl() override = default;
 
@@ -46,6 +46,8 @@ class SimavrImpl : public Simavr {
   uint8_t GetState() const override;
   uint8_t GetGdbPort() const override;
   uint64_t GetCycle() const override;
+  uint32_t GetProgramCounter() const override;
+  uint32_t GetPrevProgramCounter() const override;
   uint16_t GetStackPointer() const override;
   uint16_t GetBssSectionSize() const override;
   uint16_t GetDataSectionSize() const override;
@@ -60,6 +62,7 @@ class SimavrImpl : public Simavr {
   uint16_t bss_size_;
   uint16_t data_size_;
   avr_irq_t *i2c_irq_;
+  uint32_t prev_pc_ = 0;
 };
 }  // namespace simulator
 }  // namespace threeboard

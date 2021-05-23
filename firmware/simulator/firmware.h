@@ -4,13 +4,13 @@
 #include <functional>
 #include <thread>
 
-#include "simulator/components/firmware_state_delegate.h"
+#include "simulator/firmware_state_delegate.h"
 #include "simulator/simavr/simavr.h"
 
 namespace threeboard {
 namespace simulator {
 
-class Firmware : public FirmwareStateDelegate {
+class Firmware final : public FirmwareStateDelegate {
  public:
   explicit Firmware(Simavr *simavr);
   ~Firmware() override;
@@ -27,14 +27,14 @@ class Firmware : public FirmwareStateDelegate {
   // Set ports containing input pins.
   void SetPinB(uint8_t, bool);
 
-  int GetCpuState() const final;
-  uint64_t GetCpuCycleCount() const final;
-  bool IsGdbEnabled() const final;
+  int GetCpuState() const override;
+  uint64_t GetCpuCycleCount() const override;
+  bool IsGdbEnabled() const override;
 
-  uint16_t GetDataSectionSize() const final;
-  uint16_t GetBssSectionSize() const final;
-  uint16_t GetStackSize() const final;
-  uint16_t GetSramUsage() const final;
+  uint16_t GetDataSectionSize() const override;
+  uint16_t GetBssSectionSize() const override;
+  uint16_t GetStackSize() const override;
+  uint16_t GetSramUsage() const override;
 
   void EnableGdb(uint16_t port) const;
   void DisableGdb() const;

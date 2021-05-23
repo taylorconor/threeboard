@@ -5,14 +5,14 @@
 #include <memory>
 #include <mutex>
 
-#include "simulator/components/firmware.h"
 #include "simulator/components/i2c_eeprom.h"
 #include "simulator/components/uart.h"
 #include "simulator/components/usb_host.h"
-#include "simulator/flags.h"
+#include "simulator/firmware.h"
 #include "simulator/simavr/simavr.h"
 #include "simulator/simulator_delegate.h"
 #include "simulator/ui/ui.h"
+#include "simulator/util/flags.h"
 
 namespace threeboard {
 namespace simulator {

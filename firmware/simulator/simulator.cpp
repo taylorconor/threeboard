@@ -37,10 +37,6 @@ Simulator::~Simulator() {
 }
 
 void Simulator::Run() {
-  if (ui_ != nullptr) {
-    std::cout << "Attempted to run a running simulator instance!" << std::endl;
-    exit(0);
-  }
   ui_ = std::make_unique<UI>(this, &firmware_, log_file_path_);
   ui_->StartAsyncRenderLoop();
 

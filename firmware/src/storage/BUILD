@@ -5,8 +5,8 @@ package(default_visibility = ["//visibility:public"])
 
 avr_library(
     name = "storage_controller",
-    hdrs = ["storage_controller.h"],
     srcs = ["storage_controller.cpp"],
+    hdrs = ["storage_controller.h"],
     deps = [
         "//src/storage/internal:eeprom",
         "//src/storage/internal:internal_eeprom",
