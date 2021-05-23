@@ -6,7 +6,7 @@
 namespace threeboard {
 namespace storage {
 
-class InternalEeprom : public Eeprom {
+class InternalEeprom final : public Eeprom {
  public:
   explicit InternalEeprom(native::Native *native);
 

@@ -10,7 +10,7 @@
 
 namespace threeboard {
 
-class LayerController : public LayerControllerDelegate {
+class LayerController final : public LayerControllerDelegate {
  public:
   LayerController(LedState *led_state, usb::UsbController *usb);
 

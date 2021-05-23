@@ -14,7 +14,7 @@ namespace simulator {
 
 // Concrete implementation of the Simavr interface. This is the only class with
 // a dependency on the simavr library.
-class SimavrImpl : public Simavr {
+class SimavrImpl final : public Simavr {
  public:
   static std::unique_ptr<Simavr> Create();
 

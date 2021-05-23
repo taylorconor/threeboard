@@ -16,7 +16,7 @@
 
 namespace threeboard {
 namespace simulator {
-class Simulator : public SimulatorDelegate {
+class Simulator final : public SimulatorDelegate {
  public:
   Simulator(Flags *flags, Simavr *simavr);
   ~Simulator() override;
@@ -24,12 +24,12 @@ class Simulator : public SimulatorDelegate {
   void Run();
 
  private:
-  void PrepareRenderState() final;
-  void HandlePhysicalKeypress(char key, bool state) final;
-  void HandleVirtualKeypress(uint8_t mod_code, uint8_t key_code) final;
-  void HandleUartLogLine(const std::string &log_line) final;
-  Flags *GetFlags() final;
-  bool IsUsbAttached() final;
+  void PrepareRenderState() override;
+  void HandlePhysicalKeypress(char key, bool state) override;
+  void HandleVirtualKeypress(uint8_t mod_code, uint8_t key_code) override;
+  void HandleUartLogLine(const std::string &log_line) override;
+  Flags *GetFlags() override;
+  bool IsUsbAttached() override;
 
   Flags *flags_;
   Simavr *simavr_;

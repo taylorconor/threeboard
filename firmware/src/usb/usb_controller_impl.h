@@ -15,17 +15,17 @@ namespace usb {
 // (https://github.com/technomancy/atreus-firmware).
 // It explicitly does not support the ENDPOINT_HALT feature, since it's rarely
 // used and shouldn't affect functionality at all.
-class UsbControllerImpl : public UsbController,
-                          public UsbInterruptHandlerDelegate {
+class UsbControllerImpl final : public UsbController,
+                                public UsbInterruptHandlerDelegate {
  public:
   UsbControllerImpl(native::Native *, ErrorHandlerDelegate *);
 
-  bool Setup() final;
-  bool HasConfigured() final;
-  bool SendKeypress(uint8_t key, uint8_t mod) final;
+  bool Setup() override;
+  bool HasConfigured() override;
+  bool SendKeypress(uint8_t key, uint8_t mod) override;
 
-  void HandleGeneralInterrupt() final;
-  void HandleEndpointInterrupt() final;
+  void HandleGeneralInterrupt() override;
+  void HandleEndpointInterrupt() override;
 
  private:
   friend class UsbImplTest;

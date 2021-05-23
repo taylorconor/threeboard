@@ -13,8 +13,8 @@ namespace threeboard {
 
 // Manages the state of the keyboard and acts as a delegate to coordinate all of
 // the various timer interrupt driven and error-driven handlers.
-class Threeboard : public TimerInterruptHandlerDelegate,
-                   public ErrorHandlerDelegate {
+class Threeboard final : public TimerInterruptHandlerDelegate,
+                         public ErrorHandlerDelegate {
  public:
   Threeboard(native::Native *native, EventBuffer *event_buffer,
              usb::UsbController *usb_controller,
@@ -28,8 +28,8 @@ class Threeboard : public TimerInterruptHandlerDelegate,
   // Implement the InterruptHandlerDelegate overrides. Timer1 is used to provide
   // a clock signal to the LedController, and Timer2 is used to provide a clock
   // signal to the KeyController.
-  void HandleTimer1Interrupt() final;
-  void HandleTimer3Interrupt() final;
+  void HandleTimer1Interrupt() override;
+  void HandleTimer3Interrupt() override;
 
  private:
   // All of the components composed into this class which we need to coordinate.

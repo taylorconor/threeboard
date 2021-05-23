@@ -5,7 +5,7 @@
 
 namespace threeboard {
 
-class LayerB : public Layer {
+class LayerB final : public Layer {
  public:
   LayerB(LedState *led_state, usb::UsbController *usb,
          LayerControllerDelegate *layer_controller_delegate)

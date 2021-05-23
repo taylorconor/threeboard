@@ -7,7 +7,7 @@ namespace threeboard {
 // A very basic delegate implementation that allows state to be passed from the
 // key controller to the main keypress polling run loop. Keeping this as a
 // separate class allows decoupling to avoid a dependency cycle.
-class EventBuffer : public EventHandlerDelegate {
+class EventBuffer final : public EventHandlerDelegate {
  public:
   ~EventBuffer() override = default;
 
