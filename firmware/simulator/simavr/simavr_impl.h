@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "simavr.h"
+#include "simavr/sim_elf.h"
 #include "simavr/sim_irq.h"
 
 extern "C" {
@@ -14,7 +15,7 @@ namespace simulator {
 
 // Concrete implementation of the Simavr interface. This is the only class with
 // a dependency on the simavr library.
-class SimavrImpl final : public Simavr {
+class SimavrImpl : public Simavr {
  public:
   static std::unique_ptr<Simavr> Create();
 
@@ -47,22 +48,22 @@ class SimavrImpl final : public Simavr {
   uint8_t GetGdbPort() const override;
   uint64_t GetCycle() const override;
   uint32_t GetProgramCounter() const override;
-  uint32_t GetPrevProgramCounter() const override;
   uint16_t GetStackPointer() const override;
   uint16_t GetBssSectionSize() const override;
   uint16_t GetDataSectionSize() const override;
   uint16_t GetRamSize() const override;
-
   uint32_t TwiIrqMsg(uint8_t msg, uint8_t addr, uint8_t data) const override;
 
- private:
+ protected:
+  static std::unique_ptr<avr_t> ParseElfFile(elf_firmware_t *firmware);
+
   SimavrImpl(std::unique_ptr<avr_t> avr, uint16_t bss_size, uint16_t data_size);
 
+ private:
   std::unique_ptr<avr_t> avr_;
   uint16_t bss_size_;
   uint16_t data_size_;
   avr_irq_t *i2c_irq_;
-  uint32_t prev_pc_ = 0;
 };
 }  // namespace simulator
 }  // namespace threeboard

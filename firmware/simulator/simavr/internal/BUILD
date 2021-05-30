@@ -17,3 +17,8 @@ cc_library(
         "//src/native:constants",
     ],
 )
+
+cc_library(
+    name = "simavr_headers",
+    hdrs = ["simavr_headers.h"],
+)

@@ -9,9 +9,9 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_split.h"
 #include "gtest/gtest.h"
+#include "integration/simavr_for_testing.h"
 #include "simavr/sim_elf.h"
 #include "simulator/components/usb_host.h"
-#include "simulator/simavr/simavr_impl.h"
 #include "simulator/simulator_delegate_mock.h"
 #include "util/status_util.h"
 
@@ -20,8 +20,7 @@ namespace integration {
 
 class SimulatedTestBase : public ::testing::Test {
  public:
-  SimulatedTestBase() {
-    simavr_ = simulator::SimavrImpl::Create();
+  SimulatedTestBase() : simavr_(simulator::SimavrForTesting::Create()) {
     usb_host_ = std::make_unique<simulator::UsbHost>(simavr_.get(),
                                                      &simulator_delegate_mock_);
   }
@@ -44,21 +43,6 @@ class SimulatedTestBase : public ::testing::Test {
     return absl::OkStatus();
   }
 
-  absl::Status RunUntil(uint8_t data_idx, uint8_t data_val,
-                        const std::chrono::milliseconds& timeout =
-                            std::chrono::milliseconds(100)) {
-    auto start = std::chrono::system_clock::now();
-    while (timeout > std::chrono::system_clock::now() - start) {
-      if (simavr_->GetData(data_idx) == data_val) {
-        return absl::OkStatus();
-      }
-      simavr_->Run();
-      RETURN_IF_ERROR(VerifyState(simavr_->GetState()));
-    }
-    return absl::DeadlineExceededError(
-        absl::StrCat("RunUntil timed out after ", timeout.count(), "ms"));
-  }
-
   absl::Status RunUntil(const std::string& symbol,
                         const std::chrono::milliseconds& timeout =
                             std::chrono::milliseconds(100)) {
@@ -72,6 +56,8 @@ class SimulatedTestBase : public ::testing::Test {
       if (simavr_->GetProgramCounter() == stop_addr) {
         return absl::OkStatus();
       }
+
+      // RETURN_IF_ERROR(RunAndCompare(0xae3 - 75, 0xae3));
       simavr_->Run();
       RETURN_IF_ERROR(VerifyState(simavr_->GetState()));
     }
@@ -79,7 +65,7 @@ class SimulatedTestBase : public ::testing::Test {
         absl::StrCat("RunUntil timed out after ", timeout.count(), "ms"));
   }
 
-  std::unique_ptr<simulator::Simavr> simavr_;
+  std::unique_ptr<simulator::SimavrForTesting> simavr_;
   std::unique_ptr<simulator::UsbHost> usb_host_;
   simulator::SimulatorDelegateMock simulator_delegate_mock_;
 
@@ -127,17 +113,35 @@ class SimulatedTestBase : public ::testing::Test {
 
   absl::Status VerifyState(uint8_t state) {
     if (state == simulator::CRASHED || state == simulator::DONE) {
+      simavr_->PrintCoreDump();
       return absl::InternalError(absl::StrCat(
-          "Simulator entered error state: ", state, ". Final instruction: 0x",
-          absl::Hex(simavr_->GetPrevProgramCounter()), "."));
+          "Simulator entered error state: ", state, ". Core dumped."));
     }
     if (simavr_->GetProgramCounter() == 0 &&
-        simavr_->GetPrevProgramCounter() != 0) {
-      return absl::InternalError(absl::StrCat(
-          "Simulator unexpectedly jumped to 0x0. Final instruction: 0x",
-          absl::Hex(simavr_->GetPrevProgramCounter()), "."));
+        simavr_->GetPrevProgramCounters().back() != 0) {
+      simavr_->PrintCoreDump();
+      return absl::InternalError(
+          absl::StrCat("Simulator unexpectedly jumped to 0x0. Core dumped."));
     }
     return absl::OkStatus();
+  }
+
+  absl::Status RunAndCompare(int start_range, int end_range) {
+    uint8_t before[end_range - start_range];
+    for (int i = start_range, j = 0; i < end_range; ++i, ++j) {
+      before[j] = simavr_->GetData(i);
+    }
+    simavr_->Run();
+    uint8_t after[end_range - start_range];
+    for (int i = start_range, j = 0; i < end_range; ++i, ++j) {
+      after[j] = simavr_->GetData(i);
+    }
+    if (memcmp(before, after, end_range - start_range) == 0) {
+      return absl::OkStatus();
+    }
+    simavr_->PrintCoreDump();
+    return absl::InternalError(
+        absl::StrCat("Stack was unexpectedly modified. Core dumped."));
   }
 
   static absl::flat_hash_map<std::string, uint32_t> symbol_table_;

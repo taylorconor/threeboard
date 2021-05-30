@@ -60,7 +60,7 @@ uint16_t Firmware::GetStackSize() const {
 
 uint16_t Firmware::GetSramUsage() const {
   // Memory is laid out as follows in the atmega32u4:
-  // |- ioports -| |- .data -|- .bss -|- stack >> -----|
+  // |- ioports -| |- .data -|- .bss -|- << stack -----|
   // |-- 255 B --| |-------------- 2.5 K --------------|
   // |--------------- ramsize = 28xx B ----------------|
   double usage = GetDataSectionSize() + GetBssSectionSize() + GetStackSize();

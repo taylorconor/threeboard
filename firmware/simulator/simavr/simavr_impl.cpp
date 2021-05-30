@@ -6,7 +6,6 @@
 #include "simavr/avr_twi.h"
 #include "simavr/avr_uart.h"
 #include "simavr/avr_usb.h"
-#include "simavr/sim_elf.h"
 #include "simavr/sim_gdb.h"
 #include "simulator/util/lifetime.h"
 
@@ -36,24 +35,29 @@ static const char *_ee_irq_names[2] = {
 // static.
 std::unique_ptr<Simavr> SimavrImpl::Create() {
   elf_firmware_t f;
-  if (elf_read_firmware(kFirmwareFile.c_str(), &f)) {
+  auto avr_ptr = ParseElfFile(&f);
+  auto *raw_ptr = new SimavrImpl(std::move(avr_ptr), f.bsssize, f.datasize);
+  return std::unique_ptr<SimavrImpl>(raw_ptr);
+}
+
+// static.
+std::unique_ptr<avr_t> SimavrImpl::ParseElfFile(elf_firmware_t *firmware) {
+  if (elf_read_firmware(kFirmwareFile.c_str(), firmware)) {
     std::cout << "Failed to read ELF firmware '" << kFirmwareFile << "'"
               << std::endl;
     exit(1);
   }
   std::cout << "Loaded firmware '" << kFirmwareFile << "'" << std::endl;
 
-  avr_t *avr = avr_make_mcu_by_name(f.mmcu);
+  avr_t *avr = avr_make_mcu_by_name(firmware->mmcu);
   if (!avr) {
-    std::cout << "Unknown MMCU: '" << f.mmcu << "'" << std::endl;
+    std::cout << "Unknown MMCU: '" << firmware->mmcu << "'" << std::endl;
     exit(1);
   }
 
   avr_init(avr);
-  avr_load_firmware(avr, &f);
-  auto avr_ptr = std::unique_ptr<avr_t>(avr);
-  auto *raw_ptr = new SimavrImpl(std::move(avr_ptr), f.bsssize, f.datasize);
-  return std::unique_ptr<SimavrImpl>(raw_ptr);
+  avr_load_firmware(avr, firmware);
+  return std::unique_ptr<avr_t>(avr);
 }
 
 SimavrImpl::SimavrImpl(std::unique_ptr<avr_t> avr, uint16_t bss_size,
@@ -63,10 +67,7 @@ SimavrImpl::SimavrImpl(std::unique_ptr<avr_t> avr, uint16_t bss_size,
       data_size_(data_size),
       i2c_irq_(nullptr) {}
 
-void SimavrImpl::Run() {
-  prev_pc_ = avr_->pc;
-  avr_run(avr_.get());
-}
+void SimavrImpl::Run() { avr_run(avr_.get()); }
 
 void SimavrImpl::InitGdb() { avr_gdb_init(avr_.get()); }
 
@@ -148,8 +149,6 @@ uint8_t SimavrImpl::GetState() const { return avr_->state; }
 uint64_t SimavrImpl::GetCycle() const { return avr_->cycle; }
 
 uint32_t SimavrImpl::GetProgramCounter() const { return avr_->pc; }
-
-uint32_t SimavrImpl::GetPrevProgramCounter() const { return prev_pc_; }
 
 uint16_t SimavrImpl::GetStackPointer() const {
   return avr_->data[R_SPL] | (avr_->data[R_SPH] << 8);
