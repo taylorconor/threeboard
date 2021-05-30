@@ -34,6 +34,9 @@ cc_library(
     hdrs = ["simavr_for_testing.h"],
     deps = [
         "//simulator/simavr:simavr_impl",
+        "//util:status_util",
+        "@abseil//absl/container:flat_hash_map",
+        "@abseil//absl/status",
         "@abseil//absl/strings",
     ],
     alwayslink = 1,

@@ -20,7 +20,8 @@ namespace integration {
 
 class SimulatedTestBase : public ::testing::Test {
  public:
-  SimulatedTestBase() : simavr_(simulator::SimavrForTesting::Create()) {
+  SimulatedTestBase()
+      : simavr_(simulator::SimavrForTesting::Create(&symbol_table_)) {
     usb_host_ = std::make_unique<simulator::UsbHost>(simavr_.get(),
                                                      &simulator_delegate_mock_);
   }
@@ -31,40 +32,6 @@ class SimulatedTestBase : public ::testing::Test {
   }
 
  protected:
-  // TODO: We can get more cycles for a given timeout by optimising the each
-  // RunUntil functions loop.
-  absl::Status Run(const std::chrono::milliseconds& timeout =
-                       std::chrono::milliseconds(100)) {
-    auto start = std::chrono::system_clock::now();
-    while (timeout > std::chrono::system_clock::now() - start) {
-      simavr_->Run();
-      RETURN_IF_ERROR(VerifyState(simavr_->GetState()));
-    }
-    return absl::OkStatus();
-  }
-
-  absl::Status RunUntil(const std::string& symbol,
-                        const std::chrono::milliseconds& timeout =
-                            std::chrono::milliseconds(100)) {
-    if (!symbol_table_.contains(symbol)) {
-      return absl::InternalError(
-          absl::StrCat("Symbol '", symbol, "' not found in symbol table"));
-    }
-    uint32_t stop_addr = symbol_table_[symbol];
-    auto start = std::chrono::system_clock::now();
-    while (timeout > std::chrono::system_clock::now() - start) {
-      if (simavr_->GetProgramCounter() == stop_addr) {
-        return absl::OkStatus();
-      }
-
-      // RETURN_IF_ERROR(RunAndCompare(0xae3 - 75, 0xae3));
-      simavr_->Run();
-      RETURN_IF_ERROR(VerifyState(simavr_->GetState()));
-    }
-    return absl::DeadlineExceededError(
-        absl::StrCat("RunUntil timed out after ", timeout.count(), "ms"));
-  }
-
   std::unique_ptr<simulator::SimavrForTesting> simavr_;
   std::unique_ptr<simulator::UsbHost> usb_host_;
   simulator::SimulatorDelegateMock simulator_delegate_mock_;
@@ -109,39 +76,6 @@ class SimulatedTestBase : public ::testing::Test {
       demangled = demangled.substr(0, demangled.find('('));
       symbol_table_[demangled] = symbol->addr;
     }
-  }
-
-  absl::Status VerifyState(uint8_t state) {
-    if (state == simulator::CRASHED || state == simulator::DONE) {
-      simavr_->PrintCoreDump();
-      return absl::InternalError(absl::StrCat(
-          "Simulator entered error state: ", state, ". Core dumped."));
-    }
-    if (simavr_->GetProgramCounter() == 0 &&
-        simavr_->GetPrevProgramCounters().back() != 0) {
-      simavr_->PrintCoreDump();
-      return absl::InternalError(
-          absl::StrCat("Simulator unexpectedly jumped to 0x0. Core dumped."));
-    }
-    return absl::OkStatus();
-  }
-
-  absl::Status RunAndCompare(int start_range, int end_range) {
-    uint8_t before[end_range - start_range];
-    for (int i = start_range, j = 0; i < end_range; ++i, ++j) {
-      before[j] = simavr_->GetData(i);
-    }
-    simavr_->Run();
-    uint8_t after[end_range - start_range];
-    for (int i = start_range, j = 0; i < end_range; ++i, ++j) {
-      after[j] = simavr_->GetData(i);
-    }
-    if (memcmp(before, after, end_range - start_range) == 0) {
-      return absl::OkStatus();
-    }
-    simavr_->PrintCoreDump();
-    return absl::InternalError(
-        absl::StrCat("Stack was unexpectedly modified. Core dumped."));
   }
 
   static absl::flat_hash_map<std::string, uint32_t> symbol_table_;

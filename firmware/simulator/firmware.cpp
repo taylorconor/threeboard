@@ -60,11 +60,13 @@ uint16_t Firmware::GetStackSize() const {
 
 uint16_t Firmware::GetSramUsage() const {
   // Memory is laid out as follows in the atmega32u4:
-  // |- ioports -| |- .data -|- .bss -|- << stack -----|
-  // |-- 255 B --| |-------------- 2.5 K --------------|
-  // |--------------- ramsize = 28xx B ----------------|
+  // |- registers -| |- ioports -| |- .data -|- .bss -|- << stack -----|
+  // |--- 32 B ----| |-- 255 B --| |-------------- 2.5 K --------------|
+  //               ^             ^                                     ^
+  //             0x1F          0xFF                                  0xAFF
+  // |----------------------- ramsize = 2815 B ------------------------|
   double usage = GetDataSectionSize() + GetBssSectionSize() + GetStackSize();
-  return (usage / simavr_->GetRamSize()) * 100;
+  return (usage / (simavr_->GetRamSize() - 0xFF)) * 100;
 }
 
 void Firmware::EnableGdb(uint16_t port) const {
