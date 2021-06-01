@@ -111,36 +111,36 @@ void InstrumentingSimavr::Run() {
   }
 }
 
-std::vector<uint8_t> InstrumentingSimavr::CopyDataSegment() const {
-  return std::vector<uint8_t>(avr_->data + data_start_,
-                              avr_->data + data_start_ + firmware_->datasize);
+void InstrumentingSimavr::CopyDataSegment(std::vector<uint8_t>* v) const {
+  v->assign(avr_->data + data_start_,
+            avr_->data + data_start_ + firmware_->datasize);
 }
 
 bool InstrumentingSimavr::ShouldRunIntegrityCheckAtCurrentCycle() const {
   if (!finished_do_copy_data_) {
     return false;
   }
-  auto& symbol = symbol_table_->at("threeboard::native::NativeImpl::DelayMs");
+  static auto& symbol =
+      symbol_table_->at("threeboard::native::NativeImpl::DelayMs");
   if (GetProgramCounter() >= symbol.address &&
       GetProgramCounter() <= symbol.address + symbol.size) {
-    no_integrity_cycles_++;
     return false;
   }
-  integrity_cycles_++;
   return true;
 }
 
 absl::Status InstrumentingSimavr::RunWithIntegrityChecks() {
   if (ShouldRunIntegrityCheckAtCurrentCycle()) {
-    auto data_before = CopyDataSegment();
+    CopyDataSegment(&data_before_);
     Run();
-    auto data_after = CopyDataSegment();
-    if (data_before != data_after) {
-      for (int i = 0; i < data_before.size(); ++i) {
-        if (data_before[i] != data_after[i]) {
+    if (!std::equal(data_before_.begin(), data_before_.end(),
+                    avr_->data + data_start_)) {
+      CopyDataSegment(&data_after_);
+      for (int i = 0; i < data_before_.size(); ++i) {
+        if (data_before_[i] != data_after_[i]) {
           std::cout << absl::StrCat(".data 0x", absl::Hex(data_start_ + i),
-                                    " modified: 0x", absl::Hex(data_before[i]),
-                                    " -> 0x", absl::Hex(data_after[i]), ".")
+                                    " modified: 0x", absl::Hex(data_before_[i]),
+                                    " -> 0x", absl::Hex(data_after_[i]), ".")
                     << std::endl;
         }
       }

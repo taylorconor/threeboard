@@ -19,10 +19,7 @@ class InstrumentingSimavr final : public SimavrImpl {
     SymbolInfo(uint32_t address) : address(address), size(0) {}
   };
 
-  ~InstrumentingSimavr() override {
-    std::cout << "Integrity cycles: " << integrity_cycles_
-              << ", no integrity cycles: " << no_integrity_cycles_ << std::endl;
-  }
+  ~InstrumentingSimavr() override = default;
 
   static std::unique_ptr<InstrumentingSimavr> Create(
       elf_firmware_t* elf_firmware,
@@ -43,7 +40,7 @@ class InstrumentingSimavr final : public SimavrImpl {
       std::unique_ptr<avr_t> avr);
 
   void Run() override;
-  std::vector<uint8_t> CopyDataSegment() const;
+  void CopyDataSegment(std::vector<uint8_t>*) const;
   bool ShouldRunIntegrityCheckAtCurrentCycle() const;
   absl::Status RunWithIntegrityChecks();
 
@@ -53,8 +50,11 @@ class InstrumentingSimavr final : public SimavrImpl {
   std::vector<uint32_t> prev_pcs_;
   std::vector<uint16_t> prev_sps_;
 
-  mutable int integrity_cycles_ = 0;
-  mutable int no_integrity_cycles_ = 0;
+  // These vectors are used within RunWithIntegrityChecks, and are repeatedly
+  // overwritten hundreds of thousands of times. For performance we maintain the
+  // vectors here so we don't have to continuously free their memory.
+  mutable std::vector<uint8_t> data_before_;
+  mutable std::vector<uint8_t> data_after_;
 
   absl::flat_hash_map<std::string, SymbolInfo>* symbol_table_;
 };
