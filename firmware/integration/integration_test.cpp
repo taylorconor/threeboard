@@ -17,7 +17,8 @@ TEST_F(IntegrationTest, BootToEventLoop) {
   // indicator, so we set the timeout generously here to avoid flakiness.
   EXPECT_OK(
       simavr_->RunUntilSymbol("threeboard::Threeboard::RunEventLoopIteration",
-                              std::chrono::milliseconds(500)));
+                              // TODO: optimize this.
+                              std::chrono::milliseconds(10000)));
 }
 }  // namespace
 }  // namespace integration

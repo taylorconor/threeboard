@@ -25,10 +25,10 @@ int main() {
   // with the memory space split between .data (initialised static variables),
   // .bss (uninitialised static variables), and the remainder dedicated to the
   // stack.
-  extern void *__malloc_heap_start;
+  /*extern void *__malloc_heap_start;
   extern void *__malloc_heap_end;
   __malloc_heap_end = 0;
-  __malloc_heap_start = 0;
+  __malloc_heap_start = 0;*/
 
   // Call into an `extern "C"` function in C++ to run the threeboard firmware.
   RunThreeboardEventLoop();

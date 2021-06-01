@@ -1,11 +1,11 @@
 #pragma once
 
+#include <iostream>
 #include <memory>
 
 #include "simavr.h"
 #include "simavr/sim_elf.h"
 #include "simavr/sim_irq.h"
-
 extern "C" {
 struct avr_t;
 }
@@ -17,7 +17,7 @@ namespace simulator {
 // a dependency on the simavr library.
 class SimavrImpl : public Simavr {
  public:
-  static std::unique_ptr<Simavr> Create();
+  static std::unique_ptr<Simavr> Create(elf_firmware_t *firmware);
 
   ~SimavrImpl() override = default;
 
@@ -57,12 +57,10 @@ class SimavrImpl : public Simavr {
  protected:
   static std::unique_ptr<avr_t> ParseElfFile(elf_firmware_t *firmware);
 
-  SimavrImpl(std::unique_ptr<avr_t> avr, uint16_t bss_size, uint16_t data_size);
+  SimavrImpl(std::unique_ptr<avr_t> avr, elf_firmware_t *firmware);
 
- private:
   std::unique_ptr<avr_t> avr_;
-  uint16_t bss_size_;
-  uint16_t data_size_;
+  elf_firmware_t *firmware_;
   avr_irq_t *i2c_irq_;
 };
 }  // namespace simulator

@@ -9,19 +9,22 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_split.h"
 #include "gtest/gtest.h"
-#include "integration/simavr_for_testing.h"
 #include "simavr/sim_elf.h"
 #include "simulator/components/usb_host.h"
+#include "simulator/simavr/instrumenting_simavr.h"
 #include "simulator/simulator_delegate_mock.h"
 #include "util/status_util.h"
 
 namespace threeboard {
 namespace integration {
 
+using SymbolInfo = simulator::InstrumentingSimavr::SymbolInfo;
+
 class SimulatedTestBase : public ::testing::Test {
  public:
   SimulatedTestBase()
-      : simavr_(simulator::SimavrForTesting::Create(&symbol_table_)) {
+      : simavr_(simulator::InstrumentingSimavr::Create(&firmware_,
+                                                       &symbol_table_)) {
     usb_host_ = std::make_unique<simulator::UsbHost>(simavr_.get(),
                                                      &simulator_delegate_mock_);
   }
@@ -32,25 +35,29 @@ class SimulatedTestBase : public ::testing::Test {
   }
 
  protected:
-  std::unique_ptr<simulator::SimavrForTesting> simavr_;
+  std::unique_ptr<simulator::InstrumentingSimavr> simavr_;
   std::unique_ptr<simulator::UsbHost> usb_host_;
   simulator::SimulatorDelegateMock simulator_delegate_mock_;
 
  private:
   static void BuildSymbolTable() {
-    elf_firmware_t f;
-    if (elf_read_firmware("simulator/native/threeboard_sim_binary.elf", &f)) {
+    if (elf_read_firmware("simulator/native/threeboard_sim_binary.elf",
+                          &firmware_)) {
       std::cout << "Failed to parse threeboard ELF file for simulated testing"
                 << std::endl;
       exit(0);
     }
-    for (int i = 0; i < f.symbolcount; ++i) {
+    for (int i = 0; i < firmware_.symbolcount; ++i) {
       // Demangle the symbol name.
-      avr_symbol_t* symbol = *(f.symbol + i);
+      avr_symbol_t* symbol = *(firmware_.symbol + i);
       int status;
       char* result = abi::__cxa_demangle(symbol->symbol, 0, 0, &status);
       if (status != 0) {
-        // Skip demangling failures.
+        // Skip demangling failures, unless they correspond to segment-related
+        // symbols and functions.
+        if (absl::StartsWith(symbol->symbol, "__")) {
+          symbol_table_[symbol->symbol] = SymbolInfo(symbol->addr);
+        }
         continue;
       }
 
@@ -74,14 +81,23 @@ class SimulatedTestBase : public ::testing::Test {
       // everything that comes after it (CV qualifiers, for example). There's no
       // need to disambiguate between these for now.
       demangled = demangled.substr(0, demangled.find('('));
-      symbol_table_[demangled] = symbol->addr;
+      symbol_table_[demangled] = SymbolInfo(symbol->addr);
+      // Hard code the size of DelayMs since it's the only symbol whose size we
+      // need right now, and its size is unlikely to change.
+      // TODO: change this to use symbol->size once
+      // github.com/buserror/simavr/pull/449 is merged.
+      if (demangled == "threeboard::native::NativeImpl::DelayMs") {
+        symbol_table_[demangled].size = 278;
+      }
     }
   }
 
-  static absl::flat_hash_map<std::string, uint32_t> symbol_table_;
+  static elf_firmware_t firmware_;
+  static absl::flat_hash_map<std::string, SymbolInfo> symbol_table_;
 };
 
-absl::flat_hash_map<std::string, uint32_t> SimulatedTestBase::symbol_table_;
+elf_firmware_t SimulatedTestBase::firmware_;
+absl::flat_hash_map<std::string, SymbolInfo> SimulatedTestBase::symbol_table_;
 
 }  // namespace integration
 }  // namespace threeboard

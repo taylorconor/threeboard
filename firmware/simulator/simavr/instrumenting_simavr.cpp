@@ -1,5 +1,6 @@
-#include "simavr_for_testing.h"
+#include "instrumenting_simavr.h"
 
+#include <cstdlib>
 #include <iostream>
 
 #include "absl/strings/str_cat.h"
@@ -12,61 +13,60 @@ namespace simulator {
 constexpr int kCoreDumpSize = 16;
 
 // static.
-std::unique_ptr<SimavrForTesting> SimavrForTesting::Create(
-    absl::flat_hash_map<std::string, uint32_t>* symbol_table) {
-  elf_firmware_t f;
-  auto avr_ptr = ParseElfFile(&f);
-  auto* raw_ptr = new SimavrForTesting(symbol_table, std::move(avr_ptr),
-                                       f.bsssize, f.datasize);
-  return std::unique_ptr<SimavrForTesting>(raw_ptr);
+std::unique_ptr<InstrumentingSimavr> InstrumentingSimavr::Create(
+    elf_firmware_t* elf_firmware,
+    absl::flat_hash_map<std::string, SymbolInfo>* symbol_table) {
+  auto avr_ptr = ParseElfFile(elf_firmware);
+  auto* raw_ptr =
+      new InstrumentingSimavr(elf_firmware, symbol_table, std::move(avr_ptr));
+  return std::unique_ptr<InstrumentingSimavr>(raw_ptr);
 }
 
-SimavrForTesting::SimavrForTesting(
-    absl::flat_hash_map<std::string, uint32_t>* symbol_table,
-    std::unique_ptr<avr_t> avr, uint16_t bss_size, uint16_t data_size)
-    : SimavrImpl(std::move(avr), bss_size, data_size),
-      symbol_table_(symbol_table) {}
+InstrumentingSimavr::InstrumentingSimavr(
+    elf_firmware_t* elf_firmware,
+    absl::flat_hash_map<std::string, SymbolInfo>* symbol_table,
+    std::unique_ptr<avr_t> avr)
+    : SimavrImpl(std::move(avr), elf_firmware), symbol_table_(symbol_table) {
+  data_start_ = symbol_table_->at("__data_start").address;
+}
 
-absl::Status SimavrForTesting::RunWithTimeout(
+absl::Status InstrumentingSimavr::RunWithTimeout(
     const std::chrono::milliseconds& timeout = std::chrono::milliseconds(100)) {
   auto start = std::chrono::system_clock::now();
   while (timeout > std::chrono::system_clock::now() - start) {
-    Run();
-    RETURN_IF_ERROR(VerifyState());
+    RETURN_IF_ERROR(RunWithIntegrityChecks());
   }
   return absl::OkStatus();
 }
 
-absl::Status SimavrForTesting::RunUntilSymbol(
+absl::Status InstrumentingSimavr::RunUntilSymbol(
     const std::string& symbol,
     const std::chrono::milliseconds& timeout = std::chrono::milliseconds(100)) {
   if (!symbol_table_->contains(symbol)) {
     return absl::InternalError(
         absl::StrCat("Symbol '", symbol, "' not found in symbol table"));
   }
-  uint32_t stop_addr = symbol_table_->at(symbol);
+  uint32_t stop_addr = symbol_table_->at(symbol).address;
   auto start = std::chrono::system_clock::now();
   while (timeout > std::chrono::system_clock::now() - start) {
     if (GetProgramCounter() == stop_addr) {
       return absl::OkStatus();
     }
-
-    Run();
-    RETURN_IF_ERROR(VerifyState());
+    RETURN_IF_ERROR(RunWithIntegrityChecks());
   }
   return absl::DeadlineExceededError(
       absl::StrCat("RunUntil timed out after ", timeout.count(), "ms"));
 }
 
-std::vector<uint32_t> SimavrForTesting::GetPrevProgramCounters() const {
+std::vector<uint32_t> InstrumentingSimavr::GetPrevProgramCounters() const {
   return prev_pcs_;
 }
 
-std::vector<uint16_t> SimavrForTesting::GetPrevStackPointers() const {
+std::vector<uint16_t> InstrumentingSimavr::GetPrevStackPointers() const {
   return prev_sps_;
 }
 
-void SimavrForTesting::PrintCoreDump() const {
+void InstrumentingSimavr::PrintCoreDump() const {
   // TODO: replace this nightmare with libfort:
   // https://github.com/seleznevae/libfort.
   std::vector<std::string> pcs = {
@@ -92,6 +92,7 @@ void SimavrForTesting::PrintCoreDump() const {
         " ┃"));
   }
 
+  std::cout << "Dumping core from cycle " << GetCycle() << ":" << std::endl;
   std::cout << absl::StrCat("┏━━━━━━━━┯━━━━━━ CORE DUMP ━━━━━━━━━━━━━━━┓\n",
                             "┃ PC:    │ SP:    │ Register file:        ┃\n",
                             "┠────────┼────────┼───────────────────────┨\n",
@@ -100,13 +101,57 @@ void SimavrForTesting::PrintCoreDump() const {
             << std::endl;
 }
 
-void SimavrForTesting::Run() {
+void InstrumentingSimavr::Run() {
   prev_pcs_.push_back(GetProgramCounter());
   prev_sps_.push_back(GetStackPointer());
   SimavrImpl::Run();
+  if (!finished_do_copy_data_ &&
+      symbol_table_->at("__do_clear_bss").address == GetProgramCounter()) {
+    finished_do_copy_data_ = true;
+  }
 }
 
-absl::Status SimavrForTesting::VerifyState() const {
+std::vector<uint8_t> InstrumentingSimavr::CopyDataSegment() const {
+  return std::vector<uint8_t>(avr_->data + data_start_,
+                              avr_->data + data_start_ + firmware_->datasize);
+}
+
+bool InstrumentingSimavr::ShouldRunIntegrityCheckAtCurrentCycle() const {
+  if (!finished_do_copy_data_) {
+    return false;
+  }
+  auto& symbol = symbol_table_->at("threeboard::native::NativeImpl::DelayMs");
+  if (GetProgramCounter() >= symbol.address &&
+      GetProgramCounter() <= symbol.address + symbol.size) {
+    no_integrity_cycles_++;
+    return false;
+  }
+  integrity_cycles_++;
+  return true;
+}
+
+absl::Status InstrumentingSimavr::RunWithIntegrityChecks() {
+  if (ShouldRunIntegrityCheckAtCurrentCycle()) {
+    auto data_before = CopyDataSegment();
+    Run();
+    auto data_after = CopyDataSegment();
+    if (data_before != data_after) {
+      for (int i = 0; i < data_before.size(); ++i) {
+        if (data_before[i] != data_after[i]) {
+          std::cout << absl::StrCat(".data 0x", absl::Hex(data_start_ + i),
+                                    " modified: 0x", absl::Hex(data_before[i]),
+                                    " -> 0x", absl::Hex(data_after[i]), ".")
+                    << std::endl;
+        }
+      }
+      PrintCoreDump();
+      return absl::InternalError(
+          absl::StrCat("Data segment modified. Core dumped."));
+    }
+  } else {
+    Run();
+  }
+
   uint8_t state = GetState();
   if (state == simulator::CRASHED || state == simulator::DONE) {
     PrintCoreDump();
@@ -119,7 +164,7 @@ absl::Status SimavrForTesting::VerifyState() const {
         absl::StrCat("Simulator unexpectedly jumped to 0x0. Core dumped."));
   }
   return absl::OkStatus();
-}
+}  // namespace simulator
 
 }  // namespace simulator
 }  // namespace threeboard

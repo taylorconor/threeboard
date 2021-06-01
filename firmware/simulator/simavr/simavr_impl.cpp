@@ -33,10 +33,9 @@ static const char *_ee_irq_names[2] = {
 }  // namespace
 
 // static.
-std::unique_ptr<Simavr> SimavrImpl::Create() {
-  elf_firmware_t f;
-  auto avr_ptr = ParseElfFile(&f);
-  auto *raw_ptr = new SimavrImpl(std::move(avr_ptr), f.bsssize, f.datasize);
+std::unique_ptr<Simavr> SimavrImpl::Create(elf_firmware_t *firmware) {
+  auto avr_ptr = ParseElfFile(firmware);
+  auto *raw_ptr = new SimavrImpl(std::move(avr_ptr), firmware);
   return std::unique_ptr<SimavrImpl>(raw_ptr);
 }
 
@@ -60,12 +59,8 @@ std::unique_ptr<avr_t> SimavrImpl::ParseElfFile(elf_firmware_t *firmware) {
   return std::unique_ptr<avr_t>(avr);
 }
 
-SimavrImpl::SimavrImpl(std::unique_ptr<avr_t> avr, uint16_t bss_size,
-                       uint16_t data_size)
-    : avr_(std::move(avr)),
-      bss_size_(bss_size),
-      data_size_(data_size),
-      i2c_irq_(nullptr) {}
+SimavrImpl::SimavrImpl(std::unique_ptr<avr_t> avr, elf_firmware_t *firmware)
+    : avr_(std::move(avr)), firmware_(firmware), i2c_irq_(nullptr) {}
 
 void SimavrImpl::Run() { avr_run(avr_.get()); }
 
@@ -154,9 +149,9 @@ uint16_t SimavrImpl::GetStackPointer() const {
   return avr_->data[R_SPL] | (avr_->data[R_SPH] << 8);
 }
 
-uint16_t SimavrImpl::GetBssSectionSize() const { return bss_size_; }
+uint16_t SimavrImpl::GetBssSectionSize() const { return firmware_->bsssize; }
 
-uint16_t SimavrImpl::GetDataSectionSize() const { return data_size_; }
+uint16_t SimavrImpl::GetDataSectionSize() const { return firmware_->datasize; }
 
 uint16_t SimavrImpl::GetRamSize() const { return avr_->ramend; }
 

@@ -25,7 +25,7 @@ native::Native *Logging::native_;
 void Logging::Init(native::Native *native) { native_ = native; }
 
 void Logging::Log(const char *fmt, ...) {
-  /*va_list va;
+  va_list va;
   va_start(va, fmt);
   char buffer[256];
   vsnprintf(buffer, sizeof(buffer), fmt, va);
@@ -34,7 +34,7 @@ void Logging::Log(const char *fmt, ...) {
   for (int i = 0; buffer[i] != 0; ++i) {
     Transmit(native_, buffer[i]);
   }
-  Transmit(native_, '\n');*/
+  Transmit(native_, '\n');
 }
 
 }  // namespace threeboard

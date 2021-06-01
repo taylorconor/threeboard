@@ -14,30 +14,15 @@ cc_library(
     testonly = 1,
     hdrs = ["simulated_test_base.h"],
     deps = [
-        "//integration:simavr_for_testing",
         "//simulator:simulator_delegate_mock",
         "//simulator/components:usb_host",
+        "//simulator/simavr:instrumenting_simavr",
         "//util:status_util",
         "@abseil//absl/container:flat_hash_map",
         "@abseil//absl/status",
         "@abseil//absl/strings",
         "@gtest",
         "@gtest//:gtest_main",
-    ],
-    alwayslink = 1,
-)
-
-cc_library(
-    name = "simavr_for_testing",
-    testonly = 1,
-    srcs = ["simavr_for_testing.cpp"],
-    hdrs = ["simavr_for_testing.h"],
-    deps = [
-        "//simulator/simavr:simavr_impl",
-        "//util:status_util",
-        "@abseil//absl/container:flat_hash_map",
-        "@abseil//absl/status",
-        "@abseil//absl/strings",
     ],
     alwayslink = 1,
 )

@@ -16,7 +16,6 @@ void RunThreeboardEventLoop() {
   native::NativeImpl native_impl;
   Logging::Init(&native_impl);
   LOG("Native layer initialised");
-  LOG("NativeImpl: %p", &native_impl);
 
   util::ErrorHandlerProxy error_handler_proxy;
 

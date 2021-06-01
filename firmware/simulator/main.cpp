@@ -5,7 +5,8 @@
 using namespace threeboard::simulator;
 
 int main(int argc, char *argv[]) {
-  auto simavr = SimavrImpl::Create();
+  auto firmware = std::make_unique<elf_firmware_t>();
+  auto simavr = SimavrImpl::Create(firmware.get());
   auto flags = Flags::ParseFromArgs(argc, argv);
   Simulator simulator(&flags, simavr.get());
   simulator.Run();
