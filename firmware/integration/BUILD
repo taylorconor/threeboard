@@ -4,19 +4,10 @@ cc_test(
     name = "integration_test",
     srcs = ["integration_test.cpp"],
     deps = [
-        ":simulated_test_base",
-        "//util:gtest_util",
-    ],
-)
-
-cc_library(
-    name = "simulated_test_base",
-    testonly = 1,
-    hdrs = ["simulated_test_base.h"],
-    deps = [
         "//simulator:simulator_delegate_mock",
         "//simulator/components:usb_host",
         "//simulator/simavr:instrumenting_simavr",
+        "//util:gtest_util",
         "//util:status_util",
         "@abseil//absl/container:flat_hash_map",
         "@abseil//absl/status",
@@ -24,5 +15,4 @@ cc_library(
         "@gtest",
         "@gtest//:gtest_main",
     ],
-    alwayslink = 1,
 )

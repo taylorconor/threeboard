@@ -9,6 +9,11 @@
 namespace threeboard {
 namespace simulator {
 
+// An extension of SimavrImpl that adds runtime instrumentation to the simulated
+// firmware. This class is used for simulator-backed integration tests, using
+// its instrumentation to verify the firmware for integrity. This class should
+// not be used for interactive simulation, as its runtime instrumentation makes
+// it considerably slower than SimavrImpl.
 class InstrumentingSimavr final : public SimavrImpl {
  public:
   struct SymbolInfo {
