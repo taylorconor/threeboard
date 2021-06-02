@@ -27,15 +27,14 @@ class Layer {
   virtual void TransitionedToLayer() = 0;
 
  protected:
-  virtual void FlushToHost();
+  virtual void SendToHost(uint8_t key, uint8_t mod);
 
-  void UpdateLedState(LayerId layer_id);
+  void UpdateLedState(LayerId layer_id, uint8_t bank0, uint8_t bank1);
 
   LedState *led_state_;
   usb::UsbController *usb_controller_;
   storage::StorageController *storage_controller_;
 
-  uint8_t bank0_ = 0;
-  uint8_t bank1_ = 0;
+  bool prog_ = false;
 };
 }  // namespace threeboard

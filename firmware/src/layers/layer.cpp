@@ -4,7 +4,7 @@
 
 namespace threeboard {
 
-void Layer::UpdateLedState(LayerId layer_id) {
+void Layer::UpdateLedState(LayerId layer_id, uint8_t bank0, uint8_t bank1) {
   switch (layer_id) {
     case LayerId::DFLT:
       led_state_->SetR(LedState::OFF);
@@ -27,14 +27,15 @@ void Layer::UpdateLedState(LayerId layer_id) {
       led_state_->SetB(LedState::ON);
       break;
   }
-  led_state_->SetBank0(bank0_);
-  led_state_->SetBank1(bank1_);
+  led_state_->SetBank0(bank0);
+  led_state_->SetBank1(bank1);
+  led_state_->SetProg(prog_ ? LedState::ON : LedState::OFF);
 }
 
-void Layer::FlushToHost() {
-  bool success = usb_controller_->SendKeypress(bank0_, bank1_);
+void Layer::SendToHost(uint8_t key, uint8_t mod) {
+  bool success = usb_controller_->SendKeypress(key, mod);
   if (!success) {
-    LOG("Failed to flush to host");
+    LOG("Failed to send to host");
     led_state_->SetErr(LedState::ON);
   } else {
     led_state_->SetErr(LedState::OFF);

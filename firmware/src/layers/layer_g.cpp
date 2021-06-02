@@ -10,7 +10,7 @@ void LayerG::HandleEvent(const Keypress &keypress) {
   } else if (keypress == Keypress::Y) {
     bank1_++;
   } else if (keypress == Keypress::Z) {
-    FlushToHost();
+    SendToHost(bank0_, bank1_);
   } else if (keypress == Keypress::XZ) {
     bank0_ = 0;
   } else if (keypress == Keypress::YZ) {
@@ -19,12 +19,12 @@ void LayerG::HandleEvent(const Keypress &keypress) {
     layer_controller_delegate_->SwitchToLayer(LayerId::B);
     return;
   }
-  UpdateLedState(LayerId::G);
+  UpdateLedState(LayerId::G, bank0_, bank1_);
 }
 
 void LayerG::TransitionedToLayer() {
   LOG("Switched to layer G");
-  UpdateLedState(LayerId::G);
+  UpdateLedState(LayerId::G, bank0_, bank1_);
 }
 
 }  // namespace threeboard

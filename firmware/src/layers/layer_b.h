@@ -20,6 +20,8 @@ class LayerB final : public Layer {
 
  private:
   LayerControllerDelegate *layer_controller_delegate_;
+  uint8_t bank0_ = 0;
+  uint8_t bank1_ = 0;
 };
 
 }  // namespace threeboard

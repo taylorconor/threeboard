@@ -20,6 +20,8 @@ class LayerR final : public Layer {
 
  private:
   LayerControllerDelegate *layer_controller_delegate_;
+  uint8_t shortcut_id_ = 0;
+  uint8_t modcode_ = 0;
 };
 
 }  // namespace threeboard
