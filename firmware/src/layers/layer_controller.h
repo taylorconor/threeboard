@@ -6,13 +6,15 @@
 #include "src/layers/layer_g.h"
 #include "src/layers/layer_r.h"
 #include "src/led_state.h"
+#include "src/storage/storage_controller.h"
 #include "src/usb/usb_controller.h"
 
 namespace threeboard {
 
 class LayerController final : public LayerControllerDelegate {
  public:
-  LayerController(LedState *led_state, usb::UsbController *usb);
+  LayerController(LedState *led_state, usb::UsbController *usb_controller,
+                  storage::StorageController *storage_controller);
 
   void HandleEvent(const Keypress &);
 

@@ -31,6 +31,7 @@ avr_library(
         "//src:logging",
         "//src/delegates:event_handler_delegate",
         "//src/layers:layer_id",
+        "//src/storage:storage_controller",
         "//src/usb:usb_controller",
     ],
 )
@@ -56,6 +57,7 @@ avr_library(
         "//src:led_state",
         "//src:logging",
         "//src/delegates:layer_controller_delegate",
+        "//src/storage:storage_controller",
     ],
 )
 
@@ -68,6 +70,7 @@ avr_library(
         "//src:led_state",
         "//src:logging",
         "//src/delegates:layer_controller_delegate",
+        "//src/storage:storage_controller",
     ],
 )
 
@@ -80,5 +83,6 @@ avr_library(
         "//src:led_state",
         "//src:logging",
         "//src/delegates:layer_controller_delegate",
+        "//src/storage:storage_controller",
     ],
 )

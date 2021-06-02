@@ -19,7 +19,8 @@ Threeboard::Threeboard(native::Native *native, EventBuffer *event_buffer,
       storage_controller_(storage_controller),
       led_controller_(led_controller),
       key_controller_(key_controller),
-      layer_controller_(led_controller_->GetLedState(), usb_controller_) {
+      layer_controller_(led_controller_->GetLedState(), usb_controller_,
+                        storage_controller_) {
   native_->SetTimerInterruptHandlerDelegate(this);
   native_->EnableTimer1();
   native_->EnableTimer3();

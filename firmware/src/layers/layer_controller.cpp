@@ -2,11 +2,13 @@
 
 namespace threeboard {
 
-LayerController::LayerController(LedState *led_state, usb::UsbController *usb)
-    : layer_default_(led_state, usb, this),
-      layer_r_(led_state, usb, this),
-      layer_g_(led_state, usb, this),
-      layer_b_(led_state, usb, this),
+LayerController::LayerController(LedState *led_state,
+                                 usb::UsbController *usb_controller,
+                                 storage::StorageController *storage_controller)
+    : layer_default_(led_state, usb_controller, this),
+      layer_r_(led_state, usb_controller, storage_controller, this),
+      layer_g_(led_state, usb_controller, storage_controller, this),
+      layer_b_(led_state, usb_controller, storage_controller, this),
       current_layer_(LayerId::DFLT) {
   // Associate each Layer reference to the corresponding LayerId.
   layer_[LayerId::DFLT] = &layer_default_;
