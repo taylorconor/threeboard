@@ -133,14 +133,15 @@ absl::Status InstrumentingSimavr::RunWithIntegrityChecks() {
   if (ShouldRunIntegrityCheckAtCurrentCycle()) {
     CopyDataSegment(&data_before_);
     Run();
-    if (!std::equal(data_before_.begin(), data_before_.end(),
-                    avr_->data + data_start_)) {
-      CopyDataSegment(&data_after_);
+    // Compare the .data segment before and after run. Note that std::equal is
+    // an order of magnitude slower than manually invoking memcmp here, hence
+    auto* data_after = avr_->data + data_start_;
+    if (memcmp(data_before_.data(), data_after, firmware_->datasize) != 0) {
       for (int i = 0; i < data_before_.size(); ++i) {
-        if (data_before_[i] != data_after_[i]) {
+        if (data_before_[i] != data_after[i]) {
           std::cout << absl::StrCat(".data 0x", absl::Hex(data_start_ + i),
                                     " modified: 0x", absl::Hex(data_before_[i]),
-                                    " -> 0x", absl::Hex(data_after_[i]), ".")
+                                    " -> 0x", absl::Hex(data_after[i]), ".")
                     << std::endl;
         }
       }

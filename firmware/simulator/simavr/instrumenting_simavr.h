@@ -50,11 +50,11 @@ class InstrumentingSimavr final : public SimavrImpl {
   std::vector<uint32_t> prev_pcs_;
   std::vector<uint16_t> prev_sps_;
 
-  // These vectors are used within RunWithIntegrityChecks, and are repeatedly
-  // overwritten hundreds of thousands of times. For performance we maintain the
-  // vectors here so we don't have to continuously free their memory.
+  // This vector is used within RunWithIntegrityChecks, and is repeatedly
+  // overwritten hundreds of thousands of times. For performance we preserve it
+  // here for the lifetime of the instance, so we don't have to continuously
+  // free and reallocate its memory.
   mutable std::vector<uint8_t> data_before_;
-  mutable std::vector<uint8_t> data_after_;
 
   absl::flat_hash_map<std::string, SymbolInfo>* symbol_table_;
 };

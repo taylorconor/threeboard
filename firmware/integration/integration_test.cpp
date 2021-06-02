@@ -13,12 +13,11 @@ class IntegrationTest : public SimulatedTestBase {
 
 TEST_F(IntegrationTest, BootToEventLoop) {
   // Run until the threeboard has successfully started up and is running the
-  // event loop. This means it has already run the 250ms blocking boot sequence
-  // indicator, so we set the timeout generously here to avoid flakiness.
+  // event loop. There are potentially millions of cycles here so we need to set
+  // a generous timeout, InstrumentingSimavr is very slow.
   EXPECT_OK(
       simavr_->RunUntilSymbol("threeboard::Threeboard::RunEventLoopIteration",
-                              // TODO: optimize this.
-                              std::chrono::milliseconds(10000)));
+                              std::chrono::milliseconds(3000)));
 }
 }  // namespace
 }  // namespace integration
