@@ -11,6 +11,7 @@ namespace threeboard {
 namespace simulator {
 
 constexpr int kCoreDumpSize = 16;
+constexpr int kRunsBetweenTimeoutCheck = 10000;
 
 // static.
 std::unique_ptr<InstrumentingSimavr> InstrumentingSimavr::Create(
@@ -34,7 +35,9 @@ absl::Status InstrumentingSimavr::RunWithTimeout(
     const std::chrono::milliseconds& timeout = std::chrono::milliseconds(100)) {
   auto start = std::chrono::system_clock::now();
   while (timeout > std::chrono::system_clock::now() - start) {
-    RETURN_IF_ERROR(RunWithIntegrityChecks());
+    for (int i = 0; i < kRunsBetweenTimeoutCheck; ++i) {
+      RETURN_IF_ERROR(RunWithIntegrityChecks());
+    }
   }
   return absl::OkStatus();
 }
@@ -49,10 +52,12 @@ absl::Status InstrumentingSimavr::RunUntilSymbol(
   uint32_t stop_addr = symbol_table_->at(symbol).address;
   auto start = std::chrono::system_clock::now();
   while (timeout > std::chrono::system_clock::now() - start) {
-    if (GetProgramCounter() == stop_addr) {
-      return absl::OkStatus();
+    for (int i = 0; i < kRunsBetweenTimeoutCheck; ++i) {
+      if (avr_->pc == stop_addr) {
+        return absl::OkStatus();
+      }
+      RETURN_IF_ERROR(RunWithIntegrityChecks());
     }
-    RETURN_IF_ERROR(RunWithIntegrityChecks());
   }
   return absl::DeadlineExceededError(
       absl::StrCat("RunUntil timed out after ", timeout.count(), "ms"));
@@ -70,7 +75,7 @@ void InstrumentingSimavr::PrintCoreDump() const {
   // TODO: replace this nightmare with libfort:
   // https://github.com/seleznevae/libfort.
   std::vector<std::string> pcs = {
-      absl::StrCat("0x", absl::Hex(GetProgramCounter(), absl::kZeroPad4))};
+      absl::StrCat("0x", absl::Hex(avr_->pc, absl::kZeroPad4))};
   for (int i = prev_pcs_.size(); i >= prev_pcs_.size() - kCoreDumpSize; --i) {
     pcs.push_back(
         absl::StrCat("0x", absl::Hex(prev_pcs_[i - 1], absl::kZeroPad4)));
@@ -102,11 +107,13 @@ void InstrumentingSimavr::PrintCoreDump() const {
 }
 
 void InstrumentingSimavr::Run() {
-  prev_pcs_.push_back(GetProgramCounter());
+  // TODO: replace these vectors with circular buffers, since their size should
+  // be fixed.
+  prev_pcs_.push_back(avr_->pc);
   prev_sps_.push_back(GetStackPointer());
   SimavrImpl::Run();
-  if (!finished_do_copy_data_ &&
-      symbol_table_->at("__do_clear_bss").address == GetProgramCounter()) {
+  static auto& symbol = symbol_table_->at("__do_clear_bss");
+  if (!finished_do_copy_data_ && symbol.address == avr_->pc) {
     finished_do_copy_data_ = true;
   }
 }
@@ -122,8 +129,7 @@ bool InstrumentingSimavr::ShouldRunIntegrityCheckAtCurrentCycle() const {
   }
   static auto& symbol =
       symbol_table_->at("threeboard::native::NativeImpl::DelayMs");
-  if (GetProgramCounter() >= symbol.address &&
-      GetProgramCounter() <= symbol.address + symbol.size) {
+  if (avr_->pc >= symbol.address && avr_->pc <= symbol.address + symbol.size) {
     return false;
   }
   return true;
@@ -134,7 +140,7 @@ absl::Status InstrumentingSimavr::RunWithIntegrityChecks() {
     CopyDataSegment(&data_before_);
     Run();
     // Compare the .data segment before and after run. Note that std::equal is
-    // an order of magnitude slower than manually invoking memcmp here, hence
+    // an order of magnitude slower than manually invoking memcmp here.
     auto* data_after = avr_->data + data_start_;
     if (memcmp(data_before_.data(), data_after, firmware_->datasize) != 0) {
       for (int i = 0; i < data_before_.size(); ++i) {
@@ -153,19 +159,19 @@ absl::Status InstrumentingSimavr::RunWithIntegrityChecks() {
     Run();
   }
 
-  uint8_t state = GetState();
+  uint8_t state = avr_->state;
   if (state == simulator::CRASHED || state == simulator::DONE) {
     PrintCoreDump();
     return absl::InternalError(absl::StrCat(
         "Simulator entered error state: ", state, ". Core dumped."));
   }
-  if (GetProgramCounter() == 0 && prev_pcs_.back() != 0) {
+  if (avr_->pc == 0 && prev_pcs_.back() != 0) {
     PrintCoreDump();
     return absl::InternalError(
         absl::StrCat("Simulator unexpectedly jumped to 0x0. Core dumped."));
   }
   return absl::OkStatus();
-}  // namespace simulator
+}
 
 }  // namespace simulator
 }  // namespace threeboard
