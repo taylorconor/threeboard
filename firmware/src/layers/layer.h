@@ -3,7 +3,6 @@
 #include "src/delegates/event_handler_delegate.h"
 #include "src/layers/layer_id.h"
 #include "src/led_state.h"
-#include "src/storage/storage_controller.h"
 #include "src/usb/usb_controller.h"
 
 namespace threeboard {
@@ -14,11 +13,8 @@ class Layer {
  public:
   virtual ~Layer() = default;
 
-  Layer(LedState *led_state, usb::UsbController *usb_controller,
-        storage::StorageController *storage_controller)
-      : led_state_(led_state),
-        usb_controller_(usb_controller),
-        storage_controller_(storage_controller) {}
+  Layer(LedState *led_state, usb::UsbController *usb_controller)
+      : led_state_(led_state), usb_controller_(usb_controller) {}
 
   // Handle a keypress event.
   virtual void HandleEvent(const Keypress &) = 0;
@@ -33,7 +29,6 @@ class Layer {
 
   LedState *led_state_;
   usb::UsbController *usb_controller_;
-  storage::StorageController *storage_controller_;
 
   bool prog_ = false;
 };
