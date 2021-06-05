@@ -8,7 +8,7 @@ namespace storage {
 
 class StorageController {
  public:
-  StorageController(native::Native *native);
+  explicit StorageController(native::Native *native);
 
   // This method MUST be called after enabling interrupts, but before any
   // get/set methods interacting with the EEPROMs in this class. Otherwise these
@@ -27,8 +27,6 @@ class StorageController {
   Eeprom *internal_eeprom_;
   Eeprom *external_eeprom_0_;
   Eeprom *external_eeprom_1_;
-
-  uint8_t character_shortcut_buf_[256] = {0};
 };
 
 }  // namespace storage

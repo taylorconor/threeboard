@@ -27,22 +27,23 @@ StorageController::StorageController(Eeprom *internal_eeprom,
       external_eeprom_0_(external_eeprom_0),
       external_eeprom_1_(external_eeprom_1) {}
 
-bool StorageController::InitializeManifest() {
-  RETURN_IF_ERROR(internal_eeprom_->Read(kInternalEepromBaseOffset,
-                                         character_shortcut_buf_, 256));
-  return true;
-}
+bool StorageController::InitializeManifest() { return true; }
 
 void StorageController::SetCharacterShortcut(uint8_t offset,
                                              uint8_t character) {
-  if (character_shortcut_buf_[offset] != character) {
-    internal_eeprom_->Write(kInternalEepromBaseOffset + offset, &character, 1);
-    character_shortcut_buf_[offset] = character;
-  }
+  character = character - 1;
+  internal_eeprom_->Write(kInternalEepromBaseOffset + offset, &character, 1);
 }
 
 uint8_t StorageController::GetCharacterShortcut(uint8_t offset) {
-  return character_shortcut_buf_[offset];
+  uint8_t character = 0;
+  internal_eeprom_->Read(kInternalEepromBaseOffset + offset, &character, 1);
+  // On first boot, the EEPROM has 0xFF written at every byte. Rather than
+  // wasting time (and risking corruption) by rewriting all of these bytes to
+  // zero on first boot, instead we represent the stored shortcut as
+  // shortcut_val - 1. That means a byte entry of 0xFF represents a shortcut of
+  // value 0.
+  return character + 1;
 }
 
 }  // namespace storage
