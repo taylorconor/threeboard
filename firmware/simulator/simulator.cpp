@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "simulator/util/logging.h"
+
 namespace threeboard {
 namespace simulator {
 namespace {
@@ -20,7 +22,7 @@ Simulator::Simulator(Flags *flags, Simavr *simavr)
       firmware_(simavr_),
       usb_host_(simavr_, this),
       uart_(simavr_, this),
-      eeprom1_(simavr_, 524288, 0, 0xFE) {
+      eeprom1_(simavr_, 65536, 0, 0xFE) {
   char log_file[L_tmpnam];
   if (std::tmpnam(log_file)) {
     log_file_path_ = std::string(log_file);
@@ -38,6 +40,7 @@ Simulator::~Simulator() {
 
 void Simulator::Run() {
   ui_ = std::make_unique<UI>(this, &firmware_, log_file_path_);
+  Logging::Init(ui_.get());
   ui_->StartAsyncRenderLoop();
 
   is_running_ = true;
@@ -166,7 +169,7 @@ void Simulator::HandleVirtualKeypress(uint8_t mod_code, uint8_t key_code) {
 void Simulator::HandleUartLogLine(const std::string &log_line) {
   auto cycle = firmware_.GetCpuCycleCount();
   log_stream_ << cycle << "\t" << log_line << std::endl;
-  ui_->DisplayLogLine(cycle, log_line);
+  ui_->DisplayFirmwareLogLine(cycle, log_line);
 }
 
 Flags *Simulator::GetFlags() { return flags_; }

@@ -13,3 +13,10 @@ cc_library(
     name = "lifetime",
     hdrs = ["lifetime.h"],
 )
+
+cc_library(
+    name = "logging",
+    srcs = ["logging.cpp"],
+    hdrs = ["logging.h"],
+    deps = ["//simulator/ui"],
+)

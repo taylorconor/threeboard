@@ -216,11 +216,15 @@ void UI::ClearLedState() {
 
 void UI::DisplayKeyboardCharacter(char c) { output_pad_->Write(c); }
 
-void UI::DisplayLogLine(uint64_t cycle, const std::string &log_line) {
+void UI::DisplayFirmwareLogLine(uint64_t cycle, const std::string &log_line) {
   std::string cycle_str = std::to_string(cycle);
   std::string log =
       cycle_str + S(16 - cycle_str.length(), ' ') + log_line + "\n";
   log_pad_->Write(log);
+}
+
+void UI::DisplaySimulatorLogLine(const std::string &log_line) {
+  log_pad_->Write("[simulator]     " + log_line + "\n");
 }
 
 void UI::SetR(bool enabled) { SetLedState(r_, enabled); }

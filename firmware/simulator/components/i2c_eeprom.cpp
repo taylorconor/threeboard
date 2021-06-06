@@ -2,6 +2,8 @@
 
 #include <functional>
 
+#include "simulator/util/logging.h"
+
 namespace threeboard {
 namespace simulator {
 namespace {
@@ -42,12 +44,13 @@ I2cEeprom::I2cEeprom(Simavr *simavr, uint32_t size_bytes, uint8_t address,
       simavr_->RegisterI2cMessageCallback(i2c_message_callback_.get());
 }
 
-bool I2cEeprom::IsRelevant(const TwiMessage &message) {
+bool I2cEeprom::IsRelevant(const TwiMessage &message) const {
   return (message.addr & address_mask_) == (address_ & address_mask_);
 }
 
 void I2cEeprom::HandleI2cMessage(uint32_t value) {
   TwiMessage message = ParseTwiMessage(value);
+  LOG("I2cEeprom::HandleI2cMessage: %d", value);
 
   if (message.msg & TWI_COND_STOP) {
     // Reset the transaction if the message is addressed to us.
@@ -68,7 +71,7 @@ void I2cEeprom::HandleI2cMessage(uint32_t value) {
 
   if (in_active_txn_) {
     if (message.msg & TWI_COND_WRITE) {
-      // Write messages can serve two purposes:
+      // Write messages can serve one of two purposes:
       // 1. Writing the start index of the read/write transaction.
       // 2. Writing data to the EEPROM as part of an already indexed write
       //    transaction.

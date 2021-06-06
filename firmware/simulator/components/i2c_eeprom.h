@@ -19,7 +19,7 @@ class I2cEeprom {
 
  private:
   // Determine if the provided message is addressed to this EEPROM.
-  bool IsRelevant(const TwiMessage &message);
+  bool IsRelevant(const TwiMessage &message) const;
 
   // Handle a message fragment.
   void HandleI2cMessage(uint32_t value);

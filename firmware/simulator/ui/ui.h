@@ -33,7 +33,8 @@ class UI {
   void ClearLedState();
 
   void DisplayKeyboardCharacter(char);
-  void DisplayLogLine(uint64_t cycle, const std::string &);
+  void DisplayFirmwareLogLine(uint64_t cycle, const std::string &);
+  void DisplaySimulatorLogLine(const std::string &);
 
   void SetR(bool);
   void SetG(bool);

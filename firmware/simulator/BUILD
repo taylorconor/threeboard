@@ -66,5 +66,6 @@ cc_binary(
         ":simulator_lib",
         "//simulator/simavr:simavr_impl",
         "//simulator/util:flags",
+        "//simulator/util:logging",
     ],
 )
