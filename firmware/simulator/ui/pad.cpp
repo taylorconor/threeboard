@@ -2,7 +2,6 @@
 
 #include <curses.h>
 
-#include <iostream>
 #include <mutex>
 
 namespace threeboard {
