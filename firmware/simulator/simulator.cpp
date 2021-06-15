@@ -22,7 +22,7 @@ Simulator::Simulator(Flags *flags, Simavr *simavr)
       firmware_(simavr_),
       usb_host_(simavr_, this),
       uart_(simavr_, this),
-      eeprom1_(simavr_, 65536, 0, 0xFE) {
+      eeprom1_(simavr_, 0) {
   char log_file[L_tmpnam];
   if (std::tmpnam(log_file)) {
     log_file_path_ = std::string(log_file);
@@ -40,7 +40,7 @@ Simulator::~Simulator() {
 
 void Simulator::Run() {
   ui_ = std::make_unique<UI>(this, &firmware_, log_file_path_);
-  Logging::Init(ui_.get());
+  Logging::Init(ui_.get(), &log_stream_);
   ui_->StartAsyncRenderLoop();
 
   is_running_ = true;

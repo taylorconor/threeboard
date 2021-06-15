@@ -1,5 +1,7 @@
 #pragma once
 
+#include <fstream>
+
 #include "simulator/ui/ui.h"
 
 #define LOG(fmt, ...)                                          \
@@ -12,12 +14,13 @@ namespace simulator {
 
 class Logging {
  public:
-  static void Init(UI *ui);
+  static void Init(UI *ui, std::ofstream *log_stream);
 
   static void Log(const char *fmt, ...);
 
  private:
   static UI *ui_;
+  static std::ofstream *log_stream_;
 };
 
 }  // namespace simulator
