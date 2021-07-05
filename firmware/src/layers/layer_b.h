@@ -15,7 +15,7 @@ class LayerB final : public Layer {
         layer_controller_delegate_(layer_controller_delegate),
         storage_controller_(storage_controller) {}
 
-  void HandleEvent(const Keypress &) override;
+  bool HandleEvent(const Keypress &) override;
 
   // Called when the threeboard has transitioned to this layer.
   void TransitionedToLayer() override;

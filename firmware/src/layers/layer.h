@@ -17,7 +17,7 @@ class Layer {
       : led_state_(led_state), usb_controller_(usb_controller) {}
 
   // Handle a keypress event.
-  virtual void HandleEvent(const Keypress &) = 0;
+  virtual bool HandleEvent(const Keypress &) = 0;
 
   // Called when the threeboard has transitioned to this layer.
   virtual void TransitionedToLayer() = 0;

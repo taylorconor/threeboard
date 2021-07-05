@@ -15,8 +15,13 @@ class StorageController {
   // operations are undefined.
   bool InitializeManifest();
 
-  void SetCharacterShortcut(uint8_t offset, uint8_t character);
-  uint8_t GetCharacterShortcut(uint8_t offset);
+  bool SetCharacterShortcut(uint8_t index, uint8_t character);
+  bool GetCharacterShortcut(uint8_t index, uint8_t *output);
+
+  bool AppendToWordShortcut(uint8_t index, uint8_t character);
+  bool DeleteWordShortcut(uint8_t index);
+  bool GetWordShortcutLength(uint8_t index, uint8_t *output);
+  bool SendWordShortcut(uint8_t index);
 
  protected:
   // Test-only.

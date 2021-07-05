@@ -1,6 +1,6 @@
 #include "i2c_eeprom.h"
 
-#include "src/native/mcu.h"
+#include "src/logging.h"
 #include "src/util/util.h"
 
 namespace threeboard {
@@ -17,81 +17,83 @@ uint8_t CreateControlByte(I2cEeprom::Device device, uint8_t operation) {
 }  // namespace
 
 I2cEeprom::I2cEeprom(native::Native *native, Device device)
-    : native_(native), device_(device) {
-  // Set the TWI prescaler to 0.
-  native_->SetTWSR(native_->GetTWSR() & ~3);
-  // Set the SCL clock frequency for the TWI interface to 100kHz.
-  native_->SetTWBR(((F_CPU / 100000) - 16) / 2);
-}
+    : native_(native), device_(device) {}
 
 bool I2cEeprom::Read(const uint16_t &byte_offset, uint8_t *data,
                      const uint16_t &length) {
-  // First write the byte offset to the specified device to update its internal
-  // address pointer before we begin the sequential read.
-  RETURN_IF_ERROR(Start(kWriteBit, byte_offset), Stop());
-  RETURN_IF_ERROR(Start(kReadBit), Stop());
-
-  uint32_t i;
-  for (i = 0; i < length - 1; i++) {
+  RETURN_IF_ERROR(StartAndAddress(kReadBit, byte_offset), Stop());
+  uint16_t i = 0;
+  for (; i < length - 1; i++) {
     *(data + i) = ReadByte(false);
   }
   *(data + i) = ReadByte(true);
   Stop();
+
   return true;
 }
 
 bool I2cEeprom::Write(const uint16_t &byte_offset, uint8_t *data,
                       const uint16_t &length) {
-  // A page write can contain up to 128 bytes in total. So we split the write
-  // into 128-bit chunks to increase throughput.
-  uint16_t i = 0;
-  for (uint16_t page_id = 0; page_id < length / 128; ++page_id) {
-    RETURN_IF_ERROR(Start(kWriteBit, byte_offset + (page_id * 128)));
-    for (; i < length; i++) {
-      RETURN_IF_ERROR(WriteByte(*(data + i)));
-    }
+  LOG("I2cEeprom::Write");
+  // TODO: Implement page-write optimisation.
+  for (uint16_t i = 0; i < length; i++) {
+    RETURN_IF_ERROR(StartAndAddress(kWriteBit, byte_offset + i));
+    RETURN_IF_ERROR(WriteByteAndAck(*(data + i)));
     Stop();
   }
   return true;
 }
 
-bool I2cEeprom::Start(uint8_t operation, uint16_t byte_offset) {
+bool I2cEeprom::Start(uint8_t operation) {
   // Send START and wait for it to complete.
   native_->SetTWCR((1 << native::TWINT) | (1 << native::TWSTA) |
                    (1 << native::TWEN));
-  while (!(native_->GetTWCR() & (1 << native::TWINT)))
-    ;
+  while (!(native_->GetTWCR() & (1 << native::TWINT))) {
+    LOG("I2cEeprom::Start: looping TWINT");
+  }
 
+  // Verify that the start condition is acknowledged. For repeated start
+  // (REP_START) the ack from the EEPROM is the same, but the AVR TWI module
+  // generates a different status code to indicate ack-ing of a repeated start,
+  // so we need to check both here.
   if (GetStatusBits() != native::TW_START &&
       GetStatusBits() != native::TW_REP_START) {
     return false;
   }
 
-  // Now execute the EEPROM device addressing sequence. See the 24LC512 data
-  // sheet, section 5.0.
+  // The control byte consists of: A 4 bit control code, 3 bit chip select code
+  // (determined by the EEPROM's wiring), and 1 bit read=1/write=0. This will
+  // clear the previously set TWSTA, so we don't need to explicitly clear it
+  // here.
+  LOG("I2cEeprom::Start: writing control byte for operation: %s",
+      operation == kReadBit ? "READ" : "WRITE");
+  RETURN_IF_ERROR(WriteByteAndAck(CreateControlByte(device_, operation)));
+  return true;
+}
 
-  // The first byte the 24LC512 EEPROM should receive after the START condition
-  // is a device-specific control byte.
-  WriteByte(CreateControlByte(device_, operation));
+bool I2cEeprom::StartAndAddress(uint8_t operation, uint16_t byte_offset) {
+  // Execute the EEPROM device addressing sequence. See the 24LC512 data sheet,
+  // section 5.0 for full details. In summary, the control and addressing
+  // sequence involves sending three bytes to the slave device:
+  // |-- control byte --| |-- address high byte --| |-- address low byte --|
+  //
+  // The address word must always be sent as a write operation. This means that
+  // for random reads, two control bytes must be sent; the first triggers a
+  // write operation before the two address bytes are sent, then the second
+  // control byte is sent to start the read operation.
+  RETURN_IF_ERROR(Start(kWriteBit));
 
-  // The 24LC512 outputs an ACK signal on the SDA line after the first byte of
-  // the address sequence (the control byte). If this doesn't happen, something
-  // is wrong and we should abort.
-  if (GetStatusBits() != native::TW_MT_SLA_ACK &&
-      GetStatusBits() != native::TW_MR_SLA_ACK) {
-    return false;
+  // The next two bytes are the byte offset (address) of the first data byte
+  // to be written/read in this operation. The high byte is sent first.
+  RETURN_IF_ERROR(WriteByteAndAck(byte_offset >> 8));
+  RETURN_IF_ERROR(WriteByteAndAck(byte_offset));
+
+  // If we're starting a read operation, we need to send another control byte to
+  // set the device to read mode. For write operations this is not needed, as
+  // the address low byte can immediately be followed by data to write.
+  if (operation == kReadBit) {
+    RETURN_IF_ERROR(Start(kReadBit));
   }
-
-  if (operation == kWriteBit) {
-    // The next two bytes are the byte offset (address) of the first data byte
-    // to be written/read in this operation. This only happens for WRITE
-    // operations because a READ will first issue a WRITE to set the address
-    // before continuing with a READ. The high byte is written first, followed
-    // by the low byte.
-    WriteByte(byte_offset >> 8);
-    WriteByte(byte_offset);
-  }
-
   return true;
 }
 
@@ -108,15 +110,26 @@ uint8_t I2cEeprom::GetStatusBits() {
   return native_->GetTWSR() & 0xF8;
 }
 
-bool I2cEeprom::WriteByte(uint8_t data) {
-  native_->SetTWDR(data);
-  native_->SetTWCR((1 << native::TWINT) | (1 << native::TWEN));
-  while (!(native_->GetTWCR() & (1 << native::TWINT)))
-    ;
-  if (GetStatusBits() != native::TW_MT_DATA_ACK) {
+bool I2cEeprom::WriteByteAndAck(uint8_t data) {
+  WriteByte(data);
+  auto status_bits = GetStatusBits();
+  // TODO: This fails when attempting to SLA+R: We expect TW_MR_SLA_ACK, we
+  // receive TW_REP_START (i assume because the status hasn't been cleared yet).
+  // It succeeds for SLA+W.
+  if (status_bits != native::TW_MT_SLA_ACK &&
+      status_bits != native::TW_MR_SLA_ACK) {
+    LOG("I2cEeprom::WriteByteAndAck: fail status: %d", status_bits);
     return false;
   }
   return true;
+}
+
+void I2cEeprom::WriteByte(uint8_t data) {
+  native_->SetTWDR(data);
+  native_->SetTWCR((1 << native::TWINT) | (1 << native::TWEN));
+  while (!(native_->GetTWCR() & (1 << native::TWINT))) {
+    LOG("I2cEeprom::WriteByte: looping TWINT");
+  }
 }
 
 uint8_t I2cEeprom::ReadByte(bool is_final_byte) {
@@ -125,8 +138,9 @@ uint8_t I2cEeprom::ReadByte(bool is_final_byte) {
     twcr |= (1 << native::TWEA);
   }
   native_->SetTWCR(twcr);
-  while (!(native_->GetTWCR() & (1 << native::TWINT)))
-    ;
+  while (!(native_->GetTWCR() & (1 << native::TWINT))) {
+    LOG("I2cEeprom::ReadByte: looping TWINT");
+  }
   return native_->GetTWDR();
 }
 }  // namespace storage

@@ -4,7 +4,7 @@
 
 namespace threeboard {
 
-void LayerG::HandleEvent(const Keypress &keypress) {
+bool LayerG::HandleEvent(const Keypress &keypress) {
   if (keypress == Keypress::X) {
     bank0_++;
   } else if (keypress == Keypress::Y) {
@@ -17,9 +17,10 @@ void LayerG::HandleEvent(const Keypress &keypress) {
     bank1_ = 0;
   } else if (keypress == Keypress::XYZ) {
     layer_controller_delegate_->SwitchToLayer(LayerId::B);
-    return;
+    return true;
   }
   UpdateLedState(LayerId::G, bank0_, bank1_);
+  return true;
 }
 
 void LayerG::TransitionedToLayer() {

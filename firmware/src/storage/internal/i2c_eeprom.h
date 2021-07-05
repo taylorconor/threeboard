@@ -29,11 +29,13 @@ class I2cEeprom final : public Eeprom {
   native::Native *native_;
   Device device_;
 
-  bool Start(uint8_t operation, uint16_t byte_offset = 0);
+  bool Start(uint8_t operation);
+  bool StartAndAddress(uint8_t operation, uint16_t byte_offset);
   void Stop();
   uint8_t GetStatusBits();
 
-  bool WriteByte(uint8_t data);
+  bool WriteByteAndAck(uint8_t data);
+  void WriteByte(uint8_t data);
   uint8_t ReadByte(bool is_final_byte);
 };
 }  // namespace storage

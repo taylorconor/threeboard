@@ -14,6 +14,7 @@ avr_library(
     hdrs = ["i2c_eeprom.h"],
     deps = [
         ":eeprom",
+        "//src:logging",
         "//src/native",
         "//src/native:mcu",
         "//src/util",

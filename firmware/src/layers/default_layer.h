@@ -12,7 +12,7 @@ class DefaultLayer final : public Layer {
       : Layer(led_state, usb_controller),
         layer_controller_delegate_(layer_controller_delegate) {}
 
-  void HandleEvent(const Keypress &) override;
+  bool HandleEvent(const Keypress &) override;
 
   // Called when the threeboard has transitioned to this layer.
   void TransitionedToLayer() override;

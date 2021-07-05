@@ -224,7 +224,7 @@ void UI::DisplayFirmwareLogLine(uint64_t cycle, const std::string &log_line) {
 }
 
 void UI::DisplaySimulatorLogLine(const std::string &log_line) {
-  log_pad_->Write("[simulator]     " + log_line + "\n");
+  log_pad_->Write("[simulator]       " + log_line + "\n");
 }
 
 void UI::SetR(bool enabled) { SetLedState(r_, enabled); }

@@ -4,12 +4,13 @@
 
 namespace threeboard {
 
-void LayerR::HandleEvent(const Keypress &keypress) {
+bool LayerR::HandleEvent(const Keypress &keypress) {
   if (keypress == Keypress::X) {
     if (prog_) {
-      storage_controller_->SetCharacterShortcut(
-          shortcut_id_,
-          storage_controller_->GetCharacterShortcut(shortcut_id_) + 1);
+      storage_controller_->SetCharacterShortcut(shortcut_id_,
+                                                current_prog_char_ + 1);
+      // TODO: only increment here if the previous function call succeeded!
+      current_prog_char_ += 1;
     } else {
       shortcut_id_++;
     }
@@ -21,8 +22,9 @@ void LayerR::HandleEvent(const Keypress &keypress) {
     }
   } else if (keypress == Keypress::Z) {
     if (!prog_) {
-      SendToHost(storage_controller_->GetCharacterShortcut(shortcut_id_),
-                 modcode_);
+      uint8_t character = 0;
+      storage_controller_->GetCharacterShortcut(shortcut_id_, &character);
+      SendToHost(character, modcode_);
     }
   } else if (keypress == Keypress::XY) {
     prog_ = true;
@@ -43,16 +45,18 @@ void LayerR::HandleEvent(const Keypress &keypress) {
       prog_ = false;
     } else {
       layer_controller_delegate_->SwitchToLayer(LayerId::G);
-      return;
+      return true;
     }
   }
   if (prog_) {
-    UpdateLedState(LayerId::R,
-                   storage_controller_->GetCharacterShortcut(shortcut_id_),
-                   shortcut_id_);
+    uint8_t character = 0;
+    storage_controller_->GetCharacterShortcut(shortcut_id_, &character);
+    current_prog_char_ = character;
+    UpdateLedState(LayerId::R, current_prog_char_, shortcut_id_);
   } else {
     UpdateLedState(LayerId::R, shortcut_id_, modcode_);
   }
+  return true;
 }
 
 void LayerR::TransitionedToLayer() {

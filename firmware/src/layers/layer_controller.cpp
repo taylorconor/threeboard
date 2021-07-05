@@ -17,8 +17,8 @@ LayerController::LayerController(LedState *led_state,
   layer_[LayerId::B] = &layer_b_;
 }
 
-void LayerController::HandleEvent(const threeboard::Keypress &keypress) {
-  layer_[current_layer_]->HandleEvent(keypress);
+bool LayerController::HandleEvent(const threeboard::Keypress &keypress) {
+  return layer_[current_layer_]->HandleEvent(keypress);
 }
 
 void LayerController::SwitchToLayer(const LayerId &layer_id) {

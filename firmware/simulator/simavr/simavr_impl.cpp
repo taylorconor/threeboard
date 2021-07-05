@@ -26,10 +26,11 @@ void CallbackTrampoline(avr_irq_t *irq, uint32_t value, void *param) {
   (*callback)(value);
 }
 
-static const char *_ee_irq_names[2] = {
+/*static const char *_ee_irq_names[2] = {
     [TWI_IRQ_INPUT] = "8>eeprom.out",
     [TWI_IRQ_OUTPUT] = "32<eeprom.in",
-};
+};*/
+static const char *_ee_irq_names[] = {"twi.miso", "twi.mosi"};
 }  // namespace
 
 // static.

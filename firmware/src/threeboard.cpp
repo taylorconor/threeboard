@@ -145,6 +145,8 @@ void Threeboard::RunEventLoopIteration() {
     native_->DisableCpuSleep();
   } else {
     if (event_buffer_->HasKeypressEvent()) {
+      // TODO: surface an error here if event handling fails.
+      /*bool status =*/
       layer_controller_.HandleEvent(event_buffer_->GetKeypressEvent());
     }
     // Re-enable interrupts after handling the event.

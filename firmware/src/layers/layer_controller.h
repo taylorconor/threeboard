@@ -16,7 +16,7 @@ class LayerController final : public LayerControllerDelegate {
   LayerController(LedState *led_state, usb::UsbController *usb_controller,
                   storage::StorageController *storage_controller);
 
-  void HandleEvent(const Keypress &);
+  bool HandleEvent(const Keypress &);
 
  private:
   // Implement the LayerControllerDelegate overrides.

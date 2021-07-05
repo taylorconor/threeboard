@@ -1,7 +1,7 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
-#include <vector>
 
 #include "simulator/simavr/simavr.h"
 
@@ -14,8 +14,7 @@ using I2cMessageCallback = std::function<void(uint32_t)>;
 // MCU via i2c.
 class I2cEeprom {
  public:
-  I2cEeprom(Simavr *simavr, uint32_t size_bytes, uint8_t address,
-            uint8_t address_mask);
+  I2cEeprom(Simavr *simavr, uint8_t address);
 
  private:
   // Determine if the provided message is addressed to this EEPROM.
@@ -24,32 +23,41 @@ class I2cEeprom {
   // Handle a message fragment.
   void HandleI2cMessage(uint32_t value);
 
+  // Reset the state of this device.
+  void Reset();
+
   Simavr *simavr_;
 
-  // Byte size of this EEPROM.
-  uint32_t size_bytes_;
-
   // The hardware address of this EEPROM.
-  uint8_t address_;
-  uint8_t address_mask_;
+  const uint8_t address_;
 
   // Storage for the data in this EEPROM.
-  std::vector<uint8_t> buffer_;
+  std::array<uint8_t, 65535> buffer_;
 
-  // True if this EEPROM is currently addressed in a transaction.
-  bool in_active_txn_;
+  // The current state of the EEPROM. Since device addressing for the 22LC512
+  // takes three bytes (and therefore three messages), we need to keep track of
+  // the state of the device as it progresses through the device addressing
+  // sequence.
+  enum EepromState {
+    STOPPED,
+    ADDRESSING_HIGH,
+    ADDRESSING_LOW,
+    STARTED,
+  };
+  EepromState state_;
 
-  // Number of bytes required to store a read/write offset in this EEPROM. e.g.
-  // a 512K EEPROM needs 19 bits (= 3 bytes) to store its offset.
-  uint8_t num_offset_bytes_;
+  // The read/write flag is sent in the control byte, and sets the mode of the
+  // device for subsequent messages. We need to persist it for the duration of
+  // the operation.
+  enum EepromMode { WRITE, READ };
+  EepromMode mode_;
 
-  // The read/write offset specified in this transaction (only valid if
-  // in_active_txn_ is set).
-  uint32_t offset_;
+  // The address of the current operation. This is only fully valid when
+  // state_ == STARTED.
+  uint16_t operation_address_;
 
-  // The current index into num_offset_bytes_, used when receiving the
-  // multi-byte offset one byte at a time.
-  uint8_t offset_index_;
+  // Maintain the address of the last word accessed.
+  uint8_t operation_address_counter_;
 
   std::unique_ptr<I2cMessageCallback> i2c_message_callback_;
   std::unique_ptr<Lifetime> i2c_message_lifetime_;

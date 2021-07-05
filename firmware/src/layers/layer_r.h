@@ -15,7 +15,7 @@ class LayerR final : public Layer {
         layer_controller_delegate_(layer_controller_delegate),
         storage_controller_(storage_controller) {}
 
-  void HandleEvent(const Keypress &) override;
+  bool HandleEvent(const Keypress &) override;
 
   // Called when the threeboard has transitioned to this layer.
   void TransitionedToLayer() override;
@@ -26,6 +26,7 @@ class LayerR final : public Layer {
 
   uint8_t shortcut_id_ = 0;
   uint8_t modcode_ = 0;
+  uint8_t current_prog_char_ = 0;
 };
 
 }  // namespace threeboard
