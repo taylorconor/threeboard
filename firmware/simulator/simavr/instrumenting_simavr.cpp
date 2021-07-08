@@ -16,7 +16,7 @@ constexpr int kRunsBetweenTimeoutCheck = 10000;
 // static.
 std::unique_ptr<InstrumentingSimavr> InstrumentingSimavr::Create(
     elf_firmware_t* elf_firmware,
-    absl::flat_hash_map<std::string, SymbolInfo>* symbol_table) {
+    absl::flat_hash_map<std::string, avr_symbol_t*>* symbol_table) {
   auto avr_ptr = ParseElfFile(elf_firmware);
   auto* raw_ptr =
       new InstrumentingSimavr(elf_firmware, symbol_table, std::move(avr_ptr));
@@ -25,10 +25,10 @@ std::unique_ptr<InstrumentingSimavr> InstrumentingSimavr::Create(
 
 InstrumentingSimavr::InstrumentingSimavr(
     elf_firmware_t* elf_firmware,
-    absl::flat_hash_map<std::string, SymbolInfo>* symbol_table,
+    absl::flat_hash_map<std::string, avr_symbol_t*>* symbol_table,
     std::unique_ptr<avr_t> avr)
     : SimavrImpl(std::move(avr), elf_firmware), symbol_table_(symbol_table) {
-  data_start_ = symbol_table_->at("__data_start").address;
+  data_start_ = symbol_table_->at("__data_start")->addr;
 }
 
 absl::Status InstrumentingSimavr::RunWithTimeout(
@@ -49,7 +49,7 @@ absl::Status InstrumentingSimavr::RunUntilSymbol(
     return absl::InternalError(
         absl::StrCat("Symbol '", symbol, "' not found in symbol table"));
   }
-  uint32_t stop_addr = symbol_table_->at(symbol).address;
+  uint32_t stop_addr = symbol_table_->at(symbol)->addr;
   auto start = std::chrono::system_clock::now();
   while (timeout > std::chrono::system_clock::now() - start) {
     for (int i = 0; i < kRunsBetweenTimeoutCheck; ++i) {
@@ -113,7 +113,7 @@ void InstrumentingSimavr::Run() {
   prev_sps_.push_back(GetStackPointer());
   SimavrImpl::Run();
   static auto& symbol = symbol_table_->at("__do_clear_bss");
-  if (!finished_do_copy_data_ && symbol.address == avr_->pc) {
+  if (!finished_do_copy_data_ && symbol->addr == avr_->pc) {
     finished_do_copy_data_ = true;
   }
 }
@@ -129,7 +129,7 @@ bool InstrumentingSimavr::ShouldRunIntegrityCheckAtCurrentCycle() const {
   }
   static auto& symbol =
       symbol_table_->at("threeboard::native::NativeImpl::DelayMs");
-  if (avr_->pc >= symbol.address && avr_->pc <= symbol.address + symbol.size) {
+  if (avr_->pc >= symbol->addr && avr_->pc <= symbol->addr + symbol->size) {
     return false;
   }
   return true;

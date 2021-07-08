@@ -16,19 +16,11 @@ namespace simulator {
 // it considerably slower than SimavrImpl.
 class InstrumentingSimavr final : public SimavrImpl {
  public:
-  struct SymbolInfo {
-    uint32_t address;
-    uint32_t size;
-
-    SymbolInfo() : address(0), size(0) {}
-    SymbolInfo(uint32_t address) : address(address), size(0) {}
-  };
-
   ~InstrumentingSimavr() override = default;
 
   static std::unique_ptr<InstrumentingSimavr> Create(
       elf_firmware_t* elf_firmware,
-      absl::flat_hash_map<std::string, SymbolInfo>* symbol_table);
+      absl::flat_hash_map<std::string, avr_symbol_t*>* symbol_table);
 
   absl::Status RunWithTimeout(const std::chrono::milliseconds& timeout);
   absl::Status RunUntilSymbol(const std::string& symbol,
@@ -41,7 +33,7 @@ class InstrumentingSimavr final : public SimavrImpl {
  private:
   InstrumentingSimavr(
       elf_firmware_t* elf_firmware,
-      absl::flat_hash_map<std::string, SymbolInfo>* symbol_table,
+      absl::flat_hash_map<std::string, avr_symbol_t*>* symbol_table,
       std::unique_ptr<avr_t> avr);
 
   void Run() override;
@@ -61,7 +53,7 @@ class InstrumentingSimavr final : public SimavrImpl {
   // free and reallocate its memory.
   mutable std::vector<uint8_t> data_before_;
 
-  absl::flat_hash_map<std::string, SymbolInfo>* symbol_table_;
+  absl::flat_hash_map<std::string, avr_symbol_t*>* symbol_table_;
 };
 
 }  // namespace simulator

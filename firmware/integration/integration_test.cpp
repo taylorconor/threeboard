@@ -18,8 +18,6 @@ namespace threeboard {
 namespace integration {
 namespace {
 
-using SymbolInfo = simulator::InstrumentingSimavr::SymbolInfo;
-
 class IntegrationTest : public testing::Test {
  public:
   IntegrationTest()
@@ -56,7 +54,7 @@ class IntegrationTest : public testing::Test {
         // Skip demangling failures, unless they correspond to segment-related
         // symbols and functions.
         if (absl::StartsWith(symbol->symbol, "__")) {
-          symbol_table_[symbol->symbol] = SymbolInfo(symbol->addr);
+          symbol_table_[symbol->symbol] = symbol;
         }
         continue;
       }
@@ -78,23 +76,16 @@ class IntegrationTest : public testing::Test {
       // everything that comes after it (CV qualifiers, for example). There's no
       // need to disambiguate between these for now.
       demangled = demangled.substr(0, demangled.find('('));
-      symbol_table_[demangled] = SymbolInfo(symbol->addr);
-      // Hard code the size of DelayMs since it's the only symbol whose size we
-      // need right now, and its size is unlikely to change.
-      // TODO: change this to use symbol->size once
-      // github.com/buserror/simavr/pull/449 is merged.
-      if (demangled == "threeboard::native::NativeImpl::DelayMs") {
-        symbol_table_[demangled].size = 278;
-      }
+      symbol_table_[demangled] = symbol;
     }
   }
 
   static elf_firmware_t firmware_;
-  static absl::flat_hash_map<std::string, SymbolInfo> symbol_table_;
+  static absl::flat_hash_map<std::string, avr_symbol_t*> symbol_table_;
 };
 
 elf_firmware_t IntegrationTest::firmware_;
-absl::flat_hash_map<std::string, SymbolInfo> IntegrationTest::symbol_table_;
+absl::flat_hash_map<std::string, avr_symbol_t*> IntegrationTest::symbol_table_;
 
 TEST_F(IntegrationTest, BootToEventLoop) {
   // Run until the threeboard has successfully started up and is running the
