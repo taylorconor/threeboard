@@ -27,8 +27,7 @@ LedController::LedController(native::Native *native) : native_(native) {
 
 void LedController::ScanNextLine() {
   // The scan line identifies which row (or "line") of LEDs is next to be
-  // refreshed. It occupies the last 3 bits in the bitset, and is incremented on
-  // each scan.
+  // refreshed. It is incremented on each scan.
   uint8_t scan_line = next_scan_line_;
   next_scan_line_ = (next_scan_line_ + 1) % 5;
 
@@ -36,10 +35,15 @@ void LedController::ScanNextLine() {
 }
 
 void LedController::UpdateBlinkStatus() {
-  // This is called every 5ms. Bit 7 of blink_status_ toggles every 640ms (used
-  // to determine the blink status), and bit 6 toggles every 320ms (used to
-  // determine the fast blink status). So this should wrap around by design.
+  // This is called every 5ms. Bit 7 of blink_status_ determines whether an LED
+  // in BLINK state should be lit or not.
   blink_status_++;
+  if (blink_status_ & (1 << 6)) {
+    // Set bit 6 to 0 to reset the counter.
+    blink_status_ &= ~(1 << 6);
+    // Toggle bit 7, which indicates the blink state (on or off).
+    blink_status_ ^= (1 << 7);
+  }
 }
 
 void LedController::WriteStateToPins(uint8_t row) {
@@ -112,18 +116,15 @@ void LedController::WriteColumns(uint8_t vals) {
   }
 }
 
+bool LedController::ShouldEnableBlinkingLed() const {
+  return blink_status_ & (1 << 7);
+}
+
 void LedController::ApplyLedState(native::PortModFn port_mod_fn, uint8_t val,
                                   LedState::State state) {
-  if (state == LedState::ON) {
+  if (state == LedState::ON ||
+      (state == LedState::BLINK && ShouldEnableBlinkingLed())) {
     (native_->*port_mod_fn)(val);
-  } else if (state == LedState::BLINK) {
-    if (blink_status_ & 0x80) {
-      (native_->*port_mod_fn)(val);
-    }
-  } else if (state == LedState::BLINK_FAST) {
-    if (blink_status_ & 0x40) {
-      (native_->*port_mod_fn)(val);
-    }
   }
 }
 

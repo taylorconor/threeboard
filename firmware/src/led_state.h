@@ -12,7 +12,6 @@ class LedState {
     OFF = 0,
     ON = 1,
     BLINK = 2,
-    BLINK_FAST = 3,
   };
 
   // Getters and setters for all available addressable LEDs.

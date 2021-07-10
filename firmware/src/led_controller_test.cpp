@@ -131,7 +131,7 @@ TEST_F(LedControllerTest, TestCorrectColumnPinsDisabled) {
 
 TEST_F(LedControllerTest, TestBlink) {
   // Increment blink status to just below the blink threshold.
-  for (int i = 0; i < 0x7F; i++) {
+  for (int i = 0; i < 0x3F; i++) {
     controller_->UpdateBlinkStatus();
   }
 
@@ -140,34 +140,7 @@ TEST_F(LedControllerTest, TestBlink) {
   controller_->GetLedState()->SetErr(LedState::BLINK);
   RunAndExpectFullScanWithErrState(false);
 
-  // Increment Blink status to 0x80 (the blink threshold).
-  controller_->UpdateBlinkStatus();
-
-  // Now scan line 0 will produce a state of ON for the ERR LED.
-  RunAndExpectFullScanWithErrState(true);
-
-  // Increment the blink status another 0x80 so it's out of the blink threshold
-  // again.
-  for (int i = 0; i < 0x80; i++) {
-    controller_->UpdateBlinkStatus();
-  }
-
-  // Now scan line 0 will produce a state of OFF again for the ERR LED.
-  RunAndExpectFullScanWithErrState(false);
-}
-
-TEST_F(LedControllerTest, TestBlinkFast) {
-  // Increment blink status to just below the fast blink threshold.
-  for (int i = 0; i < 0x3F; i++) {
-    controller_->UpdateBlinkStatus();
-  }
-
-  // Setting to BLINK will initially cause the LED to turn off, since the
-  // blink_state starts below the threshold.
-  controller_->GetLedState()->SetErr(LedState::BLINK_FAST);
-  RunAndExpectFullScanWithErrState(false);
-
-  // Increment Blink status to 0x40 (the fast blink threshold).
+  // Increment Blink status to 0x40 (the blink threshold).
   controller_->UpdateBlinkStatus();
 
   // Now scan line 0 will produce a state of ON for the ERR LED.

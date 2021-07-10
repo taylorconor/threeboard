@@ -68,7 +68,7 @@ void Threeboard::HandleTimer3Interrupt() {
 
 void Threeboard::WaitForUsbSetup() {
   while (!usb_controller_->Setup()) {
-    led_controller_->GetLedState()->SetErr(LedState::BLINK_FAST);
+    led_controller_->GetLedState()->SetErr(LedState::BLINK);
     // This is an unrecoverable error. We can either crash here, or delay before
     // retrying USB setup from scratch repeatedly in the hopes that setup
     // eventually succeeds. We choose not to crash.
@@ -86,7 +86,7 @@ void Threeboard::WaitForUsbConfiguration() {
     // After 2.5 seconds, begin flashing the ERR LED.
     if (iterations > 250) {
       LOG_ONCE("Failed to configure USB, continuing to retry");
-      led_controller_->GetLedState()->SetErr(LedState::BLINK_FAST);
+      led_controller_->GetLedState()->SetErr(LedState::BLINK);
     }
     native_->DelayMs(10);
   }
@@ -98,8 +98,8 @@ void Threeboard::InitializeStorageController() {
   // This is likely fatal. Blink both ERR and STATUS LEDs (to distinguish from a
   // USB failure where only the ERR LED blinks) and keep retrying.
   while (!status) {
-    led_controller_->GetLedState()->SetErr(LedState::BLINK_FAST);
-    led_controller_->GetLedState()->SetStatus(LedState::BLINK_FAST);
+    led_controller_->GetLedState()->SetErr(LedState::BLINK);
+    led_controller_->GetLedState()->SetStatus(LedState::BLINK);
     status = storage_controller_->InitializeManifest();
   }
 }

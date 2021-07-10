@@ -47,6 +47,8 @@ class LedController {
   // Copy the provided state out to the LED column array for the LED banks.
   void WriteColumns(uint8_t vals);
 
+  bool ShouldEnableBlinkingLed() const;
+
   void ApplyLedState(native::PortModFn port_mod_fn, uint8_t val,
                      LedState::State state);
 };
