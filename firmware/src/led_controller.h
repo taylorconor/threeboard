@@ -50,6 +50,6 @@ class LedController {
   bool ShouldEnableBlinkingLed() const;
 
   void ApplyLedState(native::PortModFn port_mod_fn, uint8_t val,
-                     LedState::State state);
+                     LedState::FullState *state);
 };
 }  // namespace threeboard

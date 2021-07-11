@@ -121,10 +121,19 @@ bool LedController::ShouldEnableBlinkingLed() const {
 }
 
 void LedController::ApplyLedState(native::PortModFn port_mod_fn, uint8_t val,
-                                  LedState::State state) {
-  if (state == LedState::ON ||
-      (state == LedState::BLINK && ShouldEnableBlinkingLed())) {
+                                  LedState::FullState *state) {
+  if (state->state == LedState::ON ||
+      (state->state == LedState::BLINK && ShouldEnableBlinkingLed())) {
     (native_->*port_mod_fn)(val);
+  }
+  if (state->state == LedState::PULSE) {
+    state->pulse_timer++;
+    if (state->pulse_timer == 0) {
+      // When the pulse timer has elapsed, return the LED state to OFF.
+      state->state = LedState::OFF;
+    } else {
+      (native_->*port_mod_fn)(val);
+    }
   }
 }
 

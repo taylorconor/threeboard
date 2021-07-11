@@ -1,11 +1,15 @@
 #include "led_controller.h"
 
 #include <memory>
+#include <optional>
 
 #include "src/native/native_mock.h"
 
 namespace threeboard {
 namespace {
+
+constexpr std::nullopt_t _ = std::nullopt;
+using ::testing::AtMost;
 
 class LedControllerTest : public ::testing::Test {
  public:
@@ -23,16 +27,28 @@ class LedControllerTest : public ::testing::Test {
     EXPECT_CALL(native_mock_, EnablePORTF(0b00110011)).Times(times);
   }
 
-  void RunAndExpectFullScanWithErrState(bool enabled) {
+  void RunFullScanWithExpectations(std::optional<bool> prog,
+                                   std::optional<bool> status,
+                                   std::optional<bool> err) {
     MockDefaultScanLine(5);
     // Row 0.
     EXPECT_CALL(native_mock_, EnablePORTD(1 << native::PD7)).Times(1);
+    if (status.has_value()) {
+      EXPECT_CALL(native_mock_, EnablePORTB(1 << native::PB6))
+          .Times(*status ? 1 : 0);
+    } else {
+      EXPECT_CALL(native_mock_, EnablePORTB(1 << native::PB6)).Times(AtMost(1));
+    }
     controller_->ScanNextLine();
     // Row 1.
     EXPECT_CALL(native_mock_, EnablePORTB(1 << native::PB4)).Times(1);
     EXPECT_CALL(native_mock_, DisablePORTB(1 << native::PB6)).Times(1);
-    EXPECT_CALL(native_mock_, EnablePORTC(1 << native::PC6))
-        .Times(enabled ? 1 : 0);
+    if (err.has_value()) {
+      EXPECT_CALL(native_mock_, EnablePORTC(1 << native::PC6))
+          .Times(*err ? 1 : 0);
+    } else {
+      EXPECT_CALL(native_mock_, EnablePORTC(1 << native::PC6)).Times(AtMost(1));
+    }
     controller_->ScanNextLine();
     // Row 2.
     EXPECT_CALL(native_mock_, DisablePORTC(1 << native::PC6)).Times(1);
@@ -43,6 +59,13 @@ class LedControllerTest : public ::testing::Test {
     controller_->ScanNextLine();
     // Row 4.
     EXPECT_CALL(native_mock_, EnablePORTB(1 << native::PB5)).Times(1);
+    if (prog.has_value()) {
+      EXPECT_CALL(native_mock_, DisablePORTF(1 << native::PF5))
+          .Times(*prog ? 1 : 0);
+    } else {
+      EXPECT_CALL(native_mock_, DisablePORTF(1 << native::PF5))
+          .Times(AtMost(1));
+    }
     controller_->ScanNextLine();
   }
 
@@ -138,13 +161,13 @@ TEST_F(LedControllerTest, TestBlink) {
   // Setting to BLINK will initially cause the LED to turn off, since the
   // blink_state starts below the threshold.
   controller_->GetLedState()->SetErr(LedState::BLINK);
-  RunAndExpectFullScanWithErrState(false);
+  RunFullScanWithExpectations(_, _, false);
 
   // Increment Blink status to 0x40 (the blink threshold).
   controller_->UpdateBlinkStatus();
 
   // Now scan line 0 will produce a state of ON for the ERR LED.
-  RunAndExpectFullScanWithErrState(true);
+  RunFullScanWithExpectations(_, _, true);
 
   // Increment the blink status another 0x40 so it's out of the blink threshold
   // again.
@@ -153,7 +176,32 @@ TEST_F(LedControllerTest, TestBlink) {
   }
 
   // Now scan line 0 will produce a state of OFF again for the ERR LED.
-  RunAndExpectFullScanWithErrState(false);
+  RunFullScanWithExpectations(_, _, false);
+}
+
+TEST_F(LedControllerTest, TestPulse) {
+  // Set ERR to PULSE and verify that it is on in the next cycle.
+  controller_->GetLedState()->SetErr(LedState::PULSE);
+  RunFullScanWithExpectations(false, _, true);
+
+  // Now set PROG to PULSE and verify both are now on.
+  controller_->GetLedState()->SetProg(LedState::PULSE);
+  RunFullScanWithExpectations(true, _, true);
+
+  // Continue running full scans until the pulse timer for the ERR LED expires.
+  // It's 6 bits wide, so it takes 63 cycles. We've already run two of them.
+  for (int i = 0; i < 61; ++i) {
+    RunFullScanWithExpectations(true, _, true);
+  }
+
+  // On this scan, the ERR LED's PULSE state will expire and it will revert to
+  // OFF, but PROG will remain.
+  RunFullScanWithExpectations(true, _, false);
+  ASSERT_EQ(controller_->GetLedState()->GetErr()->state, LedState::OFF);
+
+  // Now PROG reverts to OFF.
+  RunFullScanWithExpectations(false, _, false);
+  ASSERT_EQ(controller_->GetLedState()->GetProg()->state, LedState::OFF);
 }
 }  // namespace
 }  // namespace threeboard

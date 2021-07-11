@@ -12,6 +12,16 @@ class LedState {
     OFF = 0,
     ON = 1,
     BLINK = 2,
+    PULSE = 3,
+  };
+
+  // Full packed LED state, including individual pulse timers for each LED
+  // occupying the remaining bits in a uint8_t after storing the State.
+  struct FullState {
+    State state : 2;
+    uint8_t pulse_timer : 6;
+
+    FullState(State state) : state(state), pulse_timer(0) {}
   };
 
   // Getters and setters for all available addressable LEDs.
@@ -20,17 +30,17 @@ class LedState {
   void SetBank1(uint8_t val) { bank_1_ = val; }
   uint8_t GetBank1() const { return bank_1_; }
   void SetR(State state) { led_r_ = state; }
-  State GetR() const { return led_r_; }
+  FullState* GetR() { return &led_r_; }
   void SetG(State state) { led_g_ = state; }
-  State GetG() const { return led_g_; }
+  FullState* GetG() { return &led_g_; }
   void SetB(State state) { led_b_ = state; }
-  State GetB() const { return led_b_; }
+  FullState* GetB() { return &led_b_; }
   void SetProg(State state) { led_prog_ = state; }
-  State GetProg() const { return led_prog_; }
+  FullState* GetProg() { return &led_prog_; }
   void SetErr(State state) { led_err_ = state; }
-  State GetErr() const { return led_err_; }
+  FullState* GetErr() { return &led_err_; }
   void SetStatus(State state) { led_status_ = state; }
-  State GetStatus() const { return led_status_; }
+  FullState* GetStatus() { return &led_status_; }
 
  private:
   // The state of all of the LEDs in the threeboard. There are some wasted bits
@@ -38,11 +48,11 @@ class LedState {
   // tight on memory. But for now we have plenty.
   uint8_t bank_0_ = 0;
   uint8_t bank_1_ = 0;
-  State led_r_ = OFF;
-  State led_g_ = OFF;
-  State led_b_ = OFF;
-  State led_prog_ = OFF;
-  State led_err_ = OFF;
-  State led_status_ = OFF;
+  FullState led_r_ = OFF;
+  FullState led_g_ = OFF;
+  FullState led_b_ = OFF;
+  FullState led_prog_ = OFF;
+  FullState led_err_ = OFF;
+  FullState led_status_ = OFF;
 };
 }  // namespace threeboard
