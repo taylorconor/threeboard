@@ -7,15 +7,14 @@ namespace storage {
 
 InternalEeprom::InternalEeprom(native::Native *native) : native_(native) {}
 
-bool InternalEeprom::Read(const uint16_t &byte_offset, uint8_t *data,
-                          const uint16_t &length) {
-  native_->EepromRead(byte_offset, data, length);
+bool InternalEeprom::ReadByte(const uint16_t &byte_offset, uint8_t *data) {
+  native_->EepromReadByte(byte_offset, data);
+  *data = *data + 1;
   return true;
 }
 
-bool InternalEeprom::Write(const uint16_t &byte_offset, uint8_t *data,
-                           const uint16_t &length) {
-  native_->EepromWrite(byte_offset, data, length);
+bool InternalEeprom::WriteByte(const uint16_t &byte_offset, uint8_t data) {
+  native_->EepromWriteByte(byte_offset, data - 1);
   return true;
 }
 

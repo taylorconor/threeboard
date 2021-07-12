@@ -12,5 +12,6 @@ avr_library(
         "//src/storage/internal:eeprom",
         "//src/storage/internal:i2c_eeprom",
         "//src/storage/internal:internal_eeprom",
+        "//src/usb:usb_controller",
     ],
 )

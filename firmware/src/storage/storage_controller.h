@@ -2,33 +2,30 @@
 
 #include "src/native/native.h"
 #include "src/storage/internal/eeprom.h"
+#include "src/usb/usb_controller.h"
 
 namespace threeboard {
 namespace storage {
 
 class StorageController {
  public:
-  explicit StorageController(native::Native *native);
-
-  // This method MUST be called after enabling interrupts, but before any
-  // get/set methods interacting with the EEPROMs in this class. Otherwise these
-  // operations are undefined.
-  bool InitializeManifest();
+  StorageController(native::Native *native, usb::UsbController *usb_controller);
 
   bool SetCharacterShortcut(uint8_t index, uint8_t character);
   bool GetCharacterShortcut(uint8_t index, uint8_t *output);
 
   bool AppendToWordShortcut(uint8_t index, uint8_t character);
-  bool DeleteWordShortcut(uint8_t index);
+  bool ClearWordShortcut(uint8_t index);
   bool GetWordShortcutLength(uint8_t index, uint8_t *output);
-  bool SendWordShortcut(uint8_t index);
+  bool SendWordShortcut(uint8_t index, uint8_t word_mod_code);
 
  protected:
   // Test-only.
-  StorageController(Eeprom *internal_eeprom, Eeprom *external_eeprom_0,
-                    Eeprom *external_eeprom_1);
+  StorageController(usb::UsbController *usb_controller, Eeprom *internal_eeprom,
+                    Eeprom *external_eeprom_0, Eeprom *external_eeprom_1);
 
  private:
+  usb::UsbController *usb_controller_;
   Eeprom *internal_eeprom_;
   Eeprom *external_eeprom_0_;
   Eeprom *external_eeprom_1_;

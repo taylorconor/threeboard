@@ -9,10 +9,8 @@ class Eeprom {
  public:
   virtual ~Eeprom() = default;
 
-  virtual bool Read(const uint16_t &byte_offset, uint8_t *data,
-                    const uint16_t &length) = 0;
-  virtual bool Write(const uint16_t &byte_offset, uint8_t *data,
-                     const uint16_t &length) = 0;
+  virtual bool ReadByte(const uint16_t &byte_offset, uint8_t *data) = 0;
+  virtual bool WriteByte(const uint16_t &byte_offset, uint8_t data) = 0;
 };
 
 }  // namespace storage

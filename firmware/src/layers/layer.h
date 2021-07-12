@@ -4,6 +4,7 @@
 #include "src/layers/layer_id.h"
 #include "src/led_state.h"
 #include "src/usb/usb_controller.h"
+#include "src/util/util.h"
 
 namespace threeboard {
 
@@ -30,6 +31,7 @@ class Layer {
   LedState *led_state_;
   usb::UsbController *usb_controller_;
 
+  // True if this layer is currently in program mode.
   bool prog_ = false;
 };
 }  // namespace threeboard

@@ -84,6 +84,15 @@ void I2cEeprom::HandleI2cMessage(uint32_t value) {
     Reset();
   }
   if (message.msg & TWI_COND_START) {
+    if (!IsControlByte(message)) {
+      // This should never be invoked in the threeboard code.
+      LOG("SIM::HandleI2cMessage: Received non-control start message, "
+          "returning");
+      return;
+    }
+    LOG("SIM::HandleI2cMessage: Received control byte, mode=%s",
+        mode_ == READ ? "READ" : "WRITE");
+
     // ACK the start message, parse out the read/write flag, and prepare to
     // receive the two address bytes.
     mode_ = static_cast<EepromMode>(message.addr & 1);
@@ -97,8 +106,6 @@ void I2cEeprom::HandleI2cMessage(uint32_t value) {
     } else {
       state_ = STARTED;
     }
-    LOG("SIM::HandleI2cMessage: Received control byte, mode=%s",
-        mode_ == READ ? "READ" : "WRITE");
 
     simavr_->RaiseI2cIrq(TWI_IRQ_INPUT,
                          simavr_->TwiIrqMsg(TWI_COND_ACK, address_, 1));

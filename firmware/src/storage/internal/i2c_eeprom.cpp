@@ -19,28 +19,19 @@ uint8_t CreateControlByte(I2cEeprom::Device device, uint8_t operation) {
 I2cEeprom::I2cEeprom(native::Native *native, Device device)
     : native_(native), device_(device) {}
 
-bool I2cEeprom::Read(const uint16_t &byte_offset, uint8_t *data,
-                     const uint16_t &length) {
+bool I2cEeprom::ReadByte(const uint16_t &byte_offset, uint8_t *data) {
   RETURN_IF_ERROR(StartAndAddress(kReadBit, byte_offset), Stop());
-  uint16_t i = 0;
-  for (; i < length - 1; i++) {
-    *(data + i) = ReadByte(false);
-  }
-  *(data + i) = ReadByte(true);
+  *data = ReadByte(true) + 1;
   Stop();
-
   return true;
 }
 
-bool I2cEeprom::Write(const uint16_t &byte_offset, uint8_t *data,
-                      const uint16_t &length) {
+bool I2cEeprom::WriteByte(const uint16_t &byte_offset, uint8_t data) {
+  data = data - 1;
   LOG("I2cEeprom::Write");
-  // TODO: Implement page-write optimisation.
-  for (uint16_t i = 0; i < length; i++) {
-    RETURN_IF_ERROR(StartAndAddress(kWriteBit, byte_offset + i));
-    RETURN_IF_ERROR(WriteByteAndAck(*(data + i)));
-    Stop();
-  }
+  RETURN_IF_ERROR(StartAndAddress(kWriteBit, byte_offset));
+  RETURN_IF_ERROR(WriteByteAndAck(data));
+  Stop();
   return true;
 }
 
@@ -113,9 +104,6 @@ uint8_t I2cEeprom::GetStatusBits() {
 bool I2cEeprom::WriteByteAndAck(uint8_t data) {
   WriteByte(data);
   auto status_bits = GetStatusBits();
-  // TODO: This fails when attempting to SLA+R: We expect TW_MR_SLA_ACK, we
-  // receive TW_REP_START (i assume because the status hasn't been cleared yet).
-  // It succeeds for SLA+W.
   if (status_bits != native::TW_MT_SLA_ACK &&
       status_bits != native::TW_MR_SLA_ACK) {
     LOG("I2cEeprom::WriteByteAndAck: fail status: %d", status_bits);
@@ -138,9 +126,8 @@ uint8_t I2cEeprom::ReadByte(bool is_final_byte) {
     twcr |= (1 << native::TWEA);
   }
   native_->SetTWCR(twcr);
-  while (!(native_->GetTWCR() & (1 << native::TWINT))) {
-    LOG("I2cEeprom::ReadByte: looping TWINT");
-  }
+  while (!(native_->GetTWCR() & (1 << native::TWINT)))
+    ;
   return native_->GetTWDR();
 }
 }  // namespace storage

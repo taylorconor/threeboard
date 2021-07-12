@@ -2,7 +2,7 @@
 
 #include "src/native/mcu.h"
 
-// Defining this allows delay_ms to accept non-compile time constants as
+// Defining this allows delay_ms() to accept non compile time constants as
 // parameters.
 #define __DELAY_BACKWARD_COMPATIBLE__
 
@@ -136,14 +136,13 @@ uint8_t NativeImpl::ReadPgmByte(const uint8_t *ptr) const {
   return pgm_read_byte(ptr);
 }
 
-void NativeImpl::EepromWrite(const uint16_t &byte_offset, uint8_t *data,
-                             const uint16_t &length) {
-  eeprom_write_block(data, (void *)byte_offset, length);
+void NativeImpl::EepromReadByte(const uint16_t &byte_offset,
+                                uint8_t *data) const {
+  eeprom_read_block(data, (void *)byte_offset, 1);
 }
 
-void NativeImpl::EepromRead(const uint16_t &byte_offset, uint8_t *data,
-                            const uint16_t &length) const {
-  eeprom_read_block(data, (void *)byte_offset, length);
+void NativeImpl::EepromWriteByte(const uint16_t &byte_offset, uint8_t data) {
+  eeprom_write_block(&data, (void *)byte_offset, 1);
 }
 
 void NativeImpl::EnableDDRB(const uint8_t val) { DDRB |= val; }

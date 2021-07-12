@@ -28,7 +28,8 @@ void RunThreeboardEventLoop() {
   // Set up the remaining objects to inject into the Threeboard instance. These
   // could be constructed within the instance, but injecting them makes testing
   // easier since we can inject mocks into the Threeboard class for tests.
-  storage::StorageController storage_controller(&native_impl);
+  storage::StorageController storage_controller(&native_impl,
+                                                &usb_controller_impl);
   EventBuffer event_buffer;
   LedController led_controller(&native_impl);
   KeyController key_controller(&native_impl, &event_buffer);

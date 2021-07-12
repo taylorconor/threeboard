@@ -24,8 +24,9 @@ class LayerG final : public Layer {
   LayerControllerDelegate *layer_controller_delegate_;
   storage::StorageController *storage_controller_;
 
-  uint8_t bank0_ = 0;
-  uint8_t bank1_ = 0;
+  uint8_t shortcut_id_ = 0;
+  uint8_t word_mod_code_ = 0;
+  uint8_t key_code_ = 0;
 };
 
 }  // namespace threeboard

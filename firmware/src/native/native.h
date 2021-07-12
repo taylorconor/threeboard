@@ -51,9 +51,8 @@ class Native {
   virtual uint16_t ReadPgmWord(const uint8_t *) const = 0;
   virtual uint8_t ReadPgmByte(const uint8_t *) const = 0;
 
-  virtual void EepromWrite(const uint16_t &, uint8_t *, const uint16_t &) = 0;
-  virtual void EepromRead(const uint16_t &, uint8_t *,
-                          const uint16_t &) const = 0;
+  virtual void EepromReadByte(const uint16_t &, uint8_t *) const = 0;
+  virtual void EepromWriteByte(const uint16_t &, uint8_t) = 0;
 
   virtual void EnableDDRB(uint8_t) = 0;
   virtual void DisableDDRB(uint8_t) = 0;

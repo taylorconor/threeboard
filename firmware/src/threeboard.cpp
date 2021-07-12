@@ -35,10 +35,6 @@ void Threeboard::RunEventLoop() {
   // Busy loop until USB configuration succeeds.
   WaitForUsbConfiguration();
 
-  // Initialize the storage controller, handle initialization errors and retry
-  // as necessary.
-  InitializeStorageController();
-
   // Display the "boot indicator" (the lighting of LEDs R, G and then B in
   // sequence) to show that the threeboard has booted. This method blocks until
   // the boot indicator sequence has finished (250ms) so it doesn't overwrite
@@ -93,17 +89,6 @@ void Threeboard::WaitForUsbConfiguration() {
   led_controller_->GetLedState()->SetErr(LedState::OFF);
 }
 
-void Threeboard::InitializeStorageController() {
-  bool status = storage_controller_->InitializeManifest();
-  // This is likely fatal. Blink both ERR and STATUS LEDs (to distinguish from a
-  // USB failure where only the ERR LED blinks) and keep retrying.
-  while (!status) {
-    led_controller_->GetLedState()->SetErr(LedState::BLINK);
-    led_controller_->GetLedState()->SetStatus(LedState::BLINK);
-    status = storage_controller_->InitializeManifest();
-  }
-}
-
 void Threeboard::DisplayBootIndicator() {
   boot_indicator_state_.status = 1;
   native_->DelayMs(255);
@@ -145,9 +130,14 @@ void Threeboard::RunEventLoopIteration() {
     native_->DisableCpuSleep();
   } else {
     if (event_buffer_->HasKeypressEvent()) {
-      // TODO: surface an error here if event handling fails.
-      /*bool status =*/
-      layer_controller_.HandleEvent(event_buffer_->GetKeypressEvent());
+      // Event success status is propagated up through the relevant Layer to
+      // here. A false return from HandleEvent indicates that an unrecoverable
+      // error occurred during handling of this event.
+      bool status =
+          layer_controller_.HandleEvent(event_buffer_->GetKeypressEvent());
+      if (!status) {
+        led_controller_->GetLedState()->SetErr(LedState::PULSE);
+      }
     }
     // Re-enable interrupts after handling the event.
     native_->EnableInterrupts();

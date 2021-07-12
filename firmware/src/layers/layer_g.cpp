@@ -6,26 +6,65 @@ namespace threeboard {
 
 bool LayerG::HandleEvent(const Keypress &keypress) {
   if (keypress == Keypress::X) {
-    bank0_++;
+    if (prog_) {
+      key_code_++;
+    } else {
+      shortcut_id_++;
+    }
   } else if (keypress == Keypress::Y) {
-    bank1_++;
+    if (!prog_) {
+      word_mod_code_++;
+    }
   } else if (keypress == Keypress::Z) {
-    SendToHost(bank0_, bank1_);
+    if (prog_) {
+      // Append key_code.
+      RETURN_IF_ERROR(
+          storage_controller_->AppendToWordShortcut(shortcut_id_, key_code_));
+    } else {
+      RETURN_IF_ERROR(
+          storage_controller_->SendWordShortcut(shortcut_id_, word_mod_code_));
+    }
+  } else if (keypress == Keypress::XY) {
+    if (!prog_) {
+      prog_ = true;
+    }
   } else if (keypress == Keypress::XZ) {
-    bank0_ = 0;
+    if (prog_) {
+      key_code_ = 0;
+    } else {
+      shortcut_id_ = 0;
+    }
   } else if (keypress == Keypress::YZ) {
-    bank1_ = 0;
+    if (prog_) {
+      RETURN_IF_ERROR(storage_controller_->ClearWordShortcut(shortcut_id_));
+    } else {
+      word_mod_code_ = 0;
+    }
   } else if (keypress == Keypress::XYZ) {
-    layer_controller_delegate_->SwitchToLayer(LayerId::B);
-    return true;
+    if (!prog_) {
+      layer_controller_delegate_->SwitchToLayer(LayerId::B);
+      return true;
+    } else {
+      prog_ = false;
+    }
   }
-  UpdateLedState(LayerId::G, bank0_, bank1_);
+  uint8_t length;
+  RETURN_IF_ERROR(
+      storage_controller_->GetWordShortcutLength(shortcut_id_, &length));
+  if (prog_) {
+    UpdateLedState(LayerId::G, key_code_, length << 4);
+  } else {
+    UpdateLedState(LayerId::G, shortcut_id_, (length << 4) | word_mod_code_);
+  }
   return true;
 }
 
 void LayerG::TransitionedToLayer() {
   LOG("Switched to layer G");
-  UpdateLedState(LayerId::G, bank0_, bank1_);
+  uint8_t length;
+  // TODO: RETURN_IF_ERROR!
+  storage_controller_->GetWordShortcutLength(shortcut_id_, &length);
+  UpdateLedState(LayerId::G, shortcut_id_, (length << 4) | word_mod_code_);
 }
 
 }  // namespace threeboard

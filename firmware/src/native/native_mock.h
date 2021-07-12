@@ -36,10 +36,9 @@ class DefaultNativeMock : public Native {
   }
   uint8_t ReadPgmByte(const uint8_t *ptr) const override { return *ptr; }
 
-  MOCK_METHOD(void, EepromWrite,
-              (const uint16_t &, uint8_t *, const uint16_t &), (override));
-  MOCK_METHOD(void, EepromRead, (const uint16_t &, uint8_t *, const uint16_t &),
+  MOCK_METHOD(void, EepromReadByte, (const uint16_t &, uint8_t *),
               (const override));
+  MOCK_METHOD(void, EepromWriteByte, (const uint16_t &, uint8_t), (override));
 
   MOCK_METHOD(void, EnableDDRB, (const uint8_t), (override));
   MOCK_METHOD(void, DisableDDRB, (const uint8_t), (override));

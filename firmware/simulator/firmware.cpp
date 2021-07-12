@@ -27,7 +27,6 @@ void Firmware::RunAsync() {
 
 void Firmware::Reset() { should_reset_ = true; }
 
-// TODO: assert here if is_running_ is false?
 uint8_t Firmware::GetPortB() const { return simavr_->GetData(PORTB); }
 uint8_t Firmware::GetPortC() const { return simavr_->GetData(PORTC); }
 uint8_t Firmware::GetPortD() const { return simavr_->GetData(PORTD); }

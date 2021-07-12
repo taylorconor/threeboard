@@ -58,7 +58,6 @@ class Threeboard final : public TimerInterruptHandlerDelegate,
 
   void WaitForUsbSetup();
   void WaitForUsbConfiguration();
-  void InitializeStorageController();
   void DisplayBootIndicator();
   void PollBootIndicator();
   void RunEventLoopIteration();
