@@ -18,7 +18,10 @@ class LedState {
   // Full packed LED state, including individual pulse timers for each LED
   // occupying the remaining bits in a uint8_t after storing the State.
   struct FullState {
-    State state : 2;
+    // The state field is actually a State enum object. Due to an annoying GCC
+    // bug, it needs to be represented as a uint8_t, otherwise GCC fails the
+    // compilation claiming two bits is not enough to store a State enum.
+    uint8_t state : 2;
     uint8_t pulse_timer : 6;
 
     FullState(State state) : state(state), pulse_timer(0) {}
