@@ -1,5 +1,7 @@
 #include "logging.h"
 
+#include <stdarg.h>
+
 namespace threeboard {
 namespace simulator {
 
