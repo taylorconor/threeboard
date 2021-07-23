@@ -42,8 +42,7 @@ bool LayerG::HandleEvent(const Keypress &keypress) {
     }
   } else if (keypress == Keypress::XYZ) {
     if (!prog_) {
-      layer_controller_delegate_->SwitchToLayer(LayerId::B);
-      return true;
+      return layer_controller_delegate_->SwitchToLayer(LayerId::B);
     } else {
       prog_ = false;
     }
@@ -59,12 +58,13 @@ bool LayerG::HandleEvent(const Keypress &keypress) {
   return true;
 }
 
-void LayerG::TransitionedToLayer() {
+bool LayerG::TransitionedToLayer() {
   LOG("Switched to layer G");
   uint8_t length;
-  // TODO: RETURN_IF_ERROR!
-  storage_controller_->GetWordShortcutLength(shortcut_id_, &length);
+  RETURN_IF_ERROR(
+      storage_controller_->GetWordShortcutLength(shortcut_id_, &length));
   UpdateLedState(LayerId::G, shortcut_id_, (length << 4) | word_mod_code_);
+  return true;
 }
 
 }  // namespace threeboard

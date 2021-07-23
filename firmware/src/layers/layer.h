@@ -21,7 +21,7 @@ class Layer {
   virtual bool HandleEvent(const Keypress &) = 0;
 
   // Called when the threeboard has transitioned to this layer.
-  virtual void TransitionedToLayer() = 0;
+  virtual bool TransitionedToLayer() = 0;
 
  protected:
   virtual void SendToHost(uint8_t key, uint8_t mod);

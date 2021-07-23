@@ -15,7 +15,7 @@ class DefaultLayer final : public Layer {
   bool HandleEvent(const Keypress &) override;
 
   // Called when the threeboard has transitioned to this layer.
-  void TransitionedToLayer() override;
+  bool TransitionedToLayer() override;
 
  private:
   LayerControllerDelegate *layer_controller_delegate_;

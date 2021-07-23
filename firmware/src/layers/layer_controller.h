@@ -20,7 +20,7 @@ class LayerController final : public LayerControllerDelegate {
 
  private:
   // Implement the LayerControllerDelegate overrides.
-  void SwitchToLayer(const LayerId &) override;
+  bool SwitchToLayer(const LayerId &) override;
 
   // Define all of the concrete layers of the threeboard. They need to be held
   // in memory here but are only accessed via the layer array.

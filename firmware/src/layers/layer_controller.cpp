@@ -21,9 +21,9 @@ bool LayerController::HandleEvent(const threeboard::Keypress &keypress) {
   return layer_[current_layer_]->HandleEvent(keypress);
 }
 
-void LayerController::SwitchToLayer(const LayerId &layer_id) {
+bool LayerController::SwitchToLayer(const LayerId &layer_id) {
   current_layer_ = layer_id;
-  layer_[current_layer_]->TransitionedToLayer();
+  return layer_[current_layer_]->TransitionedToLayer();
 }
 
 }  // namespace threeboard

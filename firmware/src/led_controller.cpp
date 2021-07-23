@@ -29,7 +29,11 @@ void LedController::ScanNextLine() {
   // The scan line identifies which row (or "line") of LEDs is next to be
   // refreshed. It is incremented on each scan.
   uint8_t scan_line = next_scan_line_;
-  next_scan_line_ = (next_scan_line_ + 1) % 5;
+
+  // Split this add and mod into separate operations to avoid a 16-bit divide
+  // instruction (which I suspect is a GCC bug).
+  next_scan_line_ += 1;
+  next_scan_line_ %= 5;
 
   WriteStateToPins(scan_line);
 }

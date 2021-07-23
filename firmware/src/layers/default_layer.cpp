@@ -16,16 +16,16 @@ bool DefaultLayer::HandleEvent(const Keypress &keypress) {
   } else if (keypress == Keypress::YZ) {
     bank1_ = 0;
   } else if (keypress == Keypress::XYZ) {
-    layer_controller_delegate_->SwitchToLayer(LayerId::R);
-    return true;
+    return layer_controller_delegate_->SwitchToLayer(LayerId::R);
   }
   UpdateLedState(LayerId::DFLT, bank0_, bank1_);
   return true;
 }
 
-void DefaultLayer::TransitionedToLayer() {
+bool DefaultLayer::TransitionedToLayer() {
   LOG("Switched to layer DFLT");
   UpdateLedState(LayerId::DFLT, bank0_, bank1_);
+  return true;
 }
 
 }  // namespace threeboard

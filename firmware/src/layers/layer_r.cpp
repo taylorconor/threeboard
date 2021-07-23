@@ -45,8 +45,7 @@ bool LayerR::HandleEvent(const Keypress &keypress) {
     if (prog_) {
       prog_ = false;
     } else {
-      layer_controller_delegate_->SwitchToLayer(LayerId::G);
-      return true;
+      return layer_controller_delegate_->SwitchToLayer(LayerId::G);
     }
   }
   if (prog_) {
@@ -61,9 +60,10 @@ bool LayerR::HandleEvent(const Keypress &keypress) {
   return true;
 }
 
-void LayerR::TransitionedToLayer() {
+bool LayerR::TransitionedToLayer() {
   LOG("Switched to layer R");
   UpdateLedState(LayerId::R, shortcut_id_, modcode_);
+  return true;
 }
 
 }  // namespace threeboard
