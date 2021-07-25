@@ -43,6 +43,8 @@ cc_library(
     data = ["//simulator/native:threeboard_sim_binary"],
     deps = [
         ":simavr",
+        "//simulator/util:logging",
+        "@abseil//absl/strings",
         "@third_party//:simavr",
     ],
 )

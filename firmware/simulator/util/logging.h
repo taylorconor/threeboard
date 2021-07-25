@@ -4,9 +4,10 @@
 
 #include "simulator/ui/ui.h"
 
-#define LOG(fmt, ...)                                          \
-  do {                                                         \
-    ::threeboard::simulator::Logging::Log(fmt, ##__VA_ARGS__); \
+#define LOG(fmt, ...)                                                          \
+  do {                                                                         \
+    ::threeboard::simulator::Logging::Log(UI::SimulatorSource::SIMULATOR, fmt, \
+                                          ##__VA_ARGS__);                      \
   } while (0)
 
 namespace threeboard {
@@ -16,7 +17,8 @@ class Logging {
  public:
   static void Init(UI *ui, std::ofstream *log_stream);
 
-  static void Log(const char *fmt, ...);
+  static void Log(const UI::SimulatorSource &, const char *fmt, ...);
+  static void Log(const UI::SimulatorSource &, const char *fmt, va_list va);
 
  private:
   static UI *ui_;

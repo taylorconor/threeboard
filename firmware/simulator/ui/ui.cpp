@@ -223,8 +223,13 @@ void UI::DisplayFirmwareLogLine(uint64_t cycle, const std::string &log_line) {
   log_pad_->Write(log);
 }
 
-void UI::DisplaySimulatorLogLine(const std::string &log_line) {
-  log_pad_->Write("[simulator]       " + log_line + "\n");
+void UI::DisplaySimulatorLogLine(const std::string &log_line,
+                                 const SimulatorSource &source) {
+  std::string str_source = "[simulator]";
+  if (source == SimulatorSource::SIMAVR) {
+    str_source = "[simavr]   ";
+  }
+  log_pad_->Write(str_source + "       " + log_line + "\n");
 }
 
 void UI::SetR(bool enabled) { SetLedState(r_, enabled); }

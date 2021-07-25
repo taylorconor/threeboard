@@ -33,8 +33,15 @@ class UI {
   void ClearLedState();
 
   void DisplayKeyboardCharacter(char);
+
+  enum class SimulatorSource {
+    SIMULATOR,
+    SIMAVR,
+  };
+
   void DisplayFirmwareLogLine(uint64_t cycle, const std::string &);
-  void DisplaySimulatorLogLine(const std::string &);
+  void DisplaySimulatorLogLine(const std::string &,
+                               const SimulatorSource &source);
 
   void SetR(bool);
   void SetG(bool);

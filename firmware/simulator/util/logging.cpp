@@ -10,15 +10,20 @@ void Logging::Init(UI* ui, std::ofstream* log_stream) {
   log_stream_ = log_stream;
 }
 
-void Logging::Log(const char* fmt, ...) {
+void Logging::Log(const UI::SimulatorSource& source, const char* fmt, ...) {
   va_list va;
   va_start(va, fmt);
+  Log(source, fmt, va);
+  va_end(va);
+}
+
+void Logging::Log(const UI::SimulatorSource& source, const char* fmt,
+                  va_list va) {
   char buffer[256];
   vsnprintf(buffer, sizeof(buffer), fmt, va);
-  va_end(va);
   std::string str_buffer = std::string(buffer);
   *log_stream_ << str_buffer;
-  ui_->DisplaySimulatorLogLine(str_buffer);
+  ui_->DisplaySimulatorLogLine(str_buffer, source);
 }
 
 UI* Logging::ui_;

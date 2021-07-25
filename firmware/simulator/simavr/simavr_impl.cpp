@@ -2,12 +2,14 @@
 
 #include <iostream>
 
+#include "absl/strings/str_replace.h"
 #include "simavr/avr_ioport.h"
 #include "simavr/avr_twi.h"
 #include "simavr/avr_uart.h"
 #include "simavr/avr_usb.h"
 #include "simavr/sim_gdb.h"
 #include "simulator/util/lifetime.h"
+#include "simulator/util/logging.h"
 
 namespace threeboard {
 namespace simulator {
@@ -57,6 +59,15 @@ std::unique_ptr<avr_t> SimavrImpl::ParseElfFile(elf_firmware_t *firmware) {
 
   avr_init(avr);
   avr_load_firmware(avr, firmware);
+  avr_global_logger_set(
+      [](struct avr_t *avr, const int level, const char *format, va_list ap) {
+        if (level > 3) {
+          // return;
+        }
+        std::string str_format(format);
+        str_format = absl::StrReplaceAll(str_format, {{"\n", ". "}});
+        Logging::Log(UI::SimulatorSource::SIMAVR, str_format.c_str(), ap);
+      });
   return std::unique_ptr<avr_t>(avr);
 }
 
