@@ -5,6 +5,7 @@ git_repository(
     name = "avr-bazel",
     commit = "b7f50ee9d2835d7ce42990dd2732af89cbcb0915",
     remote = "https://github.com/taylorconor/avr-bazel",
+    shallow_since = "1590245556 +0200",
 )
 
 load("@avr-bazel//:avr.bzl", "avr_tools_repository")
@@ -16,13 +17,15 @@ git_repository(
     name = "gtest",
     commit = "703bd9caab50b139428cea1aaff9974ebee5742e",
     remote = "https://github.com/google/googletest",
+    shallow_since = "1570114335 -0400",
 )
 
 # google abseil library.
 git_repository(
     name = "abseil",
+    commit = "e1d388e7e74803050423d035e4374131b9b57919",
     remote = "https://github.com/abseil/abseil-cpp",
-    branch = "20210324.1",
+    shallow_since = "1618937714 -0400",
 )
 
 # a local repo representing the third party library locations (e.g. for simavr).

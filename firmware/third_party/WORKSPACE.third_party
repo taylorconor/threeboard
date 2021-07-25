@@ -8,4 +8,5 @@ git_repository(
 )
 
 load("@avr-bazel//:avr.bzl", "avr_tools_repository")
+
 avr_tools_repository()
