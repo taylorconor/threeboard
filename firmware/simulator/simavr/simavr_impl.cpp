@@ -61,8 +61,10 @@ std::unique_ptr<avr_t> SimavrImpl::ParseElfFile(elf_firmware_t *firmware) {
   avr_load_firmware(avr, firmware);
   avr_global_logger_set(
       [](struct avr_t *avr, const int level, const char *format, va_list ap) {
+        // Ignore trace and debug logs (level 4 and 5 respectively) because
+        // they're too noisy to be useful.
         if (level > 3) {
-          // return;
+          return;
         }
         std::string str_format(format);
         str_format = absl::StrReplaceAll(str_format, {{"\n", ". "}});
