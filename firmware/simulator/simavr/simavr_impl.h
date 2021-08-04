@@ -41,11 +41,11 @@ class SimavrImpl : public Simavr {
 
   void SetData(uint8_t idx, uint8_t val) override;
   void SetState(uint8_t val) override;
-  void SetGdbPort(uint8_t val) override;
+  void SetGdbPort(uint16_t val) override;
 
   uint8_t GetData(uint8_t idx) const override;
   uint8_t GetState() const override;
-  uint8_t GetGdbPort() const override;
+  uint16_t GetGdbPort() const override;
   uint64_t GetCycle() const override;
   uint32_t GetProgramCounter() const override;
   uint16_t GetStackPointer() const override;

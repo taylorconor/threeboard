@@ -42,11 +42,11 @@ class Simavr {
 
   virtual void SetData(uint8_t idx, uint8_t val) = 0;
   virtual void SetState(uint8_t val) = 0;
-  virtual void SetGdbPort(uint8_t val) = 0;
+  virtual void SetGdbPort(uint16_t val) = 0;
 
   virtual uint8_t GetData(uint8_t idx) const = 0;
   virtual uint8_t GetState() const = 0;
-  virtual uint8_t GetGdbPort() const = 0;
+  virtual uint16_t GetGdbPort() const = 0;
   virtual uint64_t GetCycle() const = 0;
   virtual uint32_t GetProgramCounter() const = 0;
   virtual uint16_t GetStackPointer() const = 0;

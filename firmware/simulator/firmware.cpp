@@ -81,8 +81,6 @@ void Firmware::DisableGdb() const {
 }
 
 void Firmware::RunDetached() {
-  // TODO: it seems that this loop never ends even if the firmware crashes. Why?
-  // This is a regression.
   while (is_running_ && simavr_->GetState() != DONE &&
          simavr_->GetState() != CRASHED) {
     if (should_reset_) {

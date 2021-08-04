@@ -147,9 +147,9 @@ void SimavrImpl::SetData(uint8_t idx, uint8_t val) { avr_->data[idx] = val; }
 
 void SimavrImpl::SetState(uint8_t val) { avr_->state = val; }
 
-uint8_t SimavrImpl::GetGdbPort() const { return avr_->gdb_port; }
+uint16_t SimavrImpl::GetGdbPort() const { return avr_->gdb_port; }
 
-void SimavrImpl::SetGdbPort(uint8_t val) { avr_->gdb_port = val; }
+void SimavrImpl::SetGdbPort(uint16_t val) { avr_->gdb_port = val; }
 
 uint8_t SimavrImpl::GetData(uint8_t idx) const { return avr_->data[idx]; };
 
