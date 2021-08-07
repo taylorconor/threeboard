@@ -33,7 +33,7 @@ namespace {
 void Timer1Init() {
   // Enable timer 1 in CTC mode (clear timer on compare), with prescaler set to
   // 1 (so using native 16MHz clock frequency).
-  TCCR1B |= (1 << WGM12) | (1 << CS10);
+  TCCR1B = (1 << WGM12) | (1 << CS10);
 
   // Set timer1's initial value to 0.
   TCNT1 = 0;
@@ -51,7 +51,7 @@ void Timer1Init() {
 
 void Timer3Init() {
   // Enable timer 3 in CTC mode, with prescaler set to 64.
-  TCCR3B |= (1 << WGM32) | (1 << CS31) | (1 << CS30);
+  TCCR3B = (1 << WGM32) | (1 << CS31) | (1 << CS30);
 
   TCNT3 = 0;
 
