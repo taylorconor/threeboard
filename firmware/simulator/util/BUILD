@@ -6,7 +6,10 @@ cc_library(
     name = "flags",
     srcs = ["flags.cpp"],
     hdrs = ["flags.h"],
-    deps = ["//third_party:cxxopts"],
+    deps = [
+        "//third_party:cxxopts",
+        "@abseil//absl/strings",
+    ],
 )
 
 cc_library(
@@ -19,4 +22,15 @@ cc_library(
     srcs = ["logging.cpp"],
     hdrs = ["logging.h"],
     deps = ["//simulator/ui"],
+)
+
+cc_library(
+    name = "state_storage",
+    srcs = ["state_storage.cpp"],
+    hdrs = ["state_storage.h"],
+    deps = [
+        "//util:status_util",
+        "@abseil//absl/status",
+        "@nlohmann//:json",
+    ],
 )

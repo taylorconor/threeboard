@@ -60,9 +60,7 @@ bool StorageController::SetCharacterShortcut(uint8_t index, uint8_t character) {
 }
 
 bool StorageController::GetCharacterShortcut(uint8_t index, uint8_t *output) {
-  bool status = internal_eeprom_->ReadByte(index, output);
-  LOG("StorageController::GetCharacterShortcut: %d", *output);
-  return status;
+  return internal_eeprom_->ReadByte(index, output);
 }
 
 bool StorageController::AppendToWordShortcut(uint8_t index, uint8_t character) {

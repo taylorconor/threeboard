@@ -56,6 +56,7 @@ cc_library(
         "//simulator/simavr",
         "//simulator/ui",
         "//simulator/util:flags",
+        "//simulator/util:state_storage",
     ],
 )
 
@@ -67,5 +68,6 @@ cc_binary(
         "//simulator/simavr:simavr_impl",
         "//simulator/util:flags",
         "//simulator/util:logging",
+        "//simulator/util:state_storage",
     ],
 )

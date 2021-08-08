@@ -13,12 +13,13 @@
 #include "simulator/simulator_delegate.h"
 #include "simulator/ui/ui.h"
 #include "simulator/util/flags.h"
+#include "simulator/util/state_storage.h"
 
 namespace threeboard {
 namespace simulator {
 class Simulator final : public SimulatorDelegate {
  public:
-  Simulator(Flags *flags, Simavr *simavr);
+  Simulator(Flags *flags, Simavr *simavr, StateStorage *state_storage);
   ~Simulator() override;
 
   void Run();
@@ -37,7 +38,7 @@ class Simulator final : public SimulatorDelegate {
   Firmware firmware_;
   UsbHost usb_host_;
   Uart uart_;
-  I2cEeprom eeprom1_;
+  I2cEeprom eeprom0_;
   std::unique_ptr<UI> ui_;
   std::mutex mutex_;
   std::condition_variable sim_run_var_;

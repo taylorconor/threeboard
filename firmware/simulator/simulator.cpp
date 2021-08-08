@@ -15,14 +15,14 @@ bool IsEnabled(uint8_t reg, uint8_t pin) { return reg & (1 << pin); }
 
 }  // namespace
 
-Simulator::Simulator(Flags *flags, Simavr *simavr)
+Simulator::Simulator(Flags *flags, Simavr *simavr, StateStorage *state_storage)
     : flags_(flags),
       simavr_(simavr),
       is_running_(false),
       firmware_(simavr_),
       usb_host_(simavr_, this),
       uart_(simavr_, this),
-      eeprom1_(simavr_, 0) {
+      eeprom0_(simavr_, state_storage, I2cEeprom::Instance::EEPROM_0) {
   char log_file[L_tmpnam];
   if (std::tmpnam(log_file)) {
     log_file_path_ = std::string(log_file);

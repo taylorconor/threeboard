@@ -10,6 +10,7 @@ cc_library(
         "//simulator:simulator_delegate",
         "//simulator/simavr",
         "//simulator/util:logging",
+        "//simulator/util:state_storage",
     ],
 )
 

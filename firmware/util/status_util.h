@@ -2,6 +2,19 @@
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "util/status_common.h"
+
+#define DIE_IF_ERROR(...) VA_SELECT(DIE_IF_ERROR, __VA_ARGS__)
+
+#define DIE_IF_ERROR_1(expr) DIE_IF_ERROR_2(expr, "Unrecoverable error")
+#define DIE_IF_ERROR_2(expr, prefix)                       \
+  do {                                                     \
+    const absl::Status _status = (expr);                   \
+    if (!_status.ok()) {                                   \
+      std::cout << prefix << ": " << _status << std::endl; \
+      exit(1);                                             \
+    }                                                      \
+  } while (0)
 
 #define RETURN_IF_ERROR(expr)                                                \
   do {                                                                       \

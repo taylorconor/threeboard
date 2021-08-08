@@ -14,4 +14,5 @@ avr_library(
 avr_library(
     name = "util",
     hdrs = ["util.h"],
+    deps = ["//util:status_common"],
 )

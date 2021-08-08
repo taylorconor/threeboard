@@ -1,5 +1,6 @@
 #include "simavr_impl.h"
 
+#include <array>
 #include <iostream>
 
 #include "absl/strings/str_replace.h"
@@ -28,27 +29,39 @@ void CallbackTrampoline(avr_irq_t *irq, uint32_t value, void *param) {
   (*callback)(value);
 }
 
-/*static const char *_ee_irq_names[2] = {
-    [TWI_IRQ_INPUT] = "8>eeprom.out",
-    [TWI_IRQ_OUTPUT] = "32<eeprom.in",
-};*/
 static const char *_ee_irq_names[] = {"twi.miso", "twi.mosi"};
+
 }  // namespace
 
 // static.
-std::unique_ptr<Simavr> SimavrImpl::Create(elf_firmware_t *firmware) {
-  auto avr_ptr = ParseElfFile(firmware);
+std::unique_ptr<Simavr> SimavrImpl::Create(
+    elf_firmware_t *firmware, std::array<uint8_t, 1024> *internal_eeprom_data) {
+  auto avr_ptr = ParseElfFile(firmware, internal_eeprom_data);
   auto *raw_ptr = new SimavrImpl(std::move(avr_ptr), firmware);
   return std::unique_ptr<SimavrImpl>(raw_ptr);
 }
 
 // static.
-std::unique_ptr<avr_t> SimavrImpl::ParseElfFile(elf_firmware_t *firmware) {
+std::unique_ptr<avr_t> SimavrImpl::ParseElfFile(
+    elf_firmware_t *firmware, std::array<uint8_t, 1024> *internal_eeprom_data) {
   if (elf_read_firmware(kFirmwareFile.c_str(), firmware)) {
     std::cout << "Failed to read ELF firmware '" << kFirmwareFile << "'"
               << std::endl;
     exit(1);
   }
+
+  // Forcibly set the initial value of the internal EEPROM by setting the
+  // .eeprom section in the ELF file.
+  if (firmware->eeprom == nullptr && firmware->eesize == 0) {
+    firmware->eeprom = internal_eeprom_data->data();
+    firmware->eesize = 1024;
+  } else {
+    std::cout << "Invalid ELF firmware: the threeboard simulator requires that "
+                 "the .eeprom section is not set"
+              << std::endl;
+    exit(1);
+  }
+
   std::cout << "Loaded firmware '" << kFirmwareFile << "'" << std::endl;
 
   avr_t *avr = avr_make_mcu_by_name(firmware->mmcu);

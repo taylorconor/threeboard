@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include "simulator/simavr/simavr.h"
+#include "simulator/util/state_storage.h"
 
 namespace threeboard {
 namespace simulator {
@@ -14,7 +15,12 @@ using I2cMessageCallback = std::function<void(uint32_t)>;
 // MCU via i2c.
 class I2cEeprom {
  public:
-  I2cEeprom(Simavr *simavr, uint8_t address);
+  enum class Instance {
+    EEPROM_0 = 0,
+    EEPROM_1 = 3,
+  };
+
+  I2cEeprom(Simavr *simavr, StateStorage *state_storage, Instance instance);
 
  private:
   // Determine if the provided message is addressed to this EEPROM.

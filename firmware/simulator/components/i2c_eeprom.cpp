@@ -43,16 +43,19 @@ bool IsControlByte(const TwiMessage &message) {
 }
 }  // namespace
 
-I2cEeprom::I2cEeprom(Simavr *simavr, uint8_t address)
-    : simavr_(simavr), address_(address) {
-  // Write all 1's to the EEPROM, which is the default initial EEPROM
-  // configuration from the factory.
-  std::fill(buffer_.begin(), buffer_.end(), 0xFF);
-
+I2cEeprom::I2cEeprom(Simavr *simavr, StateStorage *state_storage,
+                     Instance instance)
+    : simavr_(simavr), address_((uint8_t)instance) {
   i2c_message_callback_ = std::make_unique<I2cMessageCallback>(
       std::bind(&I2cEeprom::HandleI2cMessage, this, _1));
   i2c_message_lifetime_ =
       simavr_->RegisterI2cMessageCallback(i2c_message_callback_.get());
+
+  if (instance == Instance::EEPROM_0) {
+    state_storage->ConfigureEeprom0(&buffer_);
+  } else if (instance == Instance::EEPROM_1) {
+    state_storage->ConfigureEeprom1(&buffer_);
+  }
 
   Reset();
 }

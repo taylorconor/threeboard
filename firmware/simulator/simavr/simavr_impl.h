@@ -6,6 +6,7 @@
 #include "simavr.h"
 #include "simavr/sim_elf.h"
 #include "simavr/sim_irq.h"
+
 extern "C" {
 struct avr_t;
 }
@@ -17,7 +18,9 @@ namespace simulator {
 // a dependency on the simavr library.
 class SimavrImpl : public Simavr {
  public:
-  static std::unique_ptr<Simavr> Create(elf_firmware_t *firmware);
+  static std::unique_ptr<Simavr> Create(
+      elf_firmware_t *firmware,
+      std::array<uint8_t, 1024> *internal_eeprom_data);
 
   ~SimavrImpl() override = default;
 
@@ -55,7 +58,9 @@ class SimavrImpl : public Simavr {
   uint32_t TwiIrqMsg(uint8_t msg, uint8_t addr, uint8_t data) const override;
 
  protected:
-  static std::unique_ptr<avr_t> ParseElfFile(elf_firmware_t *firmware);
+  static std::unique_ptr<avr_t> ParseElfFile(
+      elf_firmware_t *firmware,
+      std::array<uint8_t, 1024> *internal_eeprom_data);
 
   SimavrImpl(std::unique_ptr<avr_t> avr, elf_firmware_t *firmware);
 
