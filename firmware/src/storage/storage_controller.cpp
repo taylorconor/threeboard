@@ -8,6 +8,7 @@
 
 namespace threeboard {
 namespace storage {
+namespace {
 
 // Definitions of some constants used for indexing into the StorageController's
 // underlying EEPROM storage devices.
@@ -23,6 +24,21 @@ namespace storage {
 
 constexpr uint16_t kInternalEepromLayerGLengthStart = 0x100;
 constexpr uint16_t kInternalEepromLayerBLengthStart = 0x200;
+
+constexpr uint8_t kWordModCapitalise = (1 << 0);
+constexpr uint8_t kWordModUppercase = (1 << 1);
+
+bool ApplyWordModCode(uint8_t word_mod_code, uint8_t idx,
+                      uint8_t *usb_mod_code) {
+  *usb_mod_code = 0;
+  if (((word_mod_code & kWordModCapitalise) && idx == 0) ||
+      word_mod_code & kWordModUppercase) {
+    *usb_mod_code = (1 << 1);
+  }
+  return true;
+}
+
+}  // namespace
 
 StorageController::StorageController(native::Native *native,
                                      usb::UsbController *usb_controller)
@@ -98,7 +114,9 @@ bool StorageController::SendWordShortcut(uint8_t index, uint8_t word_mod_code) {
   for (int i = 0; i < length; ++i) {
     uint8_t character;
     RETURN_IF_ERROR(external_eeprom_0_->ReadByte((index * 16) + i, &character));
-    RETURN_IF_ERROR(usb_controller_->SendKeypress(character, 0));
+    uint8_t usb_mod_code;
+    RETURN_IF_ERROR(ApplyWordModCode(word_mod_code, i, &usb_mod_code));
+    RETURN_IF_ERROR(usb_controller_->SendKeypress(character, usb_mod_code));
   }
   return true;
 }
