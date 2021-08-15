@@ -28,7 +28,6 @@ bool I2cEeprom::ReadByte(const uint16_t &byte_offset, uint8_t *data) {
 
 bool I2cEeprom::WriteByte(const uint16_t &byte_offset, uint8_t data) {
   data = data - 1;
-  LOG("I2cEeprom::Write");
   RETURN_IF_ERROR(StartAndAddress(kWriteBit, byte_offset));
   RETURN_IF_ERROR(WriteByteAndAck(data));
   Stop();
@@ -39,9 +38,8 @@ bool I2cEeprom::Start(uint8_t operation) {
   // Send START and wait for it to complete.
   native_->SetTWCR((1 << native::TWINT) | (1 << native::TWSTA) |
                    (1 << native::TWEN));
-  while (!(native_->GetTWCR() & (1 << native::TWINT))) {
-    LOG("I2cEeprom::Start: looping TWINT");
-  }
+  while (!(native_->GetTWCR() & (1 << native::TWINT)))
+    ;
 
   // Verify that the start condition is acknowledged. For repeated start
   // (REP_START) the ack from the EEPROM is the same, but the AVR TWI module
@@ -56,8 +54,6 @@ bool I2cEeprom::Start(uint8_t operation) {
   // (determined by the EEPROM's wiring), and 1 bit read=1/write=0. This will
   // clear the previously set TWSTA, so we don't need to explicitly clear it
   // here.
-  LOG("I2cEeprom::Start: writing control byte for operation: %s",
-      operation == kReadBit ? "READ" : "WRITE");
   RETURN_IF_ERROR(WriteByteAndAck(CreateControlByte(device_, operation)));
   return true;
 }
@@ -115,9 +111,8 @@ bool I2cEeprom::WriteByteAndAck(uint8_t data) {
 void I2cEeprom::WriteByte(uint8_t data) {
   native_->SetTWDR(data);
   native_->SetTWCR((1 << native::TWINT) | (1 << native::TWEN));
-  while (!(native_->GetTWCR() & (1 << native::TWINT))) {
-    LOG("I2cEeprom::WriteByte: looping TWINT");
-  }
+  while (!(native_->GetTWCR() & (1 << native::TWINT)))
+    ;
 }
 
 uint8_t I2cEeprom::ReadByte(bool is_final_byte) {

@@ -79,9 +79,6 @@ void I2cEeprom::HandleI2cMessage(uint32_t value) {
     return;
   }
 
-  LOG("SIM::HandleI2cMessage: address=%d, type=%s, addr=%d, state=%d", address_,
-      GetMessageType(message).c_str(), message.addr, state_);
-
   if (message.msg & TWI_COND_STOP) {
     state_ = STOPPED;
     Reset();
@@ -121,16 +118,12 @@ void I2cEeprom::HandleI2cMessage(uint32_t value) {
     //    operation.
     // Address writing always happens before any write occurs.
     if (state_ == ADDRESSING_HIGH) {
-      LOG("SIM::HandleI2cMessage: Writing address high byte");
       operation_address_ |= (message.data << 8);
       state_ = ADDRESSING_LOW;
     } else if (state_ == ADDRESSING_LOW) {
-      LOG("SIM::HandleI2cMessage: Writing address low byte");
       operation_address_ |= message.data;
       state_ = STARTED;
     } else if (state_ == STARTED) {
-      LOG("SIM::HandleI2cMessage: Writing data %d to address %d", message.data,
-          operation_address_ + operation_address_counter_);
       buffer_[operation_address_ + operation_address_counter_] = message.data;
       operation_address_counter_++;
     }
