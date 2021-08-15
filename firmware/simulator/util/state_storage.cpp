@@ -19,7 +19,7 @@ struct JsonProperty {
 
 const std::vector<JsonProperty> json_properties = {
     {"character_shortcuts", 255, 1},
-    {"word_shortcuts", 255, 16},
+    {"word_shortcuts", 255, 15},
     {"blob_shortcuts", 240, 255}};
 
 // Ensure that the provided json (parsed from the state file) is valid, and if

@@ -68,7 +68,7 @@ bool StorageController::AppendToWordShortcut(uint8_t index, uint8_t character) {
   RETURN_IF_ERROR(GetWordShortcutLength(index, &length));
   // If this shortcut slot is already full (16 characters) then we need to
   // propagate an error.
-  if (length == 16) {
+  if (length == 15) {
     return false;
   }
   RETURN_IF_ERROR(
