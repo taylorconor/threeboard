@@ -25,18 +25,17 @@ namespace {
 constexpr uint16_t kInternalEepromLayerGLengthStart = 0x100;
 constexpr uint16_t kInternalEepromLayerBLengthStart = 0x200;
 
-constexpr uint8_t kWordModCapitalise = (1 << 0);
-constexpr uint8_t kWordModUppercase = (1 << 1);
+constexpr uint8_t kWordModUppercase = 0;
+constexpr uint8_t kWordModCapitalise = 1;
 
-bool ApplyWordModCode(uint8_t word_mod_code, uint8_t idx,
-                      uint8_t *usb_mod_code) {
-  *usb_mod_code = 0;
-  if (((word_mod_code & kWordModCapitalise) && idx == 0) ||
-      word_mod_code & kWordModUppercase) {
-    *usb_mod_code = (1 << 1);
-  }
-  return true;
-}
+enum class WordModCode {
+  LOWERCASE = 0,
+  UPPERCASE = 1,
+  CAPITALISE = 2,
+  APPEND_PERIOD = 3,
+  APPEND_COMMA = 4,
+  APPEND_HYPHEN = 5,
+};
 
 }  // namespace
 
@@ -103,7 +102,8 @@ bool StorageController::GetWordShortcutLength(uint8_t index, uint8_t *output) {
                                     output);
 }
 
-bool StorageController::SendWordShortcut(uint8_t index, uint8_t word_mod_code) {
+bool StorageController::SendWordShortcut(uint8_t index, uint8_t raw_mod_code) {
+  WordModCode word_mod_code = (WordModCode)raw_mod_code;
   uint8_t length;
   RETURN_IF_ERROR(GetWordShortcutLength(index, &length));
   // If this shortcut slot is empty then we should propagate an error instead of
@@ -114,9 +114,26 @@ bool StorageController::SendWordShortcut(uint8_t index, uint8_t word_mod_code) {
   for (int i = 0; i < length; ++i) {
     uint8_t character;
     RETURN_IF_ERROR(external_eeprom_0_->ReadByte((index * 16) + i, &character));
-    uint8_t usb_mod_code;
-    RETURN_IF_ERROR(ApplyWordModCode(word_mod_code, i, &usb_mod_code));
-    RETURN_IF_ERROR(usb_controller_->SendKeypress(character, usb_mod_code));
+    if (word_mod_code == WordModCode::UPPERCASE ||
+        (word_mod_code == WordModCode::CAPITALISE && i == 0)) {
+      RETURN_IF_ERROR(usb_controller_->SendKeypress(character, (1 << 1)));
+    } else {
+      if (i == length - 1) {
+        uint8_t append = 0;
+        if (word_mod_code == WordModCode::APPEND_PERIOD) {
+          append = 0x37;
+        } else if (word_mod_code == WordModCode::APPEND_COMMA) {
+          append = 0x36;
+        } else if (word_mod_code == WordModCode::APPEND_HYPHEN) {
+          append = 0x2d;
+        }
+        if (append > 0) {
+          RETURN_IF_ERROR(usb_controller_->SendKeypress(character, 0));
+          character = append;
+        }
+      }
+      RETURN_IF_ERROR(usb_controller_->SendKeypress(character, 0));
+    }
   }
   return true;
 }

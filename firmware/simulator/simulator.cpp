@@ -157,6 +157,12 @@ void Simulator::HandleVirtualKeypress(uint8_t mod_code, uint8_t key_code) {
     }
   } else if (key_code == 0x2a) {
     c = ' ';
+  } else if (key_code == 0x2d) {
+    c = '-';
+  } else if (key_code == 0x36) {
+    c = ',';
+  } else if (key_code == 0x37) {
+    c = '.';
   } else {
     // Ignore unsupported characters.
     // TODO: support special characters!
