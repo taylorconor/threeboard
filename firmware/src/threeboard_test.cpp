@@ -33,6 +33,12 @@ class ThreeboardTest : public ::testing::Test {
   void WaitForUsbSetup() { threeboard_->WaitForUsbSetup(); }
   void WaitForUsbConfiguration() { threeboard_->WaitForUsbConfiguration(); }
   void RunEventLoopIteration() { threeboard_->RunEventLoopIteration(); }
+  void RunTimer3Invocation() {
+    EXPECT_CALL(led_controller_mock_, UpdateBlinkStatus()).Times(1);
+    EXPECT_CALL(key_controller_mock_, PollKeyState()).Times(1);
+    threeboard_->HandleTimer3Interrupt();
+  }
+  void EnableBootIndicator() { threeboard_->DisplayBootIndicator(); }
 
   native::NativeMock native_mock_;
   usb::UsbControllerMock usb_controller_mock_;
@@ -74,15 +80,35 @@ TEST_F(ThreeboardTest, RetryOnUsbSetupFailure) {
 
 TEST_F(ThreeboardTest, RetryOnUsbConfigureFailure) {
   Sequence seq;
-  EXPECT_CALL(native_mock_, DelayMs(1)).WillRepeatedly(Return());
+  EXPECT_CALL(native_mock_, DelayMs(10)).Times(10).WillRepeatedly(Return());
   EXPECT_CALL(usb_controller_mock_, HasConfigured())
+      .Times(10)
+      .InSequence(seq)
       .WillRepeatedly(Return(false));
   EXPECT_CALL(usb_controller_mock_, HasConfigured())
       .InSequence(seq)
       .WillOnce(Return(true));
 
   EXPECT_CALL(led_controller_mock_, GetLedState())
-      .Times(1)
+      .WillOnce(Return(&led_state_));
+
+  WaitForUsbConfiguration();
+}
+
+TEST_F(ThreeboardTest, BlinkErrorOnRepeatedUsbConfigureFailure) {
+  Sequence seq;
+  EXPECT_CALL(native_mock_, DelayMs(10)).Times(251).WillRepeatedly(Return());
+  EXPECT_CALL(usb_controller_mock_, HasConfigured())
+      .Times(251)
+      .InSequence(seq)
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(usb_controller_mock_, HasConfigured())
+      .InSequence(seq)
+      .WillOnce(DoAll(
+          [&]() { EXPECT_EQ(led_state_.GetErr()->state, LedState::BLINK); },
+          Return(true)));
+
+  EXPECT_CALL(led_controller_mock_, GetLedState())
       .WillRepeatedly(Return(&led_state_));
 
   WaitForUsbConfiguration();
@@ -106,4 +132,57 @@ TEST_F(ThreeboardTest, EventLoopIterationWithNoEvent) {
 
   RunEventLoopIteration();
 }
+
+TEST_F(ThreeboardTest, DisplayBootIndicator) {
+  {
+    EXPECT_CALL(native_mock_, DelayMs(255)).Times(1);
+    EnableBootIndicator();
+  }
+  for (int i = 0; i < 16; ++i) {
+    RunTimer3Invocation();
+  }
+  {
+    EXPECT_CALL(led_controller_mock_, GetLedState())
+        .WillOnce(Return(&led_state_));
+    RunTimer3Invocation();
+    EXPECT_EQ(led_state_.GetR()->state, LedState::ON);
+  }
+  for (int i = 0; i < 16; ++i) {
+    RunTimer3Invocation();
+  }
+  {
+    EXPECT_CALL(led_controller_mock_, GetLedState())
+        .Times(2)
+        .WillRepeatedly(Return(&led_state_));
+    RunTimer3Invocation();
+    EXPECT_EQ(led_state_.GetR()->state, LedState::OFF);
+    EXPECT_EQ(led_state_.GetG()->state, LedState::ON);
+  }
+  for (int i = 0; i < 16; ++i) {
+    RunTimer3Invocation();
+  }
+  {
+    EXPECT_CALL(led_controller_mock_, GetLedState())
+        .Times(2)
+        .WillRepeatedly(Return(&led_state_));
+    RunTimer3Invocation();
+    EXPECT_EQ(led_state_.GetG()->state, LedState::OFF);
+    EXPECT_EQ(led_state_.GetB()->state, LedState::ON);
+  }
+  for (int i = 0; i < 16; ++i) {
+    RunTimer3Invocation();
+  }
+  {
+    EXPECT_CALL(led_controller_mock_, GetLedState())
+        .WillOnce(Return(&led_state_));
+    RunTimer3Invocation();
+    EXPECT_EQ(led_state_.GetB()->state, LedState::OFF);
+  }
+  // There should be no more LedState invocations once the boot indicator
+  // sequence has finished.
+  for (int i = 0; i < 32; ++i) {
+    RunTimer3Invocation();
+  }
+}
+
 }  // namespace threeboard

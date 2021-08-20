@@ -91,6 +91,7 @@ void Threeboard::WaitForUsbConfiguration() {
 
 void Threeboard::DisplayBootIndicator() {
   boot_indicator_state_.status = 1;
+  boot_indicator_state_.counter = 0;
   native_->DelayMs(255);
 }
 

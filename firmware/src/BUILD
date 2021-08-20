@@ -21,6 +21,7 @@ avr_library(
 
 cc_library(
     name = "led_controller_mock",
+    testonly = 1,
     hdrs = ["led_controller_mock.h"],
     deps = [
         ":led_controller",
@@ -53,6 +54,7 @@ avr_library(
 
 cc_library(
     name = "key_controller_mock",
+    testonly = 1,
     hdrs = ["key_controller_mock.h"],
     deps = [
         ":key_controller",
