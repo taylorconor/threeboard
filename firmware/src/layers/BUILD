@@ -22,6 +22,16 @@ avr_library(
     ],
 )
 
+cc_library(
+    name = "layer_controller_mock",
+    testonly = 1,
+    hdrs = ["layer_controller_mock.h"],
+    deps = [
+        ":layer_controller",
+        "@gtest",
+    ],
+)
+
 avr_library(
     name = "layer",
     srcs = ["layer.cpp"],

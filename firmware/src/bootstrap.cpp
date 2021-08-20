@@ -33,11 +33,14 @@ void RunThreeboardEventLoop() {
   EventBuffer event_buffer;
   LedController led_controller(&native_impl);
   KeyController key_controller(&native_impl, &event_buffer);
+  LayerController layer_controller(led_controller.GetLedState(),
+                                   &usb_controller_impl, &storage_controller);
 
   // The `threeboard` object is a high-level class responsible for coordinating
   // all threeboard components composed into it.
   Threeboard threeboard(&native_impl, &event_buffer, &usb_controller_impl,
-                        &storage_controller, &led_controller, &key_controller);
+                        &storage_controller, &led_controller, &key_controller,
+                        &layer_controller);
 
   error_handler_proxy.SetImpl(&threeboard);
 

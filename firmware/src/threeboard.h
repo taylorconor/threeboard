@@ -19,7 +19,8 @@ class Threeboard final : public TimerInterruptHandlerDelegate,
   Threeboard(native::Native *native, EventBuffer *event_buffer,
              usb::UsbController *usb_controller,
              storage::StorageController *storage_controller,
-             LedController *led_controller, KeyController *key_controller);
+             LedController *led_controller, KeyController *key_controller,
+             LayerController *layer_controller);
   ~Threeboard() override = default;
 
   // Main application event loop.
@@ -39,8 +40,7 @@ class Threeboard final : public TimerInterruptHandlerDelegate,
   storage::StorageController *storage_controller_;
   LedController *led_controller_;
   KeyController *key_controller_;
-
-  LayerController layer_controller_;
+  LayerController *layer_controller_;
 
   // A small bit-packed struct to store the state of the LED boot indicator
   // sequence in a single byte.

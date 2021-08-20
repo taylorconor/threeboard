@@ -12,15 +12,15 @@ Threeboard::Threeboard(native::Native *native, EventBuffer *event_buffer,
                        usb::UsbController *usb_controller,
                        storage::StorageController *storage_controller,
                        LedController *led_controller,
-                       KeyController *key_controller)
+                       KeyController *key_controller,
+                       LayerController *layer_controller)
     : native_(native),
       event_buffer_(event_buffer),
       usb_controller_(usb_controller),
       storage_controller_(storage_controller),
       led_controller_(led_controller),
       key_controller_(key_controller),
-      layer_controller_(led_controller_->GetLedState(), usb_controller_,
-                        storage_controller_) {
+      layer_controller_(layer_controller) {
   native_->SetTimerInterruptHandlerDelegate(this);
   native_->EnableTimer1();
   native_->EnableTimer3();
@@ -135,7 +135,7 @@ void Threeboard::RunEventLoopIteration() {
       // here. A false return from HandleEvent indicates that an unrecoverable
       // error occurred during handling of this event.
       bool status =
-          layer_controller_.HandleEvent(event_buffer_->GetKeypressEvent());
+          layer_controller_->HandleEvent(event_buffer_->GetKeypressEvent());
       if (!status) {
         led_controller_->GetLedState()->SetErr(LedState::PULSE);
       }

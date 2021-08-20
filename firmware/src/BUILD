@@ -139,6 +139,7 @@ cc_test(
         ":logging_fake",
         ":threeboard",
         "//src:event_buffer",
+        "//src/layers:layer_controller_mock",
         "//src/native:native_mock",
         "//src/usb:usb_controller_mock",
         "@gtest",

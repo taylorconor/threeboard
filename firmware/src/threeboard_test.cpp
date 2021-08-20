@@ -4,6 +4,7 @@
 
 #include "src/event_buffer.h"
 #include "src/key_controller_mock.h"
+#include "src/layers/layer_controller_mock.h"
 #include "src/led_controller_mock.h"
 #include "src/logging_fake.h"
 #include "src/native/native_mock.h"
@@ -23,11 +24,9 @@ class ThreeboardTest : public ::testing::Test {
     EXPECT_CALL(native_mock_, SetTimerInterruptHandlerDelegate(_)).Times(1);
     EXPECT_CALL(native_mock_, EnableTimer1()).Times(1);
     EXPECT_CALL(native_mock_, EnableTimer3()).Times(1);
-    EXPECT_CALL(led_controller_mock_, GetLedState())
-        .WillOnce(Return(&led_state_));
     threeboard_ = std::make_unique<Threeboard>(
         &native_mock_, &event_buffer_, &usb_controller_mock_, nullptr,
-        &led_controller_mock_, &key_controller_mock_);
+        &led_controller_mock_, &key_controller_mock_, &layer_controller_mock_);
   }
 
   void WaitForUsbSetup() { threeboard_->WaitForUsbSetup(); }
@@ -45,6 +44,7 @@ class ThreeboardTest : public ::testing::Test {
   EventBuffer event_buffer_;
   LedControllerMock led_controller_mock_;
   KeyControllerMock key_controller_mock_;
+  LayerControllerMock layer_controller_mock_;
   LedState led_state_;
   LoggingFake logging_fake_;
   std::unique_ptr<Threeboard> threeboard_;
@@ -118,9 +118,26 @@ TEST_F(ThreeboardTest, EventLoopIterationWithEvent) {
   // Add an event to the event buffer.
   event_buffer_.HandleKeypress(Keypress::X);
   EXPECT_CALL(native_mock_, DisableInterrupts()).Times(1);
+  EXPECT_CALL(layer_controller_mock_, HandleEvent(Keypress::X))
+      .WillOnce(Return(true));
   EXPECT_CALL(native_mock_, EnableInterrupts()).Times(1);
 
   RunEventLoopIteration();
+}
+
+TEST_F(ThreeboardTest, EventLoopIterationWithFailedEvent) {
+  event_buffer_.HandleKeypress(Keypress::X);
+  EXPECT_CALL(native_mock_, DisableInterrupts()).Times(1);
+  // Simulate an error during handling of the event.
+  EXPECT_CALL(layer_controller_mock_, HandleEvent(Keypress::X))
+      .WillOnce(Return(false));
+  EXPECT_CALL(led_controller_mock_, GetLedState())
+      .WillOnce(Return(&led_state_));
+  EXPECT_CALL(native_mock_, EnableInterrupts()).Times(1);
+
+  RunEventLoopIteration();
+
+  EXPECT_EQ(led_state_.GetErr()->state, LedState::PULSE);
 }
 
 TEST_F(ThreeboardTest, EventLoopIterationWithNoEvent) {

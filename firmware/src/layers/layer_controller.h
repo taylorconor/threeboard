@@ -11,12 +11,12 @@
 
 namespace threeboard {
 
-class LayerController final : public LayerControllerDelegate {
+class LayerController : public LayerControllerDelegate {
  public:
   LayerController(LedState *led_state, usb::UsbController *usb_controller,
                   storage::StorageController *storage_controller);
 
-  bool HandleEvent(const Keypress &);
+  virtual bool HandleEvent(const Keypress &);
 
  private:
   // Implement the LayerControllerDelegate overrides.
