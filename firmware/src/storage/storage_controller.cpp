@@ -138,5 +138,18 @@ bool StorageController::SendWordShortcut(uint8_t index, uint8_t raw_mod_code) {
   return true;
 }
 
+bool StorageController::AppendToBlobShortcut(uint8_t index, uint8_t character,
+                                             uint8_t modcode) {
+  return true;
+}
+
+bool StorageController::ClearBlobShortcut(uint8_t index) { return true; }
+
+bool StorageController::GetBlobShortcutLength(uint8_t index, uint8_t *output) {
+  return true;
+}
+
+bool StorageController::SendBlobShortcut(uint8_t index) { return true; }
+
 }  // namespace storage
 }  // namespace threeboard

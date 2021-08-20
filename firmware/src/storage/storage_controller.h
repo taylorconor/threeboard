@@ -19,6 +19,11 @@ class StorageController {
   bool GetWordShortcutLength(uint8_t index, uint8_t *output);
   bool SendWordShortcut(uint8_t index, uint8_t word_mod_code);
 
+  bool AppendToBlobShortcut(uint8_t index, uint8_t character, uint8_t modcode);
+  bool ClearBlobShortcut(uint8_t index);
+  bool GetBlobShortcutLength(uint8_t index, uint8_t *output);
+  bool SendBlobShortcut(uint8_t index);
+
  protected:
   // Test-only.
   StorageController(usb::UsbController *usb_controller, Eeprom *internal_eeprom,
