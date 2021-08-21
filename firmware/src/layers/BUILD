@@ -132,6 +132,20 @@ avr_library(
     ],
 )
 
+cc_test(
+    name = "layer_g_test",
+    srcs = ["layer_g_test.cpp"],
+    deps = [
+        ":layer_g",
+        "//src:logging_fake",
+        "//src/delegates:layer_controller_delegate_mock",
+        "//src/storage:storage_controller_mock",
+        "//src/usb:usb_controller_mock",
+        "@gtest",
+        "@gtest//:gtest_main",
+    ],
+)
+
 avr_library(
     name = "layer_b",
     srcs = ["layer_b.cpp"],
@@ -142,5 +156,19 @@ avr_library(
         "//src:logging",
         "//src/delegates:layer_controller_delegate",
         "//src/storage:storage_controller",
+    ],
+)
+
+cc_test(
+    name = "layer_b_test",
+    srcs = ["layer_b_test.cpp"],
+    deps = [
+        ":layer_b",
+        "//src:logging_fake",
+        "//src/delegates:layer_controller_delegate_mock",
+        "//src/storage:storage_controller_mock",
+        "//src/usb:usb_controller_mock",
+        "@gtest",
+        "@gtest//:gtest_main",
     ],
 )
