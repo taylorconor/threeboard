@@ -94,5 +94,10 @@ TEST_F(DefaultLayerTest, LayerSwitchFailure) {
       .WillOnce(Return(false));
   EXPECT_FALSE(default_layer_.HandleEvent(Keypress::XYZ));
 }
+
+TEST_F(DefaultLayerTest, TransitionToLayer) {
+  EXPECT_TRUE(default_layer_.TransitionedToLayer());
+  VerifyLayerLedExpectation();
+}
 }  // namespace
 }  // namespace threeboard

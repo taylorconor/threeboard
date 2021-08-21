@@ -199,5 +199,19 @@ TEST_F(LayerGTest, LayerSwitchFailure) {
   EXPECT_FALSE(layer_g_.HandleEvent(Keypress::XYZ));
 }
 
+TEST_F(LayerGTest, TransitionToLayer) {
+  EXPECT_CALL(storage_controller_mock_, GetWordShortcutLength(0, _))
+      .WillOnce(Return(true));
+  EXPECT_TRUE(layer_g_.TransitionedToLayer());
+  VerifyLayerLedExpectation();
+}
+
+TEST_F(LayerGTest, TransitionToFailure) {
+  EXPECT_CALL(storage_controller_mock_, GetWordShortcutLength(0, _))
+      .WillOnce(Return(false));
+  EXPECT_FALSE(layer_g_.TransitionedToLayer());
+  EXPECT_EQ(led_state_.GetG()->state, LedState::OFF);
+}
+
 }  // namespace
 }  // namespace threeboard

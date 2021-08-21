@@ -220,5 +220,10 @@ TEST_F(LayerRTest, LayerSwitchFailure) {
   EXPECT_FALSE(layer_r_.HandleEvent(Keypress::XYZ));
 }
 
+TEST_F(LayerRTest, TransitionToLayer) {
+  EXPECT_TRUE(layer_r_.TransitionedToLayer());
+  VerifyLayerLedExpectation();
+}
+
 }  // namespace
 }  // namespace threeboard
