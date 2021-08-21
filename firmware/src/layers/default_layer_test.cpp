@@ -16,7 +16,7 @@ class DefaultLayerTest : public ::testing::Test {
       : default_layer_(&led_state_, &usb_controller_mock_,
                        &layer_controller_delegate_mock_) {}
 
-  void SetLayerLedExpectation() {
+  void VerifyLayerLedExpectation() {
     EXPECT_EQ(led_state_.GetR()->state, LedState::OFF);
     EXPECT_EQ(led_state_.GetG()->state, LedState::OFF);
     EXPECT_EQ(led_state_.GetB()->state, LedState::OFF);
@@ -31,7 +31,7 @@ class DefaultLayerTest : public ::testing::Test {
 
 TEST_F(DefaultLayerTest, Bank0Increment) {
   EXPECT_TRUE(default_layer_.HandleEvent(Keypress::X));
-  SetLayerLedExpectation();
+  VerifyLayerLedExpectation();
   EXPECT_EQ(led_state_.GetBank0(), 1);
   EXPECT_EQ(led_state_.GetBank1(), 0);
 }
@@ -39,19 +39,19 @@ TEST_F(DefaultLayerTest, Bank0Increment) {
 TEST_F(DefaultLayerTest, Bank0Clear) {
   {
     EXPECT_TRUE(default_layer_.HandleEvent(Keypress::X));
-    SetLayerLedExpectation();
+    VerifyLayerLedExpectation();
     EXPECT_EQ(led_state_.GetBank0(), 1);
   }
   {
     EXPECT_TRUE(default_layer_.HandleEvent(Keypress::XZ));
-    SetLayerLedExpectation();
+    VerifyLayerLedExpectation();
     EXPECT_EQ(led_state_.GetBank0(), 0);
   }
 }
 
 TEST_F(DefaultLayerTest, Bank1Increment) {
   EXPECT_TRUE(default_layer_.HandleEvent(Keypress::Y));
-  SetLayerLedExpectation();
+  VerifyLayerLedExpectation();
   EXPECT_EQ(led_state_.GetBank0(), 0);
   EXPECT_EQ(led_state_.GetBank1(), 1);
 }
@@ -59,12 +59,12 @@ TEST_F(DefaultLayerTest, Bank1Increment) {
 TEST_F(DefaultLayerTest, Bank1Clear) {
   {
     EXPECT_TRUE(default_layer_.HandleEvent(Keypress::Y));
-    SetLayerLedExpectation();
+    VerifyLayerLedExpectation();
     EXPECT_EQ(led_state_.GetBank1(), 1);
   }
   {
     EXPECT_TRUE(default_layer_.HandleEvent(Keypress::YZ));
-    SetLayerLedExpectation();
+    VerifyLayerLedExpectation();
     EXPECT_EQ(led_state_.GetBank1(), 0);
   }
 }
@@ -72,14 +72,14 @@ TEST_F(DefaultLayerTest, Bank1Clear) {
 TEST_F(DefaultLayerTest, UsbFlush) {
   EXPECT_CALL(usb_controller_mock_, SendKeypress(0, 0)).WillOnce(Return(true));
   EXPECT_TRUE(default_layer_.HandleEvent(Keypress::Z));
-  SetLayerLedExpectation();
+  VerifyLayerLedExpectation();
   EXPECT_EQ(led_state_.GetErr()->state, LedState::OFF);
 }
 
 TEST_F(DefaultLayerTest, UsbFlushFailure) {
   EXPECT_CALL(usb_controller_mock_, SendKeypress(0, 0)).WillOnce(Return(false));
   EXPECT_TRUE(default_layer_.HandleEvent(Keypress::Z));
-  SetLayerLedExpectation();
+  VerifyLayerLedExpectation();
   EXPECT_EQ(led_state_.GetErr()->state, LedState::ON);
 }
 

@@ -10,24 +10,27 @@ namespace storage {
 class StorageController {
  public:
   StorageController(native::Native *native, usb::UsbController *usb_controller);
+  virtual ~StorageController() {}
 
-  bool SetCharacterShortcut(uint8_t index, uint8_t character);
-  bool GetCharacterShortcut(uint8_t index, uint8_t *output);
+  virtual bool SetCharacterShortcut(uint8_t index, uint8_t character);
+  virtual bool GetCharacterShortcut(uint8_t index, uint8_t *output);
 
-  bool AppendToWordShortcut(uint8_t index, uint8_t character);
-  bool ClearWordShortcut(uint8_t index);
-  bool GetWordShortcutLength(uint8_t index, uint8_t *output);
-  bool SendWordShortcut(uint8_t index, uint8_t word_mod_code);
+  virtual bool AppendToWordShortcut(uint8_t index, uint8_t character);
+  virtual bool ClearWordShortcut(uint8_t index);
+  virtual bool GetWordShortcutLength(uint8_t index, uint8_t *output);
+  virtual bool SendWordShortcut(uint8_t index, uint8_t word_mod_code);
 
-  bool AppendToBlobShortcut(uint8_t index, uint8_t character, uint8_t modcode);
-  bool ClearBlobShortcut(uint8_t index);
-  bool GetBlobShortcutLength(uint8_t index, uint8_t *output);
-  bool SendBlobShortcut(uint8_t index);
+  virtual bool AppendToBlobShortcut(uint8_t index, uint8_t character,
+                                    uint8_t modcode);
+  virtual bool ClearBlobShortcut(uint8_t index);
+  virtual bool GetBlobShortcutLength(uint8_t index, uint8_t *output);
+  virtual bool SendBlobShortcut(uint8_t index);
 
  protected:
-  // Test-only.
+  // Test-only constructors.
   StorageController(usb::UsbController *usb_controller, Eeprom *internal_eeprom,
                     Eeprom *external_eeprom_0, Eeprom *external_eeprom_1);
+  StorageController() {}
 
  private:
   usb::UsbController *usb_controller_;

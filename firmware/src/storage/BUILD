@@ -15,3 +15,12 @@ avr_library(
         "//src/usb:usb_controller",
     ],
 )
+
+cc_library(
+    name = "storage_controller_mock",
+    hdrs = ["storage_controller_mock.h"],
+    deps = [
+        ":storage_controller",
+        "@gtest",
+    ],
+)
