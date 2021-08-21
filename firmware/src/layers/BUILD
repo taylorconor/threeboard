@@ -79,6 +79,19 @@ avr_library(
     ],
 )
 
+cc_test(
+    name = "default_layer_test",
+    srcs = ["default_layer_test.cpp"],
+    deps = [
+        ":default_layer",
+        "//src:logging_fake",
+        "//src/delegates:layer_controller_delegate_mock",
+        "//src/usb:usb_controller_mock",
+        "@gtest",
+        "@gtest//:gtest_main",
+    ],
+)
+
 avr_library(
     name = "layer_r",
     srcs = ["layer_r.cpp"],

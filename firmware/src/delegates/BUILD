@@ -10,6 +10,7 @@ avr_library(
 
 cc_library(
     name = "error_handler_delegate_mock",
+    testonly = 1,
     hdrs = ["error_handler_delegate_mock.h"],
     deps = [
         "@gtest",
@@ -23,6 +24,7 @@ avr_library(
 
 cc_library(
     name = "event_handler_delegate_mock",
+    testonly = 1,
     hdrs = ["event_handler_delegate_mock.h"],
     deps = [
         "@gtest",
@@ -34,6 +36,15 @@ avr_library(
     hdrs = ["layer_controller_delegate.h"],
     deps = [
         "//src/layers:layer_id",
+    ],
+)
+
+cc_library(
+    name = "layer_controller_delegate_mock",
+    testonly = 1,
+    hdrs = ["layer_controller_delegate_mock.h"],
+    deps = [
+        "@gtest",
     ],
 )
 

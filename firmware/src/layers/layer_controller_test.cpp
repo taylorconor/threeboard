@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "gmock/gmock.h"
 #include "src/layers/layer_mock.h"
 
 namespace threeboard {
