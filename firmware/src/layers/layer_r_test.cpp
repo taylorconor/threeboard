@@ -66,6 +66,24 @@ TEST_F(LayerRTest, ProgShortcutIdIncrement) {
   EXPECT_EQ(led_state_.GetBank1(), 1);
 }
 
+TEST_F(LayerRTest, ProgShortcutIdClear) {
+  EnterProgMode();
+  {
+    EXPECT_CALL(storage_controller_mock_, GetCharacterShortcut(1, _))
+        .WillOnce(Return(true));
+    EXPECT_TRUE(layer_r_.HandleEvent(Keypress::Y));
+    VerifyLayerLedExpectation(true);
+    EXPECT_EQ(led_state_.GetBank1(), 1);
+  }
+  {
+    EXPECT_CALL(storage_controller_mock_, GetCharacterShortcut(0, _))
+        .WillOnce(Return(true));
+    EXPECT_TRUE(layer_r_.HandleEvent(Keypress::YZ));
+    VerifyLayerLedExpectation(true);
+    EXPECT_EQ(led_state_.GetBank1(), 0);
+  }
+}
+
 TEST_F(LayerRTest, ShortcutIdPersistsAcrossModeChanges) {
   {
     EXPECT_TRUE(layer_r_.HandleEvent(Keypress::X));
