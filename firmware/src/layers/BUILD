@@ -22,6 +22,17 @@ avr_library(
     ],
 )
 
+cc_test(
+    name = "layer_controller_test",
+    srcs = ["layer_controller_test.cpp"],
+    deps = [
+        ":layer_controller",
+        ":layer_mock",
+        "@gtest",
+        "@gtest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "layer_controller_mock",
     testonly = 1,
@@ -43,6 +54,16 @@ avr_library(
         "//src/layers:layer_id",
         "//src/storage:storage_controller",
         "//src/usb:usb_controller",
+    ],
+)
+
+cc_library(
+    name = "layer_mock",
+    testonly = 1,
+    hdrs = ["layer_mock.h"],
+    deps = [
+        ":layer",
+        "@gtest",
     ],
 )
 

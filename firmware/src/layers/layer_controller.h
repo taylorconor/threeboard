@@ -17,11 +17,14 @@ class LayerController : public LayerControllerDelegate {
                   storage::StorageController *storage_controller);
 
   virtual bool HandleEvent(const Keypress &);
-
- private:
-  // Implement the LayerControllerDelegate overrides.
   bool SwitchToLayer(const LayerId &) override;
 
+ protected:
+  // Test-only
+  LayerController(Layer *layer_dflt, Layer *layer_r, Layer *layer_g,
+                  Layer *layer_b);
+
+ private:
   // Define all of the concrete layers of the threeboard. They need to be held
   // in memory here but are only accessed via the layer array.
   DefaultLayer layer_default_;
@@ -30,7 +33,7 @@ class LayerController : public LayerControllerDelegate {
   LayerB layer_b_;
 
   // Current layer of the keyboard.
-  LayerId current_layer_;
+  LayerId current_layer_ = LayerId::DFLT;
   Layer *layer_[4]{};
 };
 }  // namespace threeboard
