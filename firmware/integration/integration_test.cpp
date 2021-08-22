@@ -21,8 +21,8 @@ namespace {
 class IntegrationTest : public testing::Test {
  public:
   IntegrationTest()
-      : simavr_(simulator::InstrumentingSimavr::Create(&firmware_,
-                                                       &symbol_table_)) {
+      : simavr_(simulator::InstrumentingSimavr::Create(
+            &firmware_, &internal_eeprom_data_, &symbol_table_)) {
     usb_host_ = std::make_unique<simulator::UsbHost>(simavr_.get(),
                                                      &simulator_delegate_mock_);
   }
@@ -39,6 +39,7 @@ class IntegrationTest : public testing::Test {
   }
 
  protected:
+  std::array<uint8_t, 1024> internal_eeprom_data_{};
   std::unique_ptr<simulator::InstrumentingSimavr> simavr_;
   std::unique_ptr<simulator::UsbHost> usb_host_;
   simulator::SimulatorDelegateMock simulator_delegate_mock_;

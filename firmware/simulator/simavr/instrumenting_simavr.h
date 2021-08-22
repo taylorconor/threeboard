@@ -19,7 +19,7 @@ class InstrumentingSimavr final : public SimavrImpl {
   ~InstrumentingSimavr() override = default;
 
   static std::unique_ptr<InstrumentingSimavr> Create(
-      elf_firmware_t* elf_firmware,
+      elf_firmware_t* firmware, std::array<uint8_t, 1024>* internal_eeprom_data,
       absl::flat_hash_map<std::string, avr_symbol_t*>* symbol_table);
 
   absl::Status RunWithTimeout(const std::chrono::milliseconds& timeout);

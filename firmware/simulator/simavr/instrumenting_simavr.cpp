@@ -15,11 +15,11 @@ constexpr int kRunsBetweenTimeoutCheck = 10000;
 
 // static.
 std::unique_ptr<InstrumentingSimavr> InstrumentingSimavr::Create(
-    elf_firmware_t* elf_firmware,
+    elf_firmware_t* firmware, std::array<uint8_t, 1024>* internal_eeprom_data,
     absl::flat_hash_map<std::string, avr_symbol_t*>* symbol_table) {
-  auto avr_ptr = ParseElfFile(elf_firmware);
+  auto avr_ptr = ParseElfFile(firmware, internal_eeprom_data);
   auto* raw_ptr =
-      new InstrumentingSimavr(elf_firmware, symbol_table, std::move(avr_ptr));
+      new InstrumentingSimavr(firmware, symbol_table, std::move(avr_ptr));
   return std::unique_ptr<InstrumentingSimavr>(raw_ptr);
 }
 
