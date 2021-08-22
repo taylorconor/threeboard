@@ -22,8 +22,12 @@ void Logging::Log(const UI::SimulatorSource& source, const char* fmt,
   char buffer[256];
   vsnprintf(buffer, sizeof(buffer), fmt, va);
   std::string str_buffer = std::string(buffer);
-  *log_stream_ << str_buffer << std::endl;
-  ui_->DisplaySimulatorLogLine(str_buffer, source);
+  if (log_stream_) {
+    *log_stream_ << str_buffer << std::endl;
+  }
+  if (ui_) {
+    ui_->DisplaySimulatorLogLine(str_buffer, source);
+  }
 }
 
 UI* Logging::ui_;

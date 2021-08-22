@@ -12,7 +12,6 @@
 #include "simulator/simavr/instrumenting_simavr.h"
 #include "simulator/simulator_delegate_mock.h"
 #include "util/gtest_util.h"
-#include "util/status_util.h"
 
 namespace threeboard {
 namespace integration {

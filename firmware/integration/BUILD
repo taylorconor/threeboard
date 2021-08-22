@@ -8,7 +8,6 @@ cc_test(
         "//simulator/components:usb_host",
         "//simulator/simavr:instrumenting_simavr",
         "//util:gtest_util",
-        "//util:status_util",
         "@abseil//absl/container:flat_hash_map",
         "@abseil//absl/status",
         "@abseil//absl/strings",
