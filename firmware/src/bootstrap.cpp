@@ -12,7 +12,7 @@ void RunThreeboardEventLoop() {
   // The native interface is used to abstract away all "native" code (e.g.
   // interrupt setup code, setting various pin port values). This is the only
   // place that NativeImpl is injected. To keep all other components testable,
-  // they all use the Native interface.
+  // they all use the abstract Native interface.
   native::NativeImpl native_impl;
   Logging::Init(&native_impl);
   LOG("Native layer initialised");
@@ -36,8 +36,8 @@ void RunThreeboardEventLoop() {
   LayerController layer_controller(led_controller.GetLedState(),
                                    &usb_controller_impl, &storage_controller);
 
-  // The `threeboard` object is a high-level class responsible for coordinating
-  // all threeboard components composed into it.
+  // The `threeboard` object is an instance of the high-level Threeboard class,
+  // responsible for coordinating all threeboard components composed into it.
   Threeboard threeboard(&native_impl, &event_buffer, &usb_controller_impl,
                         &storage_controller, &led_controller, &key_controller,
                         &layer_controller);
