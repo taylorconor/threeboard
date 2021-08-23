@@ -75,6 +75,11 @@ cc_test(
 )
 
 avr_library(
+    name = "keypress",
+    hdrs = ["keypress.h"],
+)
+
+avr_library(
     name = "event_buffer",
     srcs = ["event_buffer.cpp"],
     hdrs = ["event_buffer.h"],

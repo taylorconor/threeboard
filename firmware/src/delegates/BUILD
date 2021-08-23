@@ -20,6 +20,7 @@ cc_library(
 avr_library(
     name = "event_handler_delegate",
     hdrs = ["event_handler_delegate.h"],
+    deps = ["//src:keypress"],
 )
 
 cc_library(
