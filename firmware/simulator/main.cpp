@@ -8,7 +8,6 @@
 using namespace threeboard::simulator;
 
 absl::Status RunSimulator(int argc, char *argv[]) {
-  auto firmware = std::make_unique<elf_firmware_t>();
   auto flags = Flags::ParseFromArgs(argc, argv);
   auto state_storage =
       StateStorage::CreateFromFile(flags.GetShortcutFilename());
@@ -17,13 +16,15 @@ absl::Status RunSimulator(int argc, char *argv[]) {
   }
   std::array<uint8_t, 1024> internal_eeprom_data{};
   (*state_storage)->ConfigureInternalEeprom(&internal_eeprom_data);
+  auto simavr = SimavrImpl::Create(&internal_eeprom_data);
 
-  auto simavr = SimavrImpl::Create(firmware.get(), &internal_eeprom_data);
   Simulator simulator(simavr.get(), state_storage->get());
-  simulator.RunAsync();
   UI ui(&simulator, &flags);
   ui.Run();
   return absl::OkStatus();
 }
 
-int main(int argc, char *argv[]) { DIE_IF_ERROR(RunSimulator(argc, argv)); }
+int main(int argc, char *argv[]) {
+  DIE_IF_ERROR(RunSimulator(argc, argv));
+  std::cout << "Simulator shut down successfully." << std::endl;
+}

@@ -38,7 +38,6 @@ Simulator::Simulator(Simavr *simavr, StateStorage *state_storage)
       is_running_(false),
       should_reset_(false),
       usb_host_(simavr_, this),
-      uart_(simavr_, nullptr),
       eeprom0_(simavr_, state_storage, I2cEeprom::Instance::EEPROM_0) {}
 
 Simulator::~Simulator() {
@@ -47,9 +46,7 @@ Simulator::~Simulator() {
     if (sim_thread_.joinable()) {
       sim_thread_.join();
     }
-    std::cout << "Simulator shut down successfully." << std::endl;
   }
-  simavr_->Terminate();
 }
 
 void Simulator::RunAsync() {
@@ -68,13 +65,14 @@ SimulatorState Simulator::GetStateAndFlush() {
   device_state_ = DeviceState();
   state.cpu_state = simavr_->GetState();
   state.gdb_enabled = (simavr_->GetGdbPort() > 0);
-  state.cpu_cycle_count = simavr_->GetCycle();
   state.sram_usage = GetSramUsage(simavr_);
   state.data_section_size = simavr_->GetDataSectionSize();
   state.bss_section_size = simavr_->GetBssSectionSize();
   state.stack_size = simavr_->GetRamSize() - simavr_->GetStackPointer();
   return state;
 }
+
+uint64_t Simulator::GetCurrentCpuCycle() { return simavr_->GetCycle(); }
 
 void Simulator::HandleKeypress(char key, bool state) {
   if (key == 'a') {
@@ -205,6 +203,12 @@ void Simulator::HandleUsbOutput(uint8_t mod_code, uint8_t key_code) {
     return;
   }
   device_state_.usb_buffer += c;
+}
+
+void Simulator::EnableLogging(UIDelegate *ui_delegate) {
+  // If the Uart class is initialized and in scope, it will handle logging
+  // output from the simulator.
+  uart_ = std::make_unique<Uart>(simavr_, ui_delegate);
 }
 
 }  // namespace simulator
