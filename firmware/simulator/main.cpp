@@ -1,5 +1,6 @@
 #include "simulator/simavr/simavr_impl.h"
 #include "simulator/simulator.h"
+#include "simulator/ui/ui.h"
 #include "simulator/util/flags.h"
 #include "simulator/util/state_storage.h"
 #include "util/status_util.h"
@@ -18,8 +19,10 @@ absl::Status RunSimulator(int argc, char *argv[]) {
   (*state_storage)->ConfigureInternalEeprom(&internal_eeprom_data);
 
   auto simavr = SimavrImpl::Create(firmware.get(), &internal_eeprom_data);
-  Simulator simulator(&flags, simavr.get(), state_storage->get());
-  simulator.Run();
+  Simulator simulator(simavr.get(), state_storage->get());
+  simulator.RunAsync();
+  UI ui(&simulator, &flags);
+  ui.Run();
   return absl::OkStatus();
 }
 

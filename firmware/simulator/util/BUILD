@@ -21,7 +21,7 @@ cc_library(
     name = "logging",
     srcs = ["logging.cpp"],
     hdrs = ["logging.h"],
-    deps = ["//simulator/ui"],
+    deps = ["//simulator/ui:ui_delegate"],
 )
 
 cc_library(

@@ -31,10 +31,10 @@ void Logging::Log(const char *fmt, ...) {
   vsnprintf(buffer, sizeof(buffer), fmt, va);
   va_end(va);
 
-  for (int i = 0; buffer[i] != 0; ++i) {
-    Transmit(native_, buffer[i]);
-  }
-  Transmit(native_, '\n');
+  // for (int i = 0; buffer[i] != 0; ++i) {
+  //    Transmit(native_, buffer[i]);
+  //  }
+  //  Transmit(native_, '\n');
 }
 
 }  // namespace threeboard
