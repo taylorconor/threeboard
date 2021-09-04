@@ -74,8 +74,7 @@ void UsbHost::DeviceControlLoop() {
         // matter when we register the keypress in the simulator so we do it on
         // key down.
         if (read_buffer[0] != 0 || read_buffer[2] != 0) {
-          simulator_delegate_->HandleVirtualKeypress(read_buffer[0],
-                                                     read_buffer[2]);
+          simulator_delegate_->HandleUsbOutput(read_buffer[0], read_buffer[2]);
         }
       }
     }

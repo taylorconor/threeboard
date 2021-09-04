@@ -19,7 +19,7 @@ cc_library(
     srcs = ["uart.cpp"],
     hdrs = ["uart.h"],
     deps = [
-        "//simulator:simulator_delegate",
+        "//simulator/ui:ui_delegate",
         "//simulator/simavr",
     ],
 )

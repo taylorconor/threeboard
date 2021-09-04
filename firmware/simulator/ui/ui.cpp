@@ -109,6 +109,8 @@ void DrawKey(int x_offset, bool pressed, char letter) {
 void SetLedState(uint8_t &led, bool enabled) {
   if (enabled) {
     led = kLedPermanence;
+  } else if (led > 0) {
+    led -= 1;
   }
 }
 
@@ -153,32 +155,14 @@ std::string GetCpuStateName(int state) {
 }
 }  // namespace
 
-UI::UI(SimulatorDelegate *sim_delegate,
-       FirmwareStateDelegate *firmware_state_delegate,
-       const std::string &log_file)
-    : simulator_delegate_(sim_delegate),
-      firmware_state_delegate_(firmware_state_delegate),
+UI::UI(Simulator *simulator, Flags *flags)
+    : simulator_(simulator),
+      flags_(flags),
       window_(nullptr),
       screen_output_mutex_(std::make_unique<std::recursive_mutex>()),
-      is_running_(false),
-      log_file_(log_file) {}
+      is_running_(false) {}
 
-UI::~UI() {
-  if (is_running_) {
-    is_running_ = false;
-    render_thread_->join();
-    endwin();
-  }
-}  // namespace simulator
-
-void UI::StartAsyncRenderLoop() {
-  if (render_thread_) {
-    std::cout
-        << "Attempted to start another simulator UI render thread without "
-           "stopping the previous one!"
-        << std::endl;
-    exit(0);
-  }
+void UI::Run() {
   setlocale(LC_ALL, "en_US.UTF-8");
 
   // Initialise the main curses window.
@@ -198,7 +182,7 @@ void UI::StartAsyncRenderLoop() {
                                    max_y - kLogBoxY - 1, max_x);
 
   is_running_ = true;
-  render_thread_ = std::make_unique<std::thread>(&UI::RenderLoop, this);
+  RenderLoop();
 }
 
 void UI::ClearLedState() {
@@ -216,15 +200,15 @@ void UI::ClearLedState() {
 
 void UI::DisplayKeyboardCharacter(char c) { output_pad_->Write(c); }
 
-void UI::DisplayFirmwareLogLine(uint64_t cycle, const std::string &log_line) {
-  std::string cycle_str = std::to_string(cycle);
+void UI::HandleLogLine(const std::string &log_line) {
+  std::string cycle_str = std::to_string(current_sim_state_.cpu_cycle_count);
   std::string log =
       cycle_str + S(16 - cycle_str.length(), ' ') + log_line + "\n";
   log_pad_->Write(log);
 }
 
-void UI::DisplaySimulatorLogLine(const std::string &log_line,
-                                 const SimulatorSource &source) {
+void UI::HandleLogLine(const std::string &log_line,
+                       const SimulatorSource &source) {
   std::string str_source = "[simulator]";
   if (source == SimulatorSource::SIMAVR) {
     str_source = "[simavr]   ";
@@ -270,29 +254,32 @@ void UI::UpdateKeyState() {
     keyup_d = true;
   }
 
-  // Register keypresses for keys in the current buffer, and trigger keydown
-  // callbacks.
+  // Handle currently pressed keys.
   char c;
   while ((c = getch()) > 0) {
-    if (c == 'a') {
+    if (c == 'q') {
+      is_running_ = false;
+    } else if (c == 'g') {
+      simulator_->ToggleGdb(flags_->GetGdbPort());
+    } else if (c == 'a') {
       key_a_ = kKeyHoldTime;
     } else if (c == 's') {
       key_s_ = kKeyHoldTime;
     } else if (c == 'd') {
       key_d_ = kKeyHoldTime;
     }
-    simulator_delegate_->HandlePhysicalKeypress(c, true);
+    simulator_->HandleKeypress(c, true);
   }
 
   // Trigger any necessary keyup callbacks.
   if (key_a_ == 0 && keyup_a) {
-    simulator_delegate_->HandlePhysicalKeypress('a', false);
+    simulator_->HandleKeypress('a', false);
   }
   if (key_s_ == 0 && keyup_s) {
-    simulator_delegate_->HandlePhysicalKeypress('s', false);
+    simulator_->HandleKeypress('s', false);
   }
   if (key_d_ == 0 && keyup_d) {
-    simulator_delegate_->HandlePhysicalKeypress('d', false);
+    simulator_->HandleKeypress('d', false);
   }
 }
 
@@ -305,10 +292,13 @@ void UI::RenderLoop() {
       // Trigger any applicable keypresses from the user into the firmware.
       UpdateKeyState();
 
-      // Tell the simulator that we're about to redraw and need the most recent
-      // state set from the firmware onto the UI. This is an optimisation to
-      // avoid having the firmware update state more than it needs to.
-      simulator_delegate_->PrepareRenderState();
+      current_sim_state_ = simulator_->GetStateAndFlush();
+      if (!current_sim_state_.device_state.usb_buffer.empty()) {
+        // TODO: send to pad.
+      }
+
+      // Update the state and timing of the threeboard's LEDs.
+      UpdateLedState();
 
       // Draw each UI component.
       DrawBorder();
@@ -399,16 +389,15 @@ void UI::DrawStatusText() {
 
   // gdb status and port display.
   move(kRootY + row_offset++, col_offset);
-  printw("gdb: %s",
-         firmware_state_delegate_->IsGdbEnabled() ? "enabled" : "disabled");
-  if (firmware_state_delegate_->IsGdbEnabled()) {
-    printw(" (port %d)", simulator_delegate_->GetFlags()->GetGdbPort());
+  printw("gdb: %s", current_sim_state_.gdb_enabled ? "enabled" : "disabled");
+  if (current_sim_state_.gdb_enabled) {
+    printw(" (port %d)", flags_->GetGdbPort());
   }
 
   // USB attach status monitor.
   move(kRootY + row_offset, col_offset);
   printw("usb: %s",
-         (simulator_delegate_->IsUsbAttached() ? "attached" : "detached"));
+         (current_sim_state_.usb_attached ? "attached" : "detached"));
 
   if (cycles_since_memo_update_++ == kSimulatorFps) {
     cycles_since_memo_update_ = 0;
@@ -431,12 +420,12 @@ void UI::DrawLogBox() {
 
 std::string UI::GetClockSpeedString() {
   if (cycles_since_memo_update_ == kSimulatorFps) {
-    uint64_t current_cycle = firmware_state_delegate_->GetCpuCycleCount();
+    uint64_t current_cycle = current_sim_state_.cpu_cycle_count;
     uint64_t diff = current_cycle - prev_sim_cycle_;
     if (prev_sim_cycle_ > current_cycle) {
       diff = current_cycle + (~0 - prev_sim_cycle_);
     }
-    prev_sim_cycle_ = firmware_state_delegate_->GetCpuCycleCount();
+    prev_sim_cycle_ = current_cycle;
     freq_str_memo_ = ParseCpuFreq(diff);
   }
   return freq_str_memo_;
@@ -444,14 +433,13 @@ std::string UI::GetClockSpeedString() {
 
 std::string UI::GetSramUsageString() {
   if (cycles_since_memo_update_ == kSimulatorFps) {
-    sram_str_memo_ =
-        std::to_string(firmware_state_delegate_->GetSramUsage()) + "%";
+    sram_str_memo_ = std::to_string(current_sim_state_.sram_usage) + "%";
   }
   return sram_str_memo_;
 }
 
 void UI::UpdateCpuStateBreakdownList() {
-  auto state = firmware_state_delegate_->GetCpuState();
+  auto state = current_sim_state_.cpu_state;
   cpu_states_since_last_flush_.insert(state);
   if (cpu_mode_distribution_.find(state) == cpu_mode_distribution_.end()) {
     cpu_mode_distribution_[state] = 0;
@@ -482,18 +470,32 @@ void UI::UpdateSramUsageBreakdownList() {
   }
 
   sram_usage_breakdown_memo_.clear();
-  if (firmware_state_delegate_->GetDataSectionSize() != 0) {
+  if (current_sim_state_.data_section_size != 0) {
     sram_usage_breakdown_memo_.emplace_back(
-        ".data", firmware_state_delegate_->GetDataSectionSize());
+        ".data", current_sim_state_.data_section_size);
   }
-  if (firmware_state_delegate_->GetBssSectionSize() != 0) {
+  if (current_sim_state_.bss_section_size != 0) {
     sram_usage_breakdown_memo_.emplace_back(
-        ".bss", firmware_state_delegate_->GetBssSectionSize());
+        ".bss", current_sim_state_.bss_section_size);
   }
 
   // Stack size is always included, if it's zero then something is broken.
-  sram_usage_breakdown_memo_.emplace_back(
-      "stack", firmware_state_delegate_->GetStackSize());
+  sram_usage_breakdown_memo_.emplace_back("stack",
+                                          current_sim_state_.stack_size);
+}
+
+void UI::UpdateLedState() {
+  const auto &device_state = current_sim_state_.device_state;
+  SetLedState(r_, device_state.led_r);
+  SetLedState(g_, device_state.led_g);
+  SetLedState(b_, device_state.led_b);
+  SetLedState(prog_, device_state.led_prog);
+  SetLedState(err_, device_state.led_err);
+  SetLedState(status_, device_state.led_status);
+  for (int i = 0; i < 8; ++i) {
+    SetLedState(bank0_[i], device_state.bank_0 & (1 << i));
+    SetLedState(bank1_[i], device_state.bank_1 & (1 << i));
+  }
 }
 
 }  // namespace simulator

@@ -29,7 +29,11 @@ cc_library(
     }),
     deps = [
         ":pad",
-        "//simulator:firmware_state_delegate",
-        "//simulator:simulator_delegate",
+        "//simulator:simulator_lib",
     ],
+)
+
+cc_library(
+    name = "ui_delegate",
+    hdrs = ["ui_delegate.h"],
 )

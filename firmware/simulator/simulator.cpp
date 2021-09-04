@@ -1,76 +1,147 @@
-#include "simulator.h"
-
-#include <iostream>
-
-#include "simulator/util/logging.h"
+#include "simulator/simulator.h"
 
 namespace threeboard {
 namespace simulator {
 namespace {
 
-using namespace std::placeholders;
-
 // Used to test a single pin in a register.
-bool IsEnabled(uint8_t reg, uint8_t pin) { return reg & (1 << pin); }
+inline bool IsEnabled(uint8_t reg, uint8_t pin) { return reg & (1 << pin); }
 
+inline uint8_t SetBit(bool status, uint8_t idx) {
+  return status ? (1 << idx) : 0;
+}
+
+inline bool ShouldCapitalise(uint8_t modcode) { return modcode & 0b00100010; }
+
+uint16_t GetSramUsage(Simavr *simavr) {
+  // Memory is laid out as follows in the atmega32u4:
+  // |- registers -| |- ioports -| |- .data -|- .bss -|- << stack -----|
+  // |--- 32 B ----| |-- 255 B --| |-------------- 2.5 K --------------|
+  //               ^             ^                                     ^
+  //             0x1F          0xFF                                  0xAFF
+  // |----------------------- ramsize = 2815 B ------------------------|
+  double usage = simavr->GetDataSectionSize() + simavr->GetBssSectionSize() +
+                 simavr->GetRamSize() - simavr->GetStackPointer();
+  return (usage / (simavr->GetRamSize() - 0xFF)) * 100;
+}
+
+void SetPinB(Simavr *simavr, uint8_t pin, bool enabled) {
+  simavr->SetData(PINB, (simavr->GetData(PINB) & ~(1 << pin)));
+  if (enabled) {
+    simavr->SetData(PINB, (simavr->GetData(PINB) | (1 << pin)));
+  }
+}
 }  // namespace
 
-Simulator::Simulator(Flags *flags, Simavr *simavr, StateStorage *state_storage)
-    : flags_(flags),
-      simavr_(simavr),
+Simulator::Simulator(Simavr *simavr, StateStorage *state_storage)
+    : simavr_(simavr),
       is_running_(false),
-      firmware_(simavr_),
+      should_reset_(false),
       usb_host_(simavr_, this),
-      uart_(simavr_, this),
-      eeprom0_(simavr_, state_storage, I2cEeprom::Instance::EEPROM_0) {
-  char log_file[L_tmpnam];
-  if (std::tmpnam(log_file)) {
-    log_file_path_ = std::string(log_file);
-    log_stream_.open(log_file_path_, std::ios_base::app);
-  } else {
-    std::cout << "Failed to create log file" << std::endl;
-    exit(0);
-  }
-}
+      uart_(simavr_, nullptr),
+      eeprom0_(simavr_, state_storage, I2cEeprom::Instance::EEPROM_0) {}
 
 Simulator::~Simulator() {
-  is_running_ = false;
-  sim_run_var_.notify_all();
+  if (is_running_) {
+    is_running_ = false;
+    if (sim_thread_.joinable()) {
+      sim_thread_.join();
+    }
+    std::cout << "Simulator shut down successfully." << std::endl;
+  }
+  simavr_->Terminate();
 }
 
-void Simulator::Run() {
-  ui_ = std::make_unique<UI>(this, &firmware_, log_file_path_);
-  Logging::Init(ui_.get(), &log_stream_);
-  ui_->StartAsyncRenderLoop();
-
+void Simulator::RunAsync() {
+  // Start a new thread to run the simulator and manage clock timing.
   is_running_ = true;
-  // Check if we need to enable GDB on program start.
-  if (flags_->GetGdbBreakStart()) {
-    firmware_.EnableGdb(flags_->GetGdbPort());
-  }
-  firmware_.RunAsync();
-  std::unique_lock<std::mutex> lock(mutex_);
-  while (is_running_) {
-    sim_run_var_.wait(lock);
+  sim_thread_ = std::thread(&Simulator::InternalRunAsync, this);
+}
+
+void Simulator::Reset() { should_reset_ = true; }
+
+bool Simulator::IsRunning() { return is_running_; }
+
+SimulatorState Simulator::GetStateAndFlush() {
+  SimulatorState state;
+  state.device_state = device_state_;
+  device_state_ = DeviceState();
+  state.cpu_state = simavr_->GetState();
+  state.gdb_enabled = (simavr_->GetGdbPort() > 0);
+  state.cpu_cycle_count = simavr_->GetCycle();
+  state.sram_usage = GetSramUsage(simavr_);
+  state.data_section_size = simavr_->GetDataSectionSize();
+  state.bss_section_size = simavr_->GetBssSectionSize();
+  state.stack_size = simavr_->GetRamSize() - simavr_->GetStackPointer();
+  return state;
+}
+
+void Simulator::HandleKeypress(char key, bool state) {
+  if (key == 'a') {
+    // Switch 1 - maps to PB2.
+    SetPinB(simavr_, 2, !state);
+  } else if (key == 's') {
+    // Switch 2 - maps to PB3.
+    SetPinB(simavr_, 3, !state);
+  } else if (key == 'd') {
+    // Switch 3 - maps to PB1.
+    SetPinB(simavr_, 1, !state);
   }
 }
 
-void Simulator::PrepareRenderState() {
-  const uint8_t portb = firmware_.GetPortB();
-  const uint8_t portc = firmware_.GetPortC();
-  const uint8_t portd = firmware_.GetPortD();
-  const uint8_t portf = firmware_.GetPortF();
+void Simulator::ToggleGdb(uint16_t port) const {
+  if (simavr_->GetGdbPort() == 0) {
+    simavr_->SetGdbPort(port);
+    simavr_->SetState(STOPPED);
+    simavr_->InitGdb();
+  } else {
+    simavr_->DeinitGdb();
+    simavr_->SetState(RUNNING);
+    simavr_->SetGdbPort(0);
+  }
+}
 
-  // Clear the LED state before the next frame is calculated.
-  ui_->ClearLedState();
+void Simulator::InternalRunAsync() {
+  while (is_running_ && simavr_->GetState() != DONE &&
+         simavr_->GetState() != CRASHED) {
+    if (should_reset_) {
+      simavr_->Reset();
+      should_reset_ = false;
+    }
+
+    // Since the threeboard is entirely interrupt driven (the main runloop does
+    // poll the keyboard state, but sleeps the CPU between interrupts), simavr
+    // will attempt to match the simulator frequency to the target 16 MHz
+    // frequency. It's a difficult problem so it's not perfect (and simavr
+    // doesn't attempt to make it perfect), but in my experience you can
+    // expect 17.5±1.5MHz.
+    simavr_->Run();
+
+    // Add any relevant state from the current run cycle to the pending device
+    // state.
+    UpdateDeviceState();
+  }
+  is_running_ = false;
+  if (simavr_->GetState() == DONE || simavr_->GetState() == CRASHED) {
+    std::cout << "Simulator finished with state "
+              << (simavr_->GetState() == DONE ? "DONE" : "CRASHED")
+              << std::endl;
+  }
+}
+
+void Simulator::UpdateDeviceState() {
+  const uint8_t portb = simavr_->GetData(PORTB);
+  const uint8_t portc = simavr_->GetData(PORTC);
+  const uint8_t portd = simavr_->GetData(PORTD);
+  const uint8_t portf = simavr_->GetData(PORTF);
 
   // The ERR/STATUS LED pair for threeboard v1 is wired as follows:
   // status0: PB6, ERR
   // status1: PC6, STATUS
   if (IsEnabled(portb, 6) && !IsEnabled(portc, 6)) {
-    ui_->SetErr(true);
+    device_state_.led_err = true;
   } else if (IsEnabled(portc, 6) && !IsEnabled(portb, 6)) {
-    ui_->SetStatus(true);
+    device_state_.led_status = true;
   }
 
   // The wiring of the LED matrix for threeboard v1 is detailed below. Scanning
@@ -86,73 +157,38 @@ void Simulator::PrepareRenderState() {
   // col2: PF4, (B, B0_1, B0_5, B1_1, B1_5)
   // col3: PF5, (PROG, B0_0, B0_4, B1_0, B1_4)
   if (IsEnabled(portd, 7)) {
-    ui_->SetBank0(!IsEnabled(portf, 0), 7);
-    ui_->SetBank0(!IsEnabled(portf, 1), 6);
-    ui_->SetBank0(!IsEnabled(portf, 4), 5);
-    ui_->SetBank0(!IsEnabled(portf, 5), 4);
+    device_state_.bank_0 |= SetBit(!IsEnabled(portf, 0), 7);
+    device_state_.bank_0 |= SetBit(!IsEnabled(portf, 1), 6);
+    device_state_.bank_0 |= SetBit(!IsEnabled(portf, 4), 5);
+    device_state_.bank_0 |= SetBit(!IsEnabled(portf, 5), 4);
   } else if (IsEnabled(portb, 4)) {
-    ui_->SetBank0(!IsEnabled(portf, 0), 3);
-    ui_->SetBank0(!IsEnabled(portf, 1), 2);
-    ui_->SetBank0(!IsEnabled(portf, 4), 1);
-    ui_->SetBank0(!IsEnabled(portf, 5), 0);
+    device_state_.bank_0 |= SetBit(!IsEnabled(portf, 0), 3);
+    device_state_.bank_0 |= SetBit(!IsEnabled(portf, 1), 2);
+    device_state_.bank_0 |= SetBit(!IsEnabled(portf, 4), 1);
+    device_state_.bank_0 |= SetBit(!IsEnabled(portf, 5), 0);
   } else if (IsEnabled(portd, 6)) {
-    ui_->SetBank1(!IsEnabled(portf, 0), 7);
-    ui_->SetBank1(!IsEnabled(portf, 1), 6);
-    ui_->SetBank1(!IsEnabled(portf, 4), 5);
-    ui_->SetBank1(!IsEnabled(portf, 5), 4);
+    device_state_.bank_1 |= SetBit(!IsEnabled(portf, 0), 7);
+    device_state_.bank_1 |= SetBit(!IsEnabled(portf, 1), 6);
+    device_state_.bank_1 |= SetBit(!IsEnabled(portf, 4), 5);
+    device_state_.bank_1 |= SetBit(!IsEnabled(portf, 5), 4);
   } else if (IsEnabled(portd, 4)) {
-    ui_->SetBank1(!IsEnabled(portf, 0), 3);
-    ui_->SetBank1(!IsEnabled(portf, 1), 2);
-    ui_->SetBank1(!IsEnabled(portf, 4), 1);
-    ui_->SetBank1(!IsEnabled(portf, 5), 0);
+    device_state_.bank_1 |= SetBit(!IsEnabled(portf, 0), 3);
+    device_state_.bank_1 |= SetBit(!IsEnabled(portf, 1), 2);
+    device_state_.bank_1 |= SetBit(!IsEnabled(portf, 4), 1);
+    device_state_.bank_1 |= SetBit(!IsEnabled(portf, 5), 0);
   } else if (IsEnabled(portb, 5)) {
-    ui_->SetR(!IsEnabled(portf, 0));
-    ui_->SetG(!IsEnabled(portf, 1));
-    ui_->SetB(!IsEnabled(portf, 4));
-    ui_->SetProg(!IsEnabled(portf, 5));
+    device_state_.led_r |= !IsEnabled(portf, 0);
+    device_state_.led_g |= !IsEnabled(portf, 1);
+    device_state_.led_b |= !IsEnabled(portf, 4);
+    device_state_.led_prog |= !IsEnabled(portf, 5);
   }
 }
 
-void Simulator::HandlePhysicalKeypress(char key, bool state) {
-  // Simulator command keys.
-  if (key == 'q') {
-    is_running_ = false;
-    sim_run_var_.notify_all();
-  } else if (key == 'g') {
-    if (firmware_.IsGdbEnabled()) {
-      firmware_.DisableGdb();
-    } else {
-      firmware_.EnableGdb(flags_->GetGdbPort());
-    }
-  }
-
-  // The key pins are all active low.
-  else if (key == 'a') {
-    // Switch 1 - maps to PB2.
-    firmware_.SetPinB(2, !state);
-  } else if (key == 's') {
-    // Switch 2 - maps to PB3.
-    firmware_.SetPinB(3, !state);
-  } else if (key == 'd') {
-    // Switch 3 - maps to PB1.
-    firmware_.SetPinB(1, !state);
-  }
-}
-
-void Simulator::HandleVirtualKeypress(uint8_t mod_code, uint8_t key_code) {
-  bool capitalise = false;
-  // Check for L_SHIFT and R_SHIFT.
-  if ((mod_code & 0x22) > 0 && (mod_code & ~0x22) == 0) {
-    capitalise = true;
-  } else if (mod_code != 0) {
-    // Ignore and reject any non-shift modcodes.
-    return;
-  }
-
+void Simulator::HandleUsbOutput(uint8_t mod_code, uint8_t key_code) {
   char c;
   if (key_code >= 0x04 && key_code <= 0x1d) {
     c = key_code + 0x5d;
-    if (capitalise) {
+    if (ShouldCapitalise(mod_code)) {
       c -= 0x20;
     }
   } else if (key_code == 0x2a) {
@@ -165,22 +201,11 @@ void Simulator::HandleVirtualKeypress(uint8_t mod_code, uint8_t key_code) {
     c = '.';
   } else {
     // Ignore unsupported characters.
-    // TODO: support special characters!
+    // TODO: support some special characters!
     return;
   }
-
-  ui_->DisplayKeyboardCharacter(c);
+  device_state_.usb_buffer += c;
 }
-
-void Simulator::HandleUartLogLine(const std::string &log_line) {
-  auto cycle = firmware_.GetCpuCycleCount();
-  log_stream_ << cycle << "\t" << log_line << std::endl;
-  ui_->DisplayFirmwareLogLine(cycle, log_line);
-}
-
-Flags *Simulator::GetFlags() { return flags_; }
-
-bool Simulator::IsUsbAttached() { return usb_host_.IsAttached(); }
 
 }  // namespace simulator
 }  // namespace threeboard

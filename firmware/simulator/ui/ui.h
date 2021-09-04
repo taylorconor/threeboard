@@ -7,9 +7,10 @@
 #include <unordered_set>
 #include <vector>
 
-#include "simulator/firmware_state_delegate.h"
-#include "simulator/simulator_delegate.h"
+#include "simulator/simulator.h"
 #include "simulator/ui/pad.h"
+#include "simulator/ui/ui_delegate.h"
+#include "simulator/util/flags.h"
 
 // Forward declaration of ncurses WINDOW. Defined in curses.h and included by
 // ui.cpp.
@@ -24,24 +25,19 @@ namespace simulator {
 // can be provided (StateUpdateCallback) which is called before each render
 // frame, to allow the owner to set the current state of the simulator in
 // the UI.
-class UI {
+class UI : public UIDelegate {
  public:
-  UI(SimulatorDelegate *, FirmwareStateDelegate *, const std::string &log_file);
-  ~UI();
+  UI(Simulator *, Flags *);
+  ~UI() {}
 
-  void StartAsyncRenderLoop();
+  void Run();
   void ClearLedState();
 
   void DisplayKeyboardCharacter(char);
 
-  enum class SimulatorSource {
-    SIMULATOR,
-    SIMAVR,
-  };
-
-  void DisplayFirmwareLogLine(uint64_t cycle, const std::string &);
-  void DisplaySimulatorLogLine(const std::string &,
-                               const SimulatorSource &source);
+  void HandleLogLine(const std::string &) override;
+  void HandleLogLine(const std::string &,
+                     const SimulatorSource &source) override;
 
   void SetR(bool);
   void SetG(bool);
@@ -66,9 +62,13 @@ class UI {
   void DrawStatusText();
   void DrawOutputBox();
   void DrawLogBox();
+  void UpdateLedState();
 
-  SimulatorDelegate *simulator_delegate_;
-  FirmwareStateDelegate *firmware_state_delegate_;
+  Simulator *simulator_;
+  Flags *flags_;
+
+  // Current state of the simulator for a given render cycle.
+  SimulatorState current_sim_state_;
 
   // The output window used by curses.
   WINDOW *window_;

@@ -2,12 +2,12 @@
 
 #include <fstream>
 
-#include "simulator/ui/ui.h"
+#include "simulator/ui/ui_delegate.h"
 
-#define LOG(fmt, ...)                                                          \
-  do {                                                                         \
-    ::threeboard::simulator::Logging::Log(UI::SimulatorSource::SIMULATOR, fmt, \
-                                          ##__VA_ARGS__);                      \
+#define LOG(fmt, ...)                                                      \
+  do {                                                                     \
+    ::threeboard::simulator::Logging::Log(SimulatorSource::SIMULATOR, fmt, \
+                                          ##__VA_ARGS__);                  \
   } while (0)
 
 namespace threeboard {
@@ -15,13 +15,13 @@ namespace simulator {
 
 class Logging {
  public:
-  static void Init(UI *ui, std::ofstream *log_stream);
+  static void Init(UIDelegate *ui_delegate, std::ofstream *log_stream);
 
-  static void Log(const UI::SimulatorSource &, const char *fmt, ...);
-  static void Log(const UI::SimulatorSource &, const char *fmt, va_list va);
+  static void Log(const SimulatorSource &, const char *fmt, ...);
+  static void Log(const SimulatorSource &, const char *fmt, va_list va);
 
  private:
-  static UI *ui_;
+  static UIDelegate *ui_delegate_;
   static std::ofstream *log_stream_;
 };
 

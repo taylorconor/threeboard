@@ -81,7 +81,7 @@ std::unique_ptr<avr_t> SimavrImpl::ParseElfFile(
         }
         std::string str_format(format);
         str_format = absl::StrReplaceAll(str_format, {{"\n", ". "}});
-        Logging::Log(UI::SimulatorSource::SIMAVR, str_format.c_str(), ap);
+        Logging::Log(SimulatorSource::SIMAVR, str_format.c_str(), ap);
       });
   return std::unique_ptr<avr_t>(avr);
 }
@@ -132,7 +132,6 @@ std::unique_ptr<Lifetime> SimavrImpl::RegisterI2cMessageCallback(
   avr_irq_register_notify(i2c_irq_ + TWI_IRQ_OUTPUT,
                           &CallbackTrampoline<I2cMessageCallback>,
                           (void *)callback);
-
   avr_connect_irq(
       i2c_irq_ + TWI_IRQ_INPUT,
       avr_io_getirq(avr_.get(), AVR_IOCTL_TWI_GETIRQ(0), TWI_IRQ_INPUT));

@@ -1,6 +1,7 @@
 #include "i2c_eeprom.h"
 
 #include <functional>
+#include <thread>
 
 #include "simulator/util/logging.h"
 
