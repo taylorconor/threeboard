@@ -3,7 +3,6 @@
 #include <curses.h>
 
 #include <iomanip>
-#include <iostream>
 #include <sstream>
 
 namespace threeboard {
@@ -162,6 +161,8 @@ UI::UI(Simulator *simulator, Flags *flags)
       screen_output_mutex_(std::make_unique<std::recursive_mutex>()),
       is_running_(false) {}
 
+UI::~UI() { endwin(); }
+
 void UI::Run() {
   setlocale(LC_ALL, "en_US.UTF-8");
 
@@ -181,27 +182,17 @@ void UI::Run() {
   log_pad_ = std::make_unique<Pad>(screen_output_mutex_.get(),
                                    max_y - kLogBoxY - 1, max_x);
 
+  // Now that the UI is initialised, enable logging callbacks to the UI from the
+  // simulator and begin its async runloop.
+  simulator_->EnableLogging(this);
+  simulator_->RunAsync();
+
   is_running_ = true;
   RenderLoop();
 }
 
-void UI::ClearLedState() {
-  ClearLed(r_);
-  ClearLed(g_);
-  ClearLed(b_);
-  ClearLed(prog_);
-  ClearLed(err_);
-  ClearLed(status_);
-  for (int i = 0; i < 8; i++) {
-    ClearLed(bank0_[i]);
-    ClearLed(bank1_[i]);
-  }
-}
-
-void UI::DisplayKeyboardCharacter(char c) { output_pad_->Write(c); }
-
 void UI::HandleLogLine(const std::string &log_line) {
-  std::string cycle_str = std::to_string(current_sim_state_.cpu_cycle_count);
+  std::string cycle_str = std::to_string(simulator_->GetCurrentCpuCycle());
   std::string log =
       cycle_str + S(16 - cycle_str.length(), ' ') + log_line + "\n";
   log_pad_->Write(log);
@@ -216,28 +207,46 @@ void UI::HandleLogLine(const std::string &log_line,
   log_pad_->Write(str_source + "       " + log_line + "\n");
 }
 
-void UI::SetR(bool enabled) { SetLedState(r_, enabled); }
+void UI::RenderLoop() {
+  while (is_running_) {
+    {
+      std::lock_guard<std::recursive_mutex> lock(*screen_output_mutex_);
+      current_frame_++;
 
-void UI::SetG(bool enabled) { SetLedState(g_, enabled); }
+      // Trigger any applicable keypresses from the user into the firmware.
+      UpdateKeyState();
 
-void UI::SetB(bool enabled) { SetLedState(b_, enabled); }
+      // Get the latest simulator state needed to provide the state to draw each
+      // component in the UI.
+      current_sim_state_ = simulator_->GetStateAndFlush();
+      for (const char &c : current_sim_state_.device_state.usb_buffer) {
+        output_pad_->Write(c);
+      }
 
-void UI::SetProg(bool enabled) { SetLedState(prog_, enabled); }
+      // Update the state and timing of the threeboard's LEDs.
+      UpdateLedState();
 
-void UI::SetErr(bool enabled) { SetLedState(err_, enabled); }
+      // Draw each UI component.
+      DrawBorder();
+      DrawLeds();
+      DrawKeys();
+      DrawStatusText();
+      DrawOutputBox();
+      DrawLogBox();
 
-void UI::SetStatus(bool enabled) { SetLedState(status_, enabled); }
+      // Move the cursor to a place where stdio output won't overwrite any of
+      // the simulator UI.
+      // TODO: is there a way of disabling or suppressing non-curses io?
+      move(kRootY + 20, kRootX);
+      refresh();
+    }
 
-void UI::SetBank0(bool enabled, uint8_t idx) {
-  SetLedState(bank0_[idx], enabled);
+    // Maintain kSimulatorFps FPS.
+    std::this_thread::sleep_for(
+        std::chrono::milliseconds(1000 / kSimulatorFps));
+  }
 }
 
-void UI::SetBank1(bool enabled, uint8_t idx) {
-  SetLedState(bank1_[idx], enabled);
-}
-
-// Update the internal state of the keys, and trigger any relevant keypress
-// callbacks.
 void UI::UpdateKeyState() {
   // Decrement existing keypresses until they exhaust their cooldown period.
   bool keyup_a = false, keyup_s = false, keyup_d = false;
@@ -283,45 +292,86 @@ void UI::UpdateKeyState() {
   }
 }
 
-void UI::RenderLoop() {
-  while (is_running_) {
-    {
-      std::lock_guard<std::recursive_mutex> lock(*screen_output_mutex_);
-      current_frame_++;
-
-      // Trigger any applicable keypresses from the user into the firmware.
-      UpdateKeyState();
-
-      current_sim_state_ = simulator_->GetStateAndFlush();
-      if (!current_sim_state_.device_state.usb_buffer.empty()) {
-        // TODO: send to pad.
-      }
-
-      // Update the state and timing of the threeboard's LEDs.
-      UpdateLedState();
-
-      // Draw each UI component.
-      DrawBorder();
-      DrawLeds();
-      DrawKeys();
-      DrawStatusText();
-      DrawOutputBox();
-      DrawLogBox();
-
-      // Move the cursor to a place where stdio output won't overwrite any of
-      // the simulator UI.
-      // TODO: is there a way of disabling or suppressing non-curses io?
-      move(kRootY + 20, kRootX);
-      refresh();
-    }
-
-    // Maintain kSimulatorFps FPS.
-    std::this_thread::sleep_for(
-        std::chrono::milliseconds(1000 / kSimulatorFps));
+void UI::UpdateLedState() {
+  const auto &device_state = current_sim_state_.device_state;
+  SetLedState(r_, device_state.led_r);
+  SetLedState(g_, device_state.led_g);
+  SetLedState(b_, device_state.led_b);
+  SetLedState(prog_, device_state.led_prog);
+  SetLedState(err_, device_state.led_err);
+  SetLedState(status_, device_state.led_status);
+  for (int i = 0; i < 8; ++i) {
+    SetLedState(bank0_[i], device_state.bank_0 & (1 << i));
+    SetLedState(bank1_[i], device_state.bank_1 & (1 << i));
   }
 }
 
-// Draw the LEDs based on the state of the simulator as we know it.
+void UI::UpdateCpuStateBreakdownList() {
+  auto state = current_sim_state_.cpu_state;
+  cpu_states_since_last_flush_.insert(state);
+  if (cpu_mode_distribution_.find(state) == cpu_mode_distribution_.end()) {
+    cpu_mode_distribution_[state] = 0;
+  } else {
+    cpu_mode_distribution_[state]++;
+  }
+
+  if (cycles_since_memo_update_ < kSimulatorFps) {
+    return;
+  }
+
+  state_str_memo_.clear();
+  for (const auto &[key, value] : cpu_mode_distribution_) {
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(2);
+    double mode_ratio = ((double)(value * 100) / current_frame_);
+    ss << GetCpuStateName(key) << " (" << mode_ratio << "%)";
+    bool is_active = cpu_states_since_last_flush_.find(key) !=
+                     cpu_states_since_last_flush_.end();
+    state_str_memo_.emplace_back(ss.str(), is_active);
+  }
+  cpu_states_since_last_flush_.clear();
+}
+
+void UI::UpdateSramUsageBreakdownList() {
+  if (cycles_since_memo_update_ != kSimulatorFps) {
+    return;
+  }
+
+  sram_usage_breakdown_memo_.clear();
+  if (current_sim_state_.data_section_size != 0) {
+    sram_usage_breakdown_memo_.emplace_back(
+        ".data", current_sim_state_.data_section_size);
+  }
+  if (current_sim_state_.bss_section_size != 0) {
+    sram_usage_breakdown_memo_.emplace_back(
+        ".bss", current_sim_state_.bss_section_size);
+  }
+
+  // Stack size is always included, if it's zero then something is broken.
+  sram_usage_breakdown_memo_.emplace_back("stack",
+                                          current_sim_state_.stack_size);
+}
+
+std::string UI::GetClockSpeedString() {
+  if (cycles_since_memo_update_ == kSimulatorFps) {
+    uint64_t current_cycle = simulator_->GetCurrentCpuCycle();
+    uint64_t diff = current_cycle - prev_sim_cycle_;
+    if (prev_sim_cycle_ > current_cycle) {
+      diff = current_cycle + (~0 - prev_sim_cycle_);
+    }
+    prev_sim_cycle_ = current_cycle;
+    freq_str_memo_ = ParseCpuFreq(diff);
+  }
+  return freq_str_memo_;
+}
+
+std::string UI::GetSramUsageString() {
+  if (cycles_since_memo_update_ == kSimulatorFps) {
+    sram_str_memo_ = std::to_string(current_sim_state_.sram_usage) + "%";
+  }
+  return sram_str_memo_;
+}
+
 void UI::DrawLeds() {
   // Top row: R, G, B, PROG, ERR and STATUS.
   move(kRootY + 2, kRootX + 3);
@@ -416,86 +466,6 @@ void UI::DrawLogBox() {
   getmaxyx(window_, window_max_y, window_max_x);
   log_pad_->Refresh("log file: " + log_file_, kMedGrey, kLogBoxY + 1, 0,
                     window_max_y - 1, window_max_x - 1);
-}
-
-std::string UI::GetClockSpeedString() {
-  if (cycles_since_memo_update_ == kSimulatorFps) {
-    uint64_t current_cycle = current_sim_state_.cpu_cycle_count;
-    uint64_t diff = current_cycle - prev_sim_cycle_;
-    if (prev_sim_cycle_ > current_cycle) {
-      diff = current_cycle + (~0 - prev_sim_cycle_);
-    }
-    prev_sim_cycle_ = current_cycle;
-    freq_str_memo_ = ParseCpuFreq(diff);
-  }
-  return freq_str_memo_;
-}
-
-std::string UI::GetSramUsageString() {
-  if (cycles_since_memo_update_ == kSimulatorFps) {
-    sram_str_memo_ = std::to_string(current_sim_state_.sram_usage) + "%";
-  }
-  return sram_str_memo_;
-}
-
-void UI::UpdateCpuStateBreakdownList() {
-  auto state = current_sim_state_.cpu_state;
-  cpu_states_since_last_flush_.insert(state);
-  if (cpu_mode_distribution_.find(state) == cpu_mode_distribution_.end()) {
-    cpu_mode_distribution_[state] = 0;
-  } else {
-    cpu_mode_distribution_[state]++;
-  }
-
-  if (cycles_since_memo_update_ < kSimulatorFps) {
-    return;
-  }
-
-  state_str_memo_.clear();
-  for (const auto &[key, value] : cpu_mode_distribution_) {
-    std::stringstream ss;
-    ss << std::fixed << std::setprecision(2);
-    double mode_ratio = ((double)(value * 100) / current_frame_);
-    ss << GetCpuStateName(key) << " (" << mode_ratio << "%)";
-    bool is_active = cpu_states_since_last_flush_.find(key) !=
-                     cpu_states_since_last_flush_.end();
-    state_str_memo_.emplace_back(ss.str(), is_active);
-  }
-  cpu_states_since_last_flush_.clear();
-}
-
-void UI::UpdateSramUsageBreakdownList() {
-  if (cycles_since_memo_update_ != kSimulatorFps) {
-    return;
-  }
-
-  sram_usage_breakdown_memo_.clear();
-  if (current_sim_state_.data_section_size != 0) {
-    sram_usage_breakdown_memo_.emplace_back(
-        ".data", current_sim_state_.data_section_size);
-  }
-  if (current_sim_state_.bss_section_size != 0) {
-    sram_usage_breakdown_memo_.emplace_back(
-        ".bss", current_sim_state_.bss_section_size);
-  }
-
-  // Stack size is always included, if it's zero then something is broken.
-  sram_usage_breakdown_memo_.emplace_back("stack",
-                                          current_sim_state_.stack_size);
-}
-
-void UI::UpdateLedState() {
-  const auto &device_state = current_sim_state_.device_state;
-  SetLedState(r_, device_state.led_r);
-  SetLedState(g_, device_state.led_g);
-  SetLedState(b_, device_state.led_b);
-  SetLedState(prog_, device_state.led_prog);
-  SetLedState(err_, device_state.led_err);
-  SetLedState(status_, device_state.led_status);
-  for (int i = 0; i < 8; ++i) {
-    SetLedState(bank0_[i], device_state.bank_0 & (1 << i));
-    SetLedState(bank1_[i], device_state.bank_1 & (1 << i));
-  }
 }
 
 }  // namespace simulator

@@ -35,9 +35,10 @@ static const char *_ee_irq_names[] = {"twi.miso", "twi.mosi"};
 
 // static.
 std::unique_ptr<Simavr> SimavrImpl::Create(
-    elf_firmware_t *firmware, std::array<uint8_t, 1024> *internal_eeprom_data) {
-  auto avr_ptr = ParseElfFile(firmware, internal_eeprom_data);
-  auto *raw_ptr = new SimavrImpl(std::move(avr_ptr), firmware);
+    std::array<uint8_t, 1024> *internal_eeprom_data) {
+  auto firmware = std::make_unique<elf_firmware_t>();
+  auto avr_ptr = ParseElfFile(firmware.get(), internal_eeprom_data);
+  auto *raw_ptr = new SimavrImpl(std::move(avr_ptr), std::move(firmware));
   return std::unique_ptr<SimavrImpl>(raw_ptr);
 }
 
@@ -86,8 +87,9 @@ std::unique_ptr<avr_t> SimavrImpl::ParseElfFile(
   return std::unique_ptr<avr_t>(avr);
 }
 
-SimavrImpl::SimavrImpl(std::unique_ptr<avr_t> avr, elf_firmware_t *firmware)
-    : avr_(std::move(avr)), firmware_(firmware), i2c_irq_(nullptr) {}
+SimavrImpl::SimavrImpl(std::unique_ptr<avr_t> avr,
+                       std::unique_ptr<elf_firmware_t> firmware)
+    : avr_(std::move(avr)), firmware_(std::move(firmware)), i2c_irq_(nullptr) {}
 
 void SimavrImpl::Run() { avr_run(avr_.get()); }
 

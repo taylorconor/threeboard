@@ -31,7 +31,6 @@ struct SimulatorState {
   int cpu_state = 0;
   bool gdb_enabled = false;
   bool usb_attached = false;
-  uint64_t cpu_cycle_count = 0;
   uint16_t sram_usage = 0;
   uint16_t data_section_size = 0;
   uint16_t bss_section_size = 0;
@@ -47,23 +46,24 @@ class Simulator : public SimulatorDelegate {
   void Reset();
   bool IsRunning();
   SimulatorState GetStateAndFlush();
+  uint64_t GetCurrentCpuCycle();
 
   void HandleKeypress(char key, bool state);
-
   void ToggleGdb(uint16_t port) const;
   void HandleUsbOutput(uint8_t mod_code, uint8_t key_code) override;
+  void EnableLogging(UIDelegate *ui_delegate);
 
  private:
   void InternalRunAsync();
   void UpdateDeviceState();
 
   Simavr *simavr_;
+  std::unique_ptr<Uart> uart_;
   std::thread sim_thread_;
   std::atomic<bool> is_running_;
   std::atomic<bool> should_reset_;
   DeviceState device_state_;
   UsbHost usb_host_;
-  Uart uart_;
   I2cEeprom eeprom0_;
 };
 

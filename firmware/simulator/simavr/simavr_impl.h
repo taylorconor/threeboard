@@ -19,7 +19,6 @@ namespace simulator {
 class SimavrImpl : public Simavr {
  public:
   static std::unique_ptr<Simavr> Create(
-      elf_firmware_t *firmware,
       std::array<uint8_t, 1024> *internal_eeprom_data);
 
   ~SimavrImpl() override = default;
@@ -62,10 +61,11 @@ class SimavrImpl : public Simavr {
       elf_firmware_t *firmware,
       std::array<uint8_t, 1024> *internal_eeprom_data);
 
-  SimavrImpl(std::unique_ptr<avr_t> avr, elf_firmware_t *firmware);
+  SimavrImpl(std::unique_ptr<avr_t> avr,
+             std::unique_ptr<elf_firmware_t> firmware);
 
   std::unique_ptr<avr_t> avr_;
-  elf_firmware_t *firmware_;
+  std::unique_ptr<elf_firmware_t> firmware_;
   avr_irq_t *i2c_irq_;
 };
 }  // namespace simulator

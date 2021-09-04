@@ -28,41 +28,31 @@ namespace simulator {
 class UI : public UIDelegate {
  public:
   UI(Simulator *, Flags *);
-  ~UI() {}
+  ~UI();
 
   void Run();
-  void ClearLedState();
-
-  void DisplayKeyboardCharacter(char);
 
   void HandleLogLine(const std::string &) override;
   void HandleLogLine(const std::string &,
                      const SimulatorSource &source) override;
 
-  void SetR(bool);
-  void SetG(bool);
-  void SetB(bool);
-  void SetProg(bool);
-  void SetErr(bool);
-  void SetStatus(bool);
-  void SetBank0(bool, uint8_t);
-  void SetBank1(bool, uint8_t);
-
  private:
-  void UpdateKeyState();
   void RenderLoop();
-  std::string GetClockSpeedString();
-  std::string GetSramUsageString();
+
+  void UpdateKeyState();
+  void UpdateLedState();
 
   void UpdateCpuStateBreakdownList();
   void UpdateSramUsageBreakdownList();
+
+  std::string GetClockSpeedString();
+  std::string GetSramUsageString();
 
   void DrawLeds();
   void DrawKeys();
   void DrawStatusText();
   void DrawOutputBox();
   void DrawLogBox();
-  void UpdateLedState();
 
   Simulator *simulator_;
   Flags *flags_;
