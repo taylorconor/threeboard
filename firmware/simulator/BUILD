@@ -38,9 +38,9 @@ cc_binary(
     deps = [
         ":simulator_lib",
         "//simulator/simavr:simavr_impl",
+        "//simulator/ui",
         "//simulator/util:flags",
         "//simulator/util:logging",
         "//simulator/util:state_storage",
-        "//simulator/ui:ui",
     ],
 )

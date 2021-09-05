@@ -19,8 +19,8 @@ cc_library(
     srcs = ["uart.cpp"],
     hdrs = ["uart.h"],
     deps = [
-        "//simulator/ui:ui_delegate",
         "//simulator/simavr",
+        "//simulator/ui:ui_delegate",
     ],
 )
 
@@ -31,6 +31,7 @@ cc_test(
         ":uart",
         "//simulator:simulator_delegate_mock",
         "//simulator/simavr:simavr_mock",
+        "//simulator/ui:ui_delegate_mock",
         "@gtest",
         "@gtest//:gtest_main",
     ],

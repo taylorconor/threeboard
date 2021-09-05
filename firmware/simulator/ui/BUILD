@@ -37,3 +37,10 @@ cc_library(
     name = "ui_delegate",
     hdrs = ["ui_delegate.h"],
 )
+
+cc_library(
+    name = "ui_delegate_mock",
+    testonly = 1,
+    hdrs = ["ui_delegate_mock.h"],
+    deps = [":ui_delegate"],
+)

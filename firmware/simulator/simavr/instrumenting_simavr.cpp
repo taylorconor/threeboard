@@ -15,19 +15,20 @@ constexpr int kRunsBetweenTimeoutCheck = 10000;
 
 // static.
 std::unique_ptr<InstrumentingSimavr> InstrumentingSimavr::Create(
-    elf_firmware_t* firmware, std::array<uint8_t, 1024>* internal_eeprom_data,
+    std::unique_ptr<elf_firmware_t> firmware,
+    std::array<uint8_t, 1024>* internal_eeprom_data,
     absl::flat_hash_map<std::string, avr_symbol_t*>* symbol_table) {
-  auto avr_ptr = ParseElfFile(firmware, internal_eeprom_data);
-  auto* raw_ptr =
-      new InstrumentingSimavr(firmware, symbol_table, std::move(avr_ptr));
+  auto avr_ptr = ParseElfFile(firmware.get(), internal_eeprom_data);
+  auto* raw_ptr = new InstrumentingSimavr(std::move(avr_ptr),
+                                          std::move(firmware), symbol_table);
   return std::unique_ptr<InstrumentingSimavr>(raw_ptr);
 }
 
 InstrumentingSimavr::InstrumentingSimavr(
-    elf_firmware_t* elf_firmware,
-    absl::flat_hash_map<std::string, avr_symbol_t*>* symbol_table,
-    std::unique_ptr<avr_t> avr)
-    : SimavrImpl(std::move(avr), elf_firmware), symbol_table_(symbol_table) {
+    std::unique_ptr<avr_t> avr, std::unique_ptr<elf_firmware_t> elf_firmware,
+    absl::flat_hash_map<std::string, avr_symbol_t*>* symbol_table)
+    : SimavrImpl(std::move(avr), std::move(elf_firmware)),
+      symbol_table_(symbol_table) {
   data_start_ = symbol_table_->at("__data_start")->addr;
 }
 
