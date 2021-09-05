@@ -19,7 +19,8 @@ class InstrumentingSimavr final : public SimavrImpl {
   ~InstrumentingSimavr() override = default;
 
   static std::unique_ptr<InstrumentingSimavr> Create(
-      elf_firmware_t* firmware, std::array<uint8_t, 1024>* internal_eeprom_data,
+      std::unique_ptr<elf_firmware_t> firmware,
+      std::array<uint8_t, 1024>* internal_eeprom_data,
       absl::flat_hash_map<std::string, avr_symbol_t*>* symbol_table);
 
   absl::Status RunWithTimeout(const std::chrono::milliseconds& timeout);
@@ -32,9 +33,8 @@ class InstrumentingSimavr final : public SimavrImpl {
 
  private:
   InstrumentingSimavr(
-      elf_firmware_t* elf_firmware,
-      absl::flat_hash_map<std::string, avr_symbol_t*>* symbol_table,
-      std::unique_ptr<avr_t> avr);
+      std::unique_ptr<avr_t> avr, std::unique_ptr<elf_firmware_t> elf_firmware,
+      absl::flat_hash_map<std::string, avr_symbol_t*>* symbol_table);
 
   void Run() override;
   void CopyDataSegment(std::vector<uint8_t>*) const;

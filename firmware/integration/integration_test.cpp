@@ -19,22 +19,22 @@ namespace {
 
 class IntegrationTest : public testing::Test {
  public:
-  IntegrationTest()
-      : simavr_(simulator::InstrumentingSimavr::Create(
-            &firmware_, &internal_eeprom_data_, &symbol_table_)) {
-    usb_host_ = std::make_unique<simulator::UsbHost>(simavr_.get(),
-                                                     &simulator_delegate_mock_);
-  }
-
-  static void SetUpTestCase() {
+  IntegrationTest() {
+    std::unique_ptr<elf_firmware_t> firmware =
+        std::make_unique<elf_firmware_t>();
     if (elf_read_firmware("simulator/native/threeboard_sim_binary.elf",
-                          &firmware_)) {
+                          firmware.get())) {
       std::cout << "Failed to parse threeboard ELF file for simulated testing"
                 << std::endl;
       exit(0);
     }
-    // Parse the symbols from the elf file and build a symbol table out of them.
-    BuildSymbolTable();
+    if (symbol_table_.empty()) {
+      BuildSymbolTable(firmware.get());
+    }
+    simavr_ = simulator::InstrumentingSimavr::Create(
+        std::move(firmware), &internal_eeprom_data_, &symbol_table_);
+    usb_host_ = std::make_unique<simulator::UsbHost>(simavr_.get(),
+                                                     &simulator_delegate_mock_);
   }
 
  protected:
@@ -44,10 +44,10 @@ class IntegrationTest : public testing::Test {
   simulator::SimulatorDelegateMock simulator_delegate_mock_;
 
  private:
-  static void BuildSymbolTable() {
-    for (int i = 0; i < firmware_.symbolcount; ++i) {
+  static void BuildSymbolTable(elf_firmware_t* firmware) {
+    for (int i = 0; i < firmware->symbolcount; ++i) {
       // Demangle the symbol name.
-      avr_symbol_t* symbol = *(firmware_.symbol + i);
+      avr_symbol_t* symbol = *(firmware->symbol + i);
       int status;
       char* result = abi::__cxa_demangle(symbol->symbol, 0, 0, &status);
       if (status != 0) {
@@ -80,11 +80,9 @@ class IntegrationTest : public testing::Test {
     }
   }
 
-  static elf_firmware_t firmware_;
   static absl::flat_hash_map<std::string, avr_symbol_t*> symbol_table_;
 };
 
-elf_firmware_t IntegrationTest::firmware_;
 absl::flat_hash_map<std::string, avr_symbol_t*> IntegrationTest::symbol_table_;
 
 TEST_F(IntegrationTest, BootToEventLoop) {
