@@ -44,16 +44,17 @@ class Simulator : public SimulatorDelegate {
 
   void RunAsync();
   void Reset();
-  bool IsRunning();
-  SimulatorState GetStateAndFlush();
-  uint64_t GetCurrentCpuCycle();
 
+  SimulatorState GetStateAndFlush();
   void HandleKeypress(char key, bool state);
+
+  uint64_t GetCurrentCpuCycle();
   void ToggleGdb(uint16_t port) const;
-  void HandleUsbOutput(uint8_t mod_code, uint8_t key_code) override;
   void EnableLogging(UIDelegate *ui_delegate);
 
  private:
+  void HandleUsbOutput(uint8_t mod_code, uint8_t key_code) override;
+
   void InternalRunAsync();
   void UpdateDeviceState();
 

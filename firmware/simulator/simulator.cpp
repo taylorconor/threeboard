@@ -13,7 +13,7 @@ inline uint8_t SetBit(bool status, uint8_t idx) {
 
 inline bool ShouldCapitalise(uint8_t modcode) { return modcode & 0b00100010; }
 
-uint16_t GetSramUsage(Simavr *simavr) {
+inline uint16_t GetSramUsage(Simavr *simavr) {
   // Memory is laid out as follows in the atmega32u4:
   // |- registers -| |- ioports -| |- .data -|- .bss -|- << stack -----|
   // |--- 32 B ----| |-- 255 B --| |-------------- 2.5 K --------------|
@@ -25,7 +25,7 @@ uint16_t GetSramUsage(Simavr *simavr) {
   return (usage / (simavr->GetRamSize() - 0xFF)) * 100;
 }
 
-void SetPinB(Simavr *simavr, uint8_t pin, bool enabled) {
+inline void SetPinB(Simavr *simavr, uint8_t pin, bool enabled) {
   simavr->SetData(PINB, (simavr->GetData(PINB) & ~(1 << pin)));
   if (enabled) {
     simavr->SetData(PINB, (simavr->GetData(PINB) | (1 << pin)));
@@ -57,8 +57,6 @@ void Simulator::RunAsync() {
 
 void Simulator::Reset() { should_reset_ = true; }
 
-bool Simulator::IsRunning() { return is_running_; }
-
 SimulatorState Simulator::GetStateAndFlush() {
   SimulatorState state;
   state.device_state = device_state_;
@@ -71,8 +69,6 @@ SimulatorState Simulator::GetStateAndFlush() {
   state.stack_size = simavr_->GetRamSize() - simavr_->GetStackPointer();
   return state;
 }
-
-uint64_t Simulator::GetCurrentCpuCycle() { return simavr_->GetCycle(); }
 
 void Simulator::HandleKeypress(char key, bool state) {
   if (key == 'a') {
@@ -87,6 +83,8 @@ void Simulator::HandleKeypress(char key, bool state) {
   }
 }
 
+uint64_t Simulator::GetCurrentCpuCycle() { return simavr_->GetCycle(); }
+
 void Simulator::ToggleGdb(uint16_t port) const {
   if (simavr_->GetGdbPort() == 0) {
     simavr_->SetGdbPort(port);
@@ -97,6 +95,35 @@ void Simulator::ToggleGdb(uint16_t port) const {
     simavr_->SetState(RUNNING);
     simavr_->SetGdbPort(0);
   }
+}
+
+void Simulator::EnableLogging(UIDelegate *ui_delegate) {
+  // If the Uart class is initialized and in scope, it will handle logging
+  // output from the simulator.
+  uart_ = std::make_unique<Uart>(simavr_, ui_delegate);
+}
+
+void Simulator::HandleUsbOutput(uint8_t mod_code, uint8_t key_code) {
+  char c;
+  if (key_code >= 0x04 && key_code <= 0x1d) {
+    c = key_code + 0x5d;
+    if (ShouldCapitalise(mod_code)) {
+      c -= 0x20;
+    }
+  } else if (key_code == 0x2a) {
+    c = ' ';
+  } else if (key_code == 0x2d) {
+    c = '-';
+  } else if (key_code == 0x36) {
+    c = ',';
+  } else if (key_code == 0x37) {
+    c = '.';
+  } else {
+    // Ignore unsupported characters.
+    // TODO: support some special characters!
+    return;
+  }
+  device_state_.usb_buffer += c;
 }
 
 void Simulator::InternalRunAsync() {
@@ -180,35 +207,6 @@ void Simulator::UpdateDeviceState() {
     device_state_.led_b |= !IsEnabled(portf, 4);
     device_state_.led_prog |= !IsEnabled(portf, 5);
   }
-}
-
-void Simulator::HandleUsbOutput(uint8_t mod_code, uint8_t key_code) {
-  char c;
-  if (key_code >= 0x04 && key_code <= 0x1d) {
-    c = key_code + 0x5d;
-    if (ShouldCapitalise(mod_code)) {
-      c -= 0x20;
-    }
-  } else if (key_code == 0x2a) {
-    c = ' ';
-  } else if (key_code == 0x2d) {
-    c = '-';
-  } else if (key_code == 0x36) {
-    c = ',';
-  } else if (key_code == 0x37) {
-    c = '.';
-  } else {
-    // Ignore unsupported characters.
-    // TODO: support some special characters!
-    return;
-  }
-  device_state_.usb_buffer += c;
-}
-
-void Simulator::EnableLogging(UIDelegate *ui_delegate) {
-  // If the Uart class is initialized and in scope, it will handle logging
-  // output from the simulator.
-  uart_ = std::make_unique<Uart>(simavr_, ui_delegate);
 }
 
 }  // namespace simulator
