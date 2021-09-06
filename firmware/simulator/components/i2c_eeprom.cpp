@@ -52,10 +52,12 @@ I2cEeprom::I2cEeprom(Simavr *simavr, StateStorage *state_storage,
   i2c_message_lifetime_ =
       simavr_->RegisterI2cMessageCallback(i2c_message_callback_.get());
 
-  if (instance == Instance::EEPROM_0) {
-    state_storage->ConfigureEeprom0(&buffer_);
-  } else if (instance == Instance::EEPROM_1) {
-    state_storage->ConfigureEeprom1(&buffer_);
+  if (state_storage) {
+    if (instance == Instance::EEPROM_0) {
+      state_storage->ConfigureEeprom0(&buffer_);
+    } else if (instance == Instance::EEPROM_1) {
+      state_storage->ConfigureEeprom1(&buffer_);
+    }
   }
 
   Reset();

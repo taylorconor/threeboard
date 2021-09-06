@@ -15,3 +15,18 @@ cc_test(
         "@gtest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "property_test",
+    srcs = ["property_test.cpp"],
+    env = {"RC_PARAMS": "max_success=3"},
+    deps = [
+        "//integration/model:keypress_generator",
+        "//integration/model:threeboard_model",
+        "//simulator:simulator_lib",
+        "//simulator/simavr:simavr_impl",
+        "@emil-e//:rapidcheck",
+        "@gtest",
+        "@gtest//:gtest_main",
+    ],
+)

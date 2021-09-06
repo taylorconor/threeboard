@@ -1,7 +1,7 @@
 #pragma once
 
 #include "integration/model/layer_model.h"
-#include "integration/model/observable_state.h"
+#include "simulator/simulator_state.h"
 #include "src/keypress.h"
 #include "src/layers/layer_id.h"
 
@@ -14,9 +14,12 @@ class ThreeboardModel {
       : dflt_layer_model_(&usb_buffer_),
         r_layer_model_(&usb_buffer_),
         g_layer_model_(&usb_buffer_),
-        b_layer_model_(&usb_buffer_) {}
+        b_layer_model_(&usb_buffer_) {
+    current_layer_ = LayerId::DFLT;
+  }
+
   void Apply(const Keypress& keypress);
-  ObservableState GetStateSnapshot();
+  simulator::DeviceState GetStateSnapshot();
 
  private:
   LayerModel* CurrentLayerModel();

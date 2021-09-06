@@ -10,7 +10,7 @@ void ThreeboardModel::Apply(const Keypress& keypress) {
   }
 }
 
-ObservableState ThreeboardModel::GetStateSnapshot() {
+simulator::DeviceState ThreeboardModel::GetStateSnapshot() {
   return CurrentLayerModel()->GetStateSnapshot();
 }
 

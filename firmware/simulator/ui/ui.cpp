@@ -113,12 +113,6 @@ void SetLedState(uint8_t &led, bool enabled) {
   }
 }
 
-void ClearLed(uint8_t &led) {
-  if (led > 0) {
-    led--;
-  }
-}
-
 std::string ParseCpuFreq(uint64_t ticks_per_sec) {
   if (ticks_per_sec < 1000) {
     return std::to_string(ticks_per_sec) + " Hz";

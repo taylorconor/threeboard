@@ -1,4 +1,4 @@
-#include "integration/model/observable_state.h"
+#include "simulator/simulator_state.h"
 #include "src/keypress.h"
 #include "src/led_state.h"
 
@@ -9,16 +9,11 @@ class LayerModel {
   virtual ~LayerModel() {}
   LayerModel(std::string* usb_buffer) : usb_buffer_(usb_buffer) {}
   virtual bool Apply(const Keypress& keypress) = 0;
-  virtual ObservableState GetStateSnapshot() = 0;
-
-  uint8_t bank0_;
-  uint8_t bank1_;
-  LedState::State prog_;
-  LedState::State status_;
-  LedState::State err_;
+  virtual simulator::DeviceState GetStateSnapshot() = 0;
 
  protected:
   std::string* usb_buffer_;
+  simulator::DeviceState device_state_;
 };
 
 class DefaultLayerModel : public LayerModel {
@@ -26,7 +21,7 @@ class DefaultLayerModel : public LayerModel {
   DefaultLayerModel(std::string* usb_buffer) : LayerModel(usb_buffer) {}
 
   bool Apply(const Keypress& keypress) override;
-  ObservableState GetStateSnapshot() override;
+  simulator::DeviceState GetStateSnapshot() override;
 };
 }  // namespace integration
 }  // namespace threeboard

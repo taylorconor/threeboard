@@ -38,28 +38,24 @@ std::string CreateAsciiString(uint8_t keycode, uint8_t modcode) {
 
 bool DefaultLayerModel::Apply(const Keypress& keypress) {
   if (keypress == Keypress::X) {
-    bank0_++;
+    device_state_.bank_0++;
   } else if (keypress == Keypress::Y) {
-    bank1_++;
+    device_state_.bank_1++;
   } else if (keypress == Keypress::Z) {
-    *usb_buffer_ += CreateAsciiString(bank0_, bank1_);
+    *usb_buffer_ +=
+        CreateAsciiString(device_state_.bank_0, device_state_.bank_1);
   } else if (keypress == Keypress::XZ) {
-    bank0_ = 0;
+    device_state_.bank_0 = 0;
   } else if (keypress == Keypress::YZ) {
-    bank1_ = 0;
+    device_state_.bank_1 = 0;
   } else if (keypress == Keypress::XYZ) {
     return true;
   }
   return false;
 }
 
-ObservableState DefaultLayerModel::GetStateSnapshot() {
-  ObservableState state;
-  state.bank_0 = bank0_;
-  state.bank_1 = bank1_;
-  state.usb_buffer = *usb_buffer_;
-  *usb_buffer_ = "";
-  return state;
+simulator::DeviceState DefaultLayerModel::GetStateSnapshot() {
+  return device_state_;
 }
 }  // namespace integration
 }  // namespace threeboard

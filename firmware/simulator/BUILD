@@ -23,6 +23,7 @@ cc_library(
     hdrs = ["simulator.h"],
     deps = [
         ":simulator_delegate",
+        ":simulator_state",
         "//simulator/components:i2c_eeprom",
         "//simulator/components:uart",
         "//simulator/components:usb_host",
@@ -43,4 +44,9 @@ cc_binary(
         "//simulator/util:logging",
         "//simulator/util:state_storage",
     ],
+)
+
+cc_library(
+    name = "simulator_state",
+    hdrs = ["simulator_state.h"],
 )
