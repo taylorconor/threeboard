@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "integration/model/keypress_generator.h"
+#include "integration/model/rapidcheck_specializations.h"
 #include "integration/model/threeboard_model.h"
 #include "rapidcheck/gtest.h"
 #include "simulator/simavr/simavr_impl.h"

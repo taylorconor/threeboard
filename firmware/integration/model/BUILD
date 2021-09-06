@@ -5,8 +5,8 @@ package(default_visibility = [
 ])
 
 cc_library(
-    name = "keypress_generator",
-    hdrs = ["keypress_generator.h"],
+    name = "rapidcheck_specializations",
+    hdrs = ["rapidcheck_specializations.h"],
     deps = ["//src:keypress"],
 )
 
