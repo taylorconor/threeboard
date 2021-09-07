@@ -38,7 +38,6 @@ class PropertyTest : public testing::Test {
     simulator_ = std::make_unique<simulator::Simulator>(simavr_.get(), nullptr);
     simulator_->RunAsync();
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    simulator_->GetStateAndFlush();
   }
 
   void ApplyToSimulator(const Keypress &keypress) {
@@ -46,13 +45,11 @@ class PropertyTest : public testing::Test {
     for (char keycode : keycodes) {
       simulator_->HandleKeypress(keycode, true);
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     for (char keycode : keycodes) {
       simulator_->HandleKeypress(keycode, false);
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    simulator_->GetStateAndFlush();
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    std::this_thread::sleep_for(std::chrono::milliseconds(900));
   }
 
  protected:
@@ -68,8 +65,8 @@ RC_GTEST_FIXTURE_PROP(PropertyTest, DefaultPropertyTest,
     ApplyToSimulator(keypress);
 
     auto model_state = model_.GetStateSnapshot();
-    auto simulator_state = simulator_->GetStateAndFlush();
-    RC_ASSERT(model_state == simulator_state.device_state);
+    auto device_state = simulator_->GetDeviceState();
+    RC_ASSERT(model_state == device_state);
   }
 }
 

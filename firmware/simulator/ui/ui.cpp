@@ -17,9 +17,8 @@ constexpr uint8_t kOutputBoxY = kRootY + 15;
 constexpr uint8_t kLogBoxY = kRootY + 19;
 constexpr uint8_t kLogStatusColOffset = 47;
 
-constexpr uint8_t kKeyHoldTime = 20;
-constexpr uint8_t kLedPermanence = 50;
-constexpr uint8_t kSimulatorFps = 200;
+constexpr uint8_t kKeyHoldTime = 3;
+constexpr uint8_t kSimulatorFps = 20;
 
 constexpr uint8_t kWhite = 1;
 constexpr uint8_t kMedGrey = 2;
@@ -66,14 +65,11 @@ void DrawBorder() {
 }
 
 // Draw a single LED in the provided state under the current cursor;
-void DrawLed(uint8_t &enabled, const std::string &extra) {
+void DrawLed(bool enabled, const std::string &extra) {
   int color = enabled ? COLOR_PAIR(kBrightRed) : COLOR_PAIR(kDarkGrey);
   attron(color);
   printw(("●" + extra).c_str());
   attroff(color);
-  if (enabled < kLedPermanence && enabled > 0) {
-    enabled--;
-  }
 }
 
 void DrawKey(int x_offset, bool pressed, char letter) {
@@ -103,14 +99,6 @@ void DrawKey(int x_offset, bool pressed, char letter) {
     printw("|/____\\|");
   }
   attroff(color);
-}
-
-void SetLedState(uint8_t &led, bool enabled) {
-  if (enabled) {
-    led = kLedPermanence;
-  } else if (led > 0) {
-    led -= 1;
-  }
 }
 
 std::string ParseCpuFreq(uint64_t ticks_per_sec) {
@@ -210,15 +198,13 @@ void UI::RenderLoop() {
       // Trigger any applicable keypresses from the user into the firmware.
       UpdateKeyState();
 
-      // Get the latest simulator state needed to provide the state to draw each
-      // component in the UI.
-      current_sim_state_ = simulator_->GetStateAndFlush();
-      for (const char &c : current_sim_state_.device_state.usb_buffer) {
+      // Get the latest simulator states needed to provide the state to draw
+      // each component in the UI.
+      current_sim_state_ = simulator_->GetSimulatorState();
+      current_device_state_ = simulator_->GetDeviceState();
+      for (const char &c : current_device_state_.usb_buffer) {
         output_pad_->Write(c);
       }
-
-      // Update the state and timing of the threeboard's LEDs.
-      UpdateLedState();
 
       // Draw each UI component.
       DrawBorder();
@@ -283,20 +269,6 @@ void UI::UpdateKeyState() {
   }
   if (key_d_ == 0 && keyup_d) {
     simulator_->HandleKeypress('d', false);
-  }
-}
-
-void UI::UpdateLedState() {
-  const auto &device_state = current_sim_state_.device_state;
-  SetLedState(r_, device_state.led_r);
-  SetLedState(g_, device_state.led_g);
-  SetLedState(b_, device_state.led_b);
-  SetLedState(prog_, device_state.led_prog);
-  SetLedState(err_, device_state.led_err);
-  SetLedState(status_, device_state.led_status);
-  for (int i = 0; i < 8; ++i) {
-    SetLedState(bank0_[i], device_state.bank_0 & (1 << i));
-    SetLedState(bank1_[i], device_state.bank_1 & (1 << i));
   }
 }
 
@@ -369,23 +341,23 @@ std::string UI::GetSramUsageString() {
 void UI::DrawLeds() {
   // Top row: R, G, B, PROG, ERR and STATUS.
   move(kRootY + 2, kRootX + 3);
-  DrawLed(r_, S(4, ' '));
-  DrawLed(g_, S(4, ' '));
-  DrawLed(b_, S(14, ' '));
-  DrawLed(prog_, S(4, ' '));
-  DrawLed(err_, S(4, ' '));
-  DrawLed(status_, "");
+  DrawLed(current_device_state_.led_r, S(4, ' '));
+  DrawLed(current_device_state_.led_g, S(4, ' '));
+  DrawLed(current_device_state_.led_b, S(14, ' '));
+  DrawLed(current_device_state_.led_prog, S(4, ' '));
+  DrawLed(current_device_state_.led_err, S(4, ' '));
+  DrawLed(current_device_state_.led_status, "");
 
   // First 8-bit LED bank.
   move(kRootY + 4, kRootX + 3);
-  for (int j = 7; j >= 0; j--) {
-    DrawLed(bank0_[j], S(4, ' '));
+  for (int i = 7; i >= 0; i--) {
+    DrawLed(current_device_state_.bank_0 & (1 << i), S(4, ' '));
   }
 
   // Second 8-bit LED bank.
   move(kRootY + 6, kRootX + 3);
-  for (int j = 7; j >= 0; j--) {
-    DrawLed(bank1_[j], S(4, ' '));
+  for (int i = 7; i >= 0; i--) {
+    DrawLed(current_device_state_.bank_1 & (1 << i), S(4, ' '));
   }
 }
 

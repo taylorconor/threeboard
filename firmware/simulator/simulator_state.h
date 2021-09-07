@@ -26,7 +26,6 @@ struct DeviceState {
 };
 
 struct SimulatorState {
-  DeviceState device_state;
   int cpu_state = 0;
   bool gdb_enabled = false;
   bool usb_attached = false;

@@ -2,7 +2,6 @@
 
 #include <atomic>
 #include <mutex>
-#include <thread>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -40,7 +39,6 @@ class UI : public UIDelegate {
   void RenderLoop();
 
   void UpdateKeyState();
-  void UpdateLedState();
 
   void UpdateCpuStateBreakdownList();
   void UpdateSramUsageBreakdownList();
@@ -59,6 +57,7 @@ class UI : public UIDelegate {
 
   // Current state of the simulator for a given render cycle.
   SimulatorState current_sim_state_;
+  DeviceState current_device_state_;
 
   // The output window used by curses.
   WINDOW *window_;
@@ -86,7 +85,6 @@ class UI : public UIDelegate {
   std::unordered_map<uint8_t, uint64_t> cpu_mode_distribution_;
   std::unordered_set<int> cpu_states_since_last_flush_;
 
-  std::unique_ptr<std::thread> render_thread_;
   std::atomic<bool> is_running_;
   std::string log_file_;
   uint64_t current_frame_ = 0;
@@ -94,14 +92,6 @@ class UI : public UIDelegate {
   uint8_t key_a_ = 0;
   uint8_t key_s_ = 0;
   uint8_t key_d_ = 0;
-  uint8_t r_ = 0;
-  uint8_t g_ = 0;
-  uint8_t b_ = 0;
-  uint8_t prog_ = 0;
-  uint8_t err_ = 0;
-  uint8_t status_ = 0;
-  uint8_t bank0_[8] = {};
-  uint8_t bank1_[8] = {};
 };
 }  // namespace simulator
 }  // namespace threeboard

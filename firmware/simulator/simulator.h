@@ -23,7 +23,8 @@ class Simulator : public SimulatorDelegate {
   void RunAsync();
   void Reset();
 
-  SimulatorState GetStateAndFlush();
+  DeviceState GetDeviceState();
+  SimulatorState GetSimulatorState();
   void HandleKeypress(char key, bool state);
 
   uint64_t GetCurrentCpuCycle();
@@ -34,16 +35,26 @@ class Simulator : public SimulatorDelegate {
   void HandleUsbOutput(uint8_t mod_code, uint8_t key_code) override;
 
   void InternalRunAsync();
-  void UpdateDeviceState();
+  void UpdateLedState();
 
   Simavr *simavr_;
   std::unique_ptr<Uart> uart_;
   std::thread sim_thread_;
+  std::thread state_update_thread_;
   std::atomic<bool> is_running_;
   std::atomic<bool> should_reset_;
-  DeviceState device_state_;
   UsbHost usb_host_;
   I2cEeprom eeprom0_;
+
+  uint8_t r_ = 0;
+  uint8_t g_ = 0;
+  uint8_t b_ = 0;
+  uint8_t prog_ = 0;
+  uint8_t err_ = 0;
+  uint8_t status_ = 0;
+  uint8_t bank0_[8] = {};
+  uint8_t bank1_[8] = {};
+  std::string usb_buffer_;
 };
 
 }  // namespace simulator
