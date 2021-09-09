@@ -31,6 +31,10 @@ void CallbackTrampoline(avr_irq_t *irq, uint32_t value, void *param) {
 
 static const char *_ee_irq_names[] = {"twi.miso", "twi.mosi"};
 
+// A definition of a simavr sleep function that does nothing. Used to run simavr
+// at max speed when requested.
+void noop_sleep(struct avr_t *avr, avr_cycle_count_t) {}
+
 }  // namespace
 
 // static.
@@ -100,6 +104,8 @@ void SimavrImpl::DeinitGdb() { avr_deinit_gdb(avr_.get()); }
 void SimavrImpl::Reset() { avr_reset(avr_.get()); }
 
 void SimavrImpl::Terminate() { avr_terminate(avr_.get()); }
+
+void SimavrImpl::DisableSleep() { avr_->sleep = noop_sleep; }
 
 int SimavrImpl::InvokeIoctl(uint32_t ioctl, void *param) {
   return avr_ioctl(avr_.get(), ioctl, param);

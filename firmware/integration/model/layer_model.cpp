@@ -42,7 +42,7 @@ bool DefaultLayerModel::Apply(const Keypress& keypress) {
   } else if (keypress == Keypress::Y) {
     device_state_.bank_1++;
   } else if (keypress == Keypress::Z) {
-    *usb_buffer_ +=
+    device_state_.usb_buffer +=
         CreateAsciiString(device_state_.bank_0, device_state_.bank_1);
   } else if (keypress == Keypress::XZ) {
     device_state_.bank_0 = 0;
@@ -55,7 +55,9 @@ bool DefaultLayerModel::Apply(const Keypress& keypress) {
 }
 
 simulator::DeviceState DefaultLayerModel::GetStateSnapshot() {
-  return device_state_;
+  simulator::DeviceState snapshot = device_state_;
+  device_state_.usb_buffer = "";
+  return snapshot;
 }
 }  // namespace integration
 }  // namespace threeboard

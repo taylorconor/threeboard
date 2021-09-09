@@ -11,8 +11,6 @@ inline uint8_t SetBit(bool status, uint8_t idx) {
   return status ? (1 << idx) : 0;
 }
 
-inline bool ShouldCapitalise(uint8_t modcode) { return modcode & 0b00100010; }
-
 inline uint16_t GetSramUsage(Simavr *simavr) {
   // Memory is laid out as follows in the atmega32u4:
   // |- registers -| |- ioports -| |- .data -|- .bss -|- << stack -----|
@@ -59,6 +57,11 @@ void Simulator::RunAsync() {
   is_running_ = true;
   sim_thread_ = std::thread(&Simulator::InternalRunAsync, this);
   state_update_thread_ = std::thread(&Simulator::UpdateLedState, this);
+}
+
+void Simulator::RunFullSpeedAsync() {
+  simavr_->DisableSleep();
+  RunAsync();
 }
 
 void Simulator::Reset() { should_reset_ = true; }
@@ -125,10 +128,18 @@ void Simulator::EnableLogging(UIDelegate *ui_delegate) {
 }
 
 void Simulator::HandleUsbOutput(uint8_t mod_code, uint8_t key_code) {
+  bool capitalise = false;
+  // Check for L_SHIFT and R_SHIFT.
+  if ((mod_code & 0x22) > 0 && (mod_code & ~0x22) == 0) {
+    capitalise = true;
+  } else if (mod_code != 0) {
+    // Ignore and reject any non-shift modcodes.
+    return;
+  }
   char c;
   if (key_code >= 0x04 && key_code <= 0x1d) {
     c = key_code + 0x5d;
-    if (ShouldCapitalise(mod_code)) {
+    if (capitalise) {
       c -= 0x20;
     }
   } else if (key_code == 0x2a) {

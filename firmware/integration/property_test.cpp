@@ -36,7 +36,7 @@ class PropertyTest : public testing::Test {
     std::array<uint8_t, 1024> internal_eeprom_data{};
     simavr_ = simulator::SimavrImpl::Create(&internal_eeprom_data);
     simulator_ = std::make_unique<simulator::Simulator>(simavr_.get(), nullptr);
-    simulator_->RunAsync();
+    simulator_->RunFullSpeedAsync();
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
 
@@ -49,7 +49,7 @@ class PropertyTest : public testing::Test {
     for (char keycode : keycodes) {
       simulator_->HandleKeypress(keycode, false);
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(900));
+    std::this_thread::sleep_for(std::chrono::milliseconds(150));
   }
 
  protected:
@@ -57,6 +57,36 @@ class PropertyTest : public testing::Test {
   std::unique_ptr<simulator::Simavr> simavr_;
   std::unique_ptr<simulator::Simulator> simulator_;
 };
+
+TEST_F(PropertyTest, TempPropertyTest) {
+  std::vector<Keypress> keypresses = {
+      Keypress::X, Keypress::X,  Keypress::X, Keypress::X,
+      Keypress::Y, Keypress::Y,  Keypress::Z, Keypress::X,
+      Keypress::X, Keypress::X,  Keypress::X, Keypress::Z,
+      Keypress::Z, Keypress::YZ, Keypress::Z, Keypress::Z};
+  std::stringstream s;
+  int i = 0;
+  for (const Keypress &keypress : keypresses) {
+    s << "Applying keypress " << i << " (";
+    rc::show(keypress, s);
+    s << ")\n";
+    model_.Apply(keypress);
+    ApplyToSimulator(keypress);
+
+    auto model_state = model_.GetStateSnapshot();
+    auto device_state = simulator_->GetDeviceState();
+    if (model_state != device_state) {
+      s << "Failure!\nmodel_state = ";
+      rc::show(model_state, s);
+      s << "\ndevice_state= ";
+      rc::show(device_state, s);
+      std::cout << s.str() << std::endl;
+      s.clear();
+    }
+    ASSERT_EQ(model_state, device_state);
+    i++;
+  }
+}
 
 RC_GTEST_FIXTURE_PROP(PropertyTest, DefaultPropertyTest,
                       (const std::vector<Keypress> &keypresses)) {

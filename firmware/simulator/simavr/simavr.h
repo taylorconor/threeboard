@@ -28,6 +28,7 @@ class Simavr {
   virtual void DeinitGdb() = 0;
   virtual void Reset() = 0;
   virtual void Terminate() = 0;
+  virtual void DisableSleep() = 0;
 
   virtual int InvokeIoctl(uint32_t ioctl, void *param) = 0;
 

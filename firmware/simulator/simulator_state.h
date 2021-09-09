@@ -23,6 +23,8 @@ struct DeviceState {
            (led_err == rhs.led_err) && (led_status == rhs.led_status) &&
            (usb_buffer == rhs.usb_buffer);
   }
+
+  bool operator!=(const DeviceState& rhs) const { return !operator==(rhs); }
 };
 
 struct SimulatorState {

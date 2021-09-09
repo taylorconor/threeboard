@@ -10,13 +10,7 @@ namespace integration {
 
 class ThreeboardModel {
  public:
-  ThreeboardModel()
-      : dflt_layer_model_(&usb_buffer_),
-        r_layer_model_(&usb_buffer_),
-        g_layer_model_(&usb_buffer_),
-        b_layer_model_(&usb_buffer_) {
-    current_layer_ = LayerId::DFLT;
-  }
+  ThreeboardModel() { current_layer_ = LayerId::DFLT; }
 
   void Apply(const Keypress& keypress);
   simulator::DeviceState GetStateSnapshot();
@@ -24,7 +18,6 @@ class ThreeboardModel {
  private:
   LayerModel* CurrentLayerModel();
 
-  std::string usb_buffer_;
   DefaultLayerModel dflt_layer_model_;
   DefaultLayerModel r_layer_model_;
   DefaultLayerModel g_layer_model_;
