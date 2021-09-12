@@ -37,7 +37,7 @@ class PropertyTest : public testing::Test {
     simavr_ = simulator::SimavrImpl::Create(&internal_eeprom_data);
     simulator_ = std::make_unique<simulator::Simulator>(simavr_.get(), nullptr);
     simulator_->RunFullSpeedAsync();
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
 
   void ApplyToSimulator(const Keypress &keypress) {
@@ -45,7 +45,7 @@ class PropertyTest : public testing::Test {
     for (char keycode : keycodes) {
       simulator_->HandleKeypress(keycode, true);
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(150));
     for (char keycode : keycodes) {
       simulator_->HandleKeypress(keycode, false);
     }
@@ -58,15 +58,16 @@ class PropertyTest : public testing::Test {
   std::unique_ptr<simulator::Simulator> simulator_;
 };
 
-TEST_F(PropertyTest, TempPropertyTest) {
-  std::vector<Keypress> keypresses = {
-      Keypress::X, Keypress::X,  Keypress::X, Keypress::X,
-      Keypress::Y, Keypress::Y,  Keypress::Z, Keypress::X,
-      Keypress::X, Keypress::X,  Keypress::X, Keypress::Z,
-      Keypress::Z, Keypress::YZ, Keypress::Z, Keypress::Z};
+RC_GTEST_FIXTURE_PROP(PropertyTest, DefaultPropertyTest,
+                      (const std::vector<Keypress> &keypresses)) {
   std::stringstream s;
   int i = 0;
   for (const Keypress &keypress : keypresses) {
+    // TODO: remove this check when the model is fully implemented.
+    if (keypress == Keypress::XYZ) {
+      i++;
+      continue;
+    }
     s << "Applying keypress " << i << " (";
     rc::show(keypress, s);
     s << ")\n";
@@ -83,20 +84,8 @@ TEST_F(PropertyTest, TempPropertyTest) {
       std::cout << s.str() << std::endl;
       s.clear();
     }
-    ASSERT_EQ(model_state, device_state);
-    i++;
-  }
-}
-
-RC_GTEST_FIXTURE_PROP(PropertyTest, DefaultPropertyTest,
-                      (const std::vector<Keypress> &keypresses)) {
-  for (const Keypress &keypress : keypresses) {
-    model_.Apply(keypress);
-    ApplyToSimulator(keypress);
-
-    auto model_state = model_.GetStateSnapshot();
-    auto device_state = simulator_->GetDeviceState();
     RC_ASSERT(model_state == device_state);
+    i++;
   }
 }
 

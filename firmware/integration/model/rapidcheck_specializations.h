@@ -9,7 +9,7 @@ namespace rc {
 template <>
 struct Arbitrary<threeboard::Keypress> {
   static Gen<threeboard::Keypress> arbitrary() {
-    return gen::cast<threeboard::Keypress>(gen::inRange(1, 6));
+    return gen::cast<threeboard::Keypress>(gen::inRange(1, 100));
   }
 };
 

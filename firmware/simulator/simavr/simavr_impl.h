@@ -39,6 +39,8 @@ class SimavrImpl : public Simavr {
       UartOutputCallback *callback) override;
   std::unique_ptr<Lifetime> RegisterI2cMessageCallback(
       I2cMessageCallback *callback) override;
+  void RegisterPortBWriteCallback(PortWriteCallback *callback) override;
+  void RegisterPortDWriteCallback(PortWriteCallback *callback) override;
 
   void RaiseI2cIrq(uint8_t direction, uint32_t value) override;
 

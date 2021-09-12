@@ -15,6 +15,7 @@ namespace simulator {
 using UsbAttachCallback = std::function<void(uint32_t)>;
 using UartOutputCallback = std::function<void(uint8_t)>;
 using I2cMessageCallback = std::function<void(uint32_t)>;
+using PortWriteCallback = std::function<void(uint8_t)>;
 
 // A shim to collect the simavr API into one single interface to make all
 // classes that interact with simavr testable.
@@ -38,6 +39,8 @@ class Simavr {
       UartOutputCallback *callback) = 0;
   virtual std::unique_ptr<Lifetime> RegisterI2cMessageCallback(
       I2cMessageCallback *callback) = 0;
+  virtual void RegisterPortBWriteCallback(PortWriteCallback *callback) = 0;
+  virtual void RegisterPortDWriteCallback(PortWriteCallback *callback) = 0;
 
   virtual void RaiseI2cIrq(uint8_t direction, uint32_t value) = 0;
 

@@ -34,28 +34,22 @@ class Simulator : public SimulatorDelegate {
 
  private:
   void HandleUsbOutput(uint8_t mod_code, uint8_t key_code) override;
+  void HandlePortWrite(uint8_t port, uint8_t value);
+  void UpdateLedState(uint8_t row);
 
   void InternalRunAsync();
-  void UpdateLedState();
 
   Simavr *simavr_;
   std::unique_ptr<Uart> uart_;
   std::thread sim_thread_;
-  std::thread state_update_thread_;
   std::atomic<bool> is_running_;
   std::atomic<bool> should_reset_;
   UsbHost usb_host_;
   I2cEeprom eeprom0_;
+  DeviceState device_state_;
 
-  uint8_t r_ = 0;
-  uint8_t g_ = 0;
-  uint8_t b_ = 0;
-  uint8_t prog_ = 0;
-  uint8_t err_ = 0;
-  uint8_t status_ = 0;
-  uint8_t bank0_[8] = {};
-  uint8_t bank1_[8] = {};
-  std::string usb_buffer_;
+  std::unique_ptr<PortWriteCallback> portb_write_callback_;
+  std::unique_ptr<PortWriteCallback> portd_write_callback_;
 };
 
 }  // namespace simulator

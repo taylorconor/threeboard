@@ -76,24 +76,23 @@ void LedController::WriteStateToPins(uint8_t row) {
   // Enable the correct row pin and column pins for the current row.
   if (row == 0) {
     // row 0: 4 MSB of bank 0
-    native_->EnablePORTD(1 << native::PD7);
     WriteColumns(state_.GetBank0() >> 4);
+    native_->EnablePORTD(1 << native::PD7);
   } else if (row == 1) {
     // row 1: 4 LSB of bank 0
+    WriteColumns(state_.GetBank0());
     native_->EnablePORTB(1 << native::PB4);
-    WriteColumns(state_.GetBank0() & 0xFF);
   } else if (row == 2) {
     // row 2: 4 MSB of bank 1
-    native_->EnablePORTD(1 << native::PD6);
     WriteColumns(state_.GetBank1() >> 4);
+    native_->EnablePORTD(1 << native::PD6);
   } else if (row == 3) {
     // row 3: 4 LSB of bank 1
+    WriteColumns(state_.GetBank1());
     native_->EnablePORTD(1 << native::PD4);
-    WriteColumns(state_.GetBank1() & 0xFF);
   } else if (row == 4) {
     // row 4: R,G,B and PROG. These support full LedState rather than simple
     // booleans.
-    native_->EnablePORTB(1 << native::PB5);
     ApplyLedState(&native::Native::DisablePORTF, 1 << native::PF0,
                   state_.GetR());
     ApplyLedState(&native::Native::DisablePORTF, 1 << native::PF1,
@@ -102,6 +101,7 @@ void LedController::WriteStateToPins(uint8_t row) {
                   state_.GetB());
     ApplyLedState(&native::Native::DisablePORTF, 1 << native::PF5,
                   state_.GetProg());
+    native_->EnablePORTB(1 << native::PB5);
   }
 }
 

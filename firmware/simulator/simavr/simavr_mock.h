@@ -15,6 +15,7 @@ class DefaultSimavrMock : public Simavr {
   MOCK_METHOD(void, DeinitGdb, (), (override));
   MOCK_METHOD(void, Reset, (), (override));
   MOCK_METHOD(void, Terminate, (), (override));
+  MOCK_METHOD(void, DisableSleep, (), (override));
 
   MOCK_METHOD(int, InvokeIoctl, (uint32_t, void *), (override));
 
@@ -24,6 +25,10 @@ class DefaultSimavrMock : public Simavr {
               (UartOutputCallback *), (override));
   MOCK_METHOD(std::unique_ptr<Lifetime>, RegisterI2cMessageCallback,
               (I2cMessageCallback *), (override));
+  MOCK_METHOD(void, RegisterPortBWriteCallback, (PortWriteCallback *),
+              (override));
+  MOCK_METHOD(void, RegisterPortDWriteCallback, (PortWriteCallback *),
+              (override));
 
   MOCK_METHOD(void, RaiseI2cIrq, (uint8_t, uint32_t), (override));
 

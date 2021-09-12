@@ -4,6 +4,8 @@ namespace threeboard {
 namespace simulator {
 namespace {
 
+using namespace std::placeholders;
+
 // Used to test a single pin in a register.
 inline bool IsEnabled(uint8_t reg, uint8_t pin) { return reg & (1 << pin); }
 
@@ -44,19 +46,24 @@ Simulator::Simulator(Simavr *simavr, StateStorage *state_storage)
       is_running_(false),
       should_reset_(false),
       usb_host_(simavr_, this),
-      eeprom0_(simavr_, state_storage, I2cEeprom::Instance::EEPROM_0) {}
+      eeprom0_(simavr_, state_storage, I2cEeprom::Instance::EEPROM_0) {
+  portb_write_callback_ = std::make_unique<PortWriteCallback>(
+      std::bind(&Simulator::HandlePortWrite, this, PORTB, _1));
+  simavr_->RegisterPortBWriteCallback(portb_write_callback_.get());
+  portd_write_callback_ = std::make_unique<PortWriteCallback>(
+      std::bind(&Simulator::HandlePortWrite, this, PORTD, _1));
+  simavr_->RegisterPortDWriteCallback(portd_write_callback_.get());
+}
 
 Simulator::~Simulator() {
   is_running_ = false;
   sim_thread_.join();
-  state_update_thread_.join();
 }
 
 void Simulator::RunAsync() {
   // Start a new thread to run the simulator and manage clock timing.
   is_running_ = true;
   sim_thread_ = std::thread(&Simulator::InternalRunAsync, this);
-  state_update_thread_ = std::thread(&Simulator::UpdateLedState, this);
 }
 
 void Simulator::RunFullSpeedAsync() {
@@ -67,19 +74,8 @@ void Simulator::RunFullSpeedAsync() {
 void Simulator::Reset() { should_reset_ = true; }
 
 DeviceState Simulator::GetDeviceState() {
-  DeviceState state;
-  state.led_r = r_;
-  state.led_g = g_;
-  state.led_b = b_;
-  state.led_prog = prog_;
-  state.led_err = err_;
-  state.led_status = status_;
-  for (int i = 0; i < 8; ++i) {
-    state.bank_0 |= !!bank0_[i] << i;
-    state.bank_1 |= !!bank1_[i] << i;
-  }
-  state.usb_buffer = usb_buffer_;
-  usb_buffer_.clear();
+  auto state = device_state_;
+  device_state_.usb_buffer.clear();
   return state;
 }
 
@@ -155,7 +151,56 @@ void Simulator::HandleUsbOutput(uint8_t mod_code, uint8_t key_code) {
     // TODO: support some special characters!
     return;
   }
-  usb_buffer_ += c;
+  device_state_.usb_buffer += c;
+}
+
+void Simulator::HandlePortWrite(uint8_t port, uint8_t value) {
+  if (port == PORTB) {
+    if (value & 0b00100000) {
+      UpdateLedState(4);
+    } else if (value & 0b00010000) {
+      UpdateLedState(1);
+    }
+  } else if (port == PORTD) {
+    if (value & 0b10000000) {
+      UpdateLedState(0);
+    } else if (value & 0b01000000) {
+      UpdateLedState(2);
+    } else if (value & 0b00010000) {
+      UpdateLedState(3);
+    }
+  }
+}
+
+void Simulator::UpdateLedState(uint8_t row) {
+  bool pf0 = !(simavr_->GetData(PORTF) & (1 << 0));
+  bool pf1 = !(simavr_->GetData(PORTF) & (1 << 1));
+  bool pf4 = !(simavr_->GetData(PORTF) & (1 << 4));
+  bool pf5 = !(simavr_->GetData(PORTF) & (1 << 5));
+  uint8_t cols = (pf0 << 3) | (pf1 << 2) | (pf4 << 1) | pf5;
+
+  if (row == 0) {
+    device_state_.bank_0 &= 0x0F;
+    device_state_.bank_0 |= cols << 4;
+    device_state_.led_err = IsEnabled(simavr_->GetData(PORTB), 6) &&
+                            !IsEnabled(simavr_->GetData(PORTC), 6);
+  } else if (row == 1) {
+    device_state_.bank_0 &= 0xF0;
+    device_state_.bank_0 |= cols;
+    device_state_.led_status = IsEnabled(simavr_->GetData(PORTC), 6) &&
+                               !IsEnabled(simavr_->GetData(PORTB), 6);
+  } else if (row == 2) {
+    device_state_.bank_1 &= 0x0F;
+    device_state_.bank_1 |= cols << 4;
+  } else if (row == 3) {
+    device_state_.bank_1 &= 0xF0;
+    device_state_.bank_1 |= cols;
+  } else if (row == 4) {
+    device_state_.led_r = pf0;
+    device_state_.led_g = pf1;
+    device_state_.led_b = pf4;
+    device_state_.led_prog = pf5;
+  }
 }
 
 void Simulator::InternalRunAsync() {
@@ -179,65 +224,6 @@ void Simulator::InternalRunAsync() {
     std::cout << "Simulator finished with state "
               << (simavr_->GetState() == DONE ? "DONE" : "CRASHED")
               << std::endl;
-  }
-}
-
-void Simulator::UpdateLedState() {
-  while (is_running_) {
-    const uint8_t portb = simavr_->GetData(PORTB);
-    const uint8_t portc = simavr_->GetData(PORTC);
-    const uint8_t portd = simavr_->GetData(PORTD);
-    const uint8_t portf = simavr_->GetData(PORTF);
-
-    // The ERR/STATUS LED pair for threeboard v1 is wired as follows:
-    // status0: PB6, ERR
-    // status1: PC6, STATUS
-    if (IsEnabled(portb, 6) && !IsEnabled(portc, 6)) {
-      SetLedState(err_, true);
-    } else if (IsEnabled(portc, 6) && !IsEnabled(portb, 6)) {
-      SetLedState(status_, true);
-    }
-
-    // The wiring of the LED matrix for threeboard v1 is detailed below.
-    // Scanning is row-major, meaning only one row is active at a time. The
-    // column pins can be effectively considered as active low.
-    // row0: PD7, B0_{4,5,6,7}
-    // row1: PB4, B0_{0,1,2,3}
-    // row2: PD6, B1_{4,5,6,7}
-    // row3: PD4, B1_{0,1,2,3}
-    // row4: PB5, (R, G, B, PROG)
-    // col0: PF0, (R, B0_3, B0_7, B1_3, B1_7)
-    // col1: PF1, (G, B0_2, B0_6, B1_2, B1_6)
-    // col2: PF4, (B, B0_1, B0_5, B1_1, B1_5)
-    // col3: PF5, (PROG, B0_0, B0_4, B1_0, B1_4)
-    if (IsEnabled(portd, 7)) {
-      SetLedState(bank0_[7], !IsEnabled(portf, 0));
-      SetLedState(bank0_[6], !IsEnabled(portf, 1));
-      SetLedState(bank0_[5], !IsEnabled(portf, 4));
-      SetLedState(bank0_[4], !IsEnabled(portf, 5));
-    } else if (IsEnabled(portb, 4)) {
-      SetLedState(bank0_[3], !IsEnabled(portf, 0));
-      SetLedState(bank0_[2], !IsEnabled(portf, 1));
-      SetLedState(bank0_[1], !IsEnabled(portf, 4));
-      SetLedState(bank0_[0], !IsEnabled(portf, 5));
-    } else if (IsEnabled(portd, 6)) {
-      SetLedState(bank1_[7], !IsEnabled(portf, 0));
-      SetLedState(bank1_[6], !IsEnabled(portf, 1));
-      SetLedState(bank1_[5], !IsEnabled(portf, 4));
-      SetLedState(bank1_[4], !IsEnabled(portf, 5));
-    } else if (IsEnabled(portd, 4)) {
-      SetLedState(bank1_[3], !IsEnabled(portf, 0));
-      SetLedState(bank1_[2], !IsEnabled(portf, 1));
-      SetLedState(bank1_[1], !IsEnabled(portf, 4));
-      SetLedState(bank1_[0], !IsEnabled(portf, 5));
-    } else if (IsEnabled(portb, 5)) {
-      SetLedState(r_, !IsEnabled(portf, 0));
-      SetLedState(g_, !IsEnabled(portf, 1));
-      SetLedState(b_, !IsEnabled(portf, 4));
-      SetLedState(prog_, !IsEnabled(portf, 5));
-    }
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 }
 

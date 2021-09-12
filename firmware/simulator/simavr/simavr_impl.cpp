@@ -20,20 +20,29 @@ namespace {
 // this is built since it's listed as a dependency.
 const std::string kFirmwareFile = "simulator/native/threeboard_sim_binary.elf";
 
-// C-style trampoline function to bounce the avr_irq_register_notify callback to
-// an instance of the provided callback type defined in T, which is assumed to
-// have been cast to void* and provided in param.
+// C-style trampoline functions to bounce the avr_irq_register_notify and
+// avr_register_io_write callbacks to an instance of the provided callback type
+// defined in T, which is assumed to have been cast to void* and provided in
+// param.
 template <typename T>
 void CallbackTrampoline(avr_irq_t *irq, uint32_t value, void *param) {
   auto *callback = (T *)param;
   (*callback)(value);
 }
 
+template <typename T>
+void CallbackTrampoline(avr_t *avr, avr_io_addr_t addr, uint8_t value,
+                        void *param) {
+  auto *callback = (T *)param;
+  (*callback)(value);
+  avr->data[addr] = value;
+}
+
 static const char *_ee_irq_names[] = {"twi.miso", "twi.mosi"};
 
 // A definition of a simavr sleep function that does nothing. Used to run simavr
 // at max speed when requested.
-void noop_sleep(struct avr_t *avr, avr_cycle_count_t) {}
+void noop_sleep(struct avr_t *, avr_cycle_count_t) {}
 
 }  // namespace
 
@@ -157,6 +166,18 @@ std::unique_ptr<Lifetime> SimavrImpl::RegisterI2cMessageCallback(
         avr_io_getirq(avr_.get(), AVR_IOCTL_TWI_GETIRQ(0), TWI_IRQ_OUTPUT),
         i2c_irq_ + TWI_IRQ_OUTPUT);
   });
+}
+
+void SimavrImpl::RegisterPortBWriteCallback(PortWriteCallback *callback) {
+  avr_register_io_write(avr_.get(), PORTB,
+                        &CallbackTrampoline<PortWriteCallback>,
+                        (void *)callback);
+}
+
+void SimavrImpl::RegisterPortDWriteCallback(PortWriteCallback *callback) {
+  avr_register_io_write(avr_.get(), PORTD,
+                        &CallbackTrampoline<PortWriteCallback>,
+                        (void *)callback);
 }
 
 void SimavrImpl::RaiseI2cIrq(uint8_t direction, uint32_t value) {
