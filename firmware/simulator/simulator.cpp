@@ -9,10 +9,6 @@ using namespace std::placeholders;
 // Used to test a single pin in a register.
 inline bool IsEnabled(uint8_t reg, uint8_t pin) { return reg & (1 << pin); }
 
-inline uint8_t SetBit(bool status, uint8_t idx) {
-  return status ? (1 << idx) : 0;
-}
-
 inline uint16_t GetSramUsage(Simavr *simavr) {
   // Memory is laid out as follows in the atmega32u4:
   // |- registers -| |- ioports -| |- .data -|- .bss -|- << stack -----|
@@ -29,14 +25,6 @@ inline void SetPinB(Simavr *simavr, uint8_t pin, bool enabled) {
   simavr->SetData(PINB, (simavr->GetData(PINB) & ~(1 << pin)));
   if (enabled) {
     simavr->SetData(PINB, (simavr->GetData(PINB) | (1 << pin)));
-  }
-}
-
-inline void SetLedState(uint8_t &led, bool enabled) {
-  if (enabled) {
-    led = 5;
-  } else if (led > 0) {
-    led -= 1;
   }
 }
 }  // namespace

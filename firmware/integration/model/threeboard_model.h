@@ -19,7 +19,7 @@ class ThreeboardModel {
   LayerModel* CurrentLayerModel();
 
   DefaultLayerModel dflt_layer_model_;
-  DefaultLayerModel r_layer_model_;
+  LayerRModel r_layer_model_;
   DefaultLayerModel g_layer_model_;
   DefaultLayerModel b_layer_model_;
   LayerId current_layer_;

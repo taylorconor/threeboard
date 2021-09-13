@@ -36,6 +36,12 @@ std::string CreateAsciiString(uint8_t keycode, uint8_t modcode) {
 
 }  // namespace
 
+simulator::DeviceState LayerModel::GetStateSnapshot() {
+  simulator::DeviceState snapshot = device_state_;
+  device_state_.usb_buffer = "";
+  return snapshot;
+}
+
 bool DefaultLayerModel::Apply(const Keypress& keypress) {
   if (keypress == Keypress::X) {
     device_state_.bank_0++;
@@ -54,9 +60,60 @@ bool DefaultLayerModel::Apply(const Keypress& keypress) {
   return false;
 }
 
-simulator::DeviceState DefaultLayerModel::GetStateSnapshot() {
-  simulator::DeviceState snapshot = device_state_;
-  device_state_.usb_buffer = "";
+bool LayerRModel::Apply(const Keypress& keypress) {
+  if (keypress == Keypress::X) {
+    if (prog_) {
+      shortcuts_[shortcut_id_]++;
+    } else {
+      shortcut_id_++;
+    }
+  } else if (keypress == Keypress::Y) {
+    if (prog_) {
+      shortcut_id_++;
+    } else {
+      modcode_++;
+    }
+  } else if (keypress == Keypress::Z) {
+    if (!prog_) {
+      usb_buffer_ += CreateAsciiString(shortcuts_[shortcut_id_], modcode_);
+    }
+  } else if (keypress == Keypress::XY) {
+    prog_ = true;
+  } else if (keypress == Keypress::XZ) {
+    if (prog_) {
+      shortcuts_[shortcut_id_] = 0;
+    } else {
+      shortcut_id_ = 0;
+    }
+  } else if (keypress == Keypress::YZ) {
+    if (prog_) {
+      shortcut_id_ = 0;
+    } else {
+      modcode_ = 0;
+    }
+  } else if (keypress == Keypress::XYZ) {
+    if (prog_) {
+      prog_ = false;
+    } else {
+      return true;
+    }
+  }
+  return false;
+}
+
+simulator::DeviceState LayerRModel::GetStateSnapshot() {
+  simulator::DeviceState snapshot;
+  if (prog_) {
+    snapshot.bank_0 = shortcuts_[shortcut_id_];
+    snapshot.bank_1 = shortcut_id_;
+  } else {
+    snapshot.bank_0 = shortcut_id_;
+    snapshot.bank_1 = modcode_;
+  }
+  snapshot.led_r = true;
+  snapshot.led_prog = prog_;
+  snapshot.usb_buffer = usb_buffer_;
+  usb_buffer_ = "";
   return snapshot;
 }
 }  // namespace integration

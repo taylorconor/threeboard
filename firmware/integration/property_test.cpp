@@ -33,12 +33,26 @@ std::vector<char> GetKeycodes(const Keypress &keypress) {
 class PropertyTest : public testing::Test {
  public:
   PropertyTest() {
-    std::array<uint8_t, 1024> internal_eeprom_data{};
-    simavr_ = simulator::SimavrImpl::Create(&internal_eeprom_data);
+    internal_eeprom_data_.fill(0xFF);
+    simavr_ = simulator::SimavrImpl::Create(&internal_eeprom_data_);
     simulator_ = std::make_unique<simulator::Simulator>(simavr_.get(), nullptr);
-    simulator_->RunFullSpeedAsync();
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    simulator_->RunAsync();
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
+
+  bool ApplyAndCompare(const Keypress &keypress) {
+    model_.Apply(keypress);
+    ApplyToSimulator(keypress);
+    auto model_state = model_.GetStateSnapshot();
+    auto device_state = simulator_->GetDeviceState();
+    return model_state == device_state;
+  }
+
+ protected:
+  ThreeboardModel model_;
+  std::array<uint8_t, 1024> internal_eeprom_data_;
+  std::unique_ptr<simulator::Simavr> simavr_;
+  std::unique_ptr<simulator::Simulator> simulator_;
 
   void ApplyToSimulator(const Keypress &keypress) {
     auto keycodes = GetKeycodes(keypress);
@@ -51,41 +65,48 @@ class PropertyTest : public testing::Test {
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(150));
   }
-
- protected:
-  ThreeboardModel model_;
-  std::unique_ptr<simulator::Simavr> simavr_;
-  std::unique_ptr<simulator::Simulator> simulator_;
 };
+
+TEST_F(PropertyTest, DefaultLayerUsbOutput) {
+  // Set B0 = 4, B1 = 2.
+  std::vector<Keypress> keypresses = {Keypress::X, Keypress::X, Keypress::X,
+                                      Keypress::X, Keypress::Y, Keypress::Y};
+  for (const Keypress &keypress : keypresses) {
+    ASSERT_TRUE(ApplyAndCompare(keypress));
+  }
+
+  // Flush to USB output, verify consistency with the model, and verify that the
+  // correct character was output.
+  model_.Apply(Keypress::Z);
+  ApplyToSimulator(Keypress::Z);
+  auto model_state = model_.GetStateSnapshot();
+  auto device_state = simulator_->GetDeviceState();
+  ASSERT_EQ(model_state, device_state);
+  ASSERT_EQ(device_state.usb_buffer, "A");
+}
+
+TEST_F(PropertyTest, LayerRUsbOutput) {
+  // Set Layer = R, PROG, shortcut 0 = 4, DFLT.
+  std::vector<Keypress> keypresses = {Keypress::XYZ, Keypress::XY, Keypress::X,
+                                      Keypress::X,   Keypress::X,  Keypress::X,
+                                      Keypress::XYZ};
+  for (const Keypress &keypress : keypresses) {
+    ASSERT_TRUE(ApplyAndCompare(keypress));
+  }
+
+  // Flush shortcut to USB and verify the correct value was output.
+  model_.Apply(Keypress::Z);
+  ApplyToSimulator(Keypress::Z);
+  auto model_state = model_.GetStateSnapshot();
+  auto device_state = simulator_->GetDeviceState();
+  ASSERT_EQ(model_state, device_state);
+  ASSERT_EQ(device_state.usb_buffer, "a");
+}
 
 RC_GTEST_FIXTURE_PROP(PropertyTest, DefaultPropertyTest,
                       (const std::vector<Keypress> &keypresses)) {
-  std::stringstream s;
-  int i = 0;
   for (const Keypress &keypress : keypresses) {
-    // TODO: remove this check when the model is fully implemented.
-    if (keypress == Keypress::XYZ) {
-      i++;
-      continue;
-    }
-    s << "Applying keypress " << i << " (";
-    rc::show(keypress, s);
-    s << ")\n";
-    model_.Apply(keypress);
-    ApplyToSimulator(keypress);
-
-    auto model_state = model_.GetStateSnapshot();
-    auto device_state = simulator_->GetDeviceState();
-    if (model_state != device_state) {
-      s << "Failure!\nmodel_state = ";
-      rc::show(model_state, s);
-      s << "\ndevice_state= ";
-      rc::show(device_state, s);
-      std::cout << s.str() << std::endl;
-      s.clear();
-    }
-    RC_ASSERT(model_state == device_state);
-    i++;
+    RC_ASSERT(ApplyAndCompare(keypress));
   }
 }
 
