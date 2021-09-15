@@ -116,5 +116,65 @@ simulator::DeviceState LayerRModel::GetStateSnapshot() {
   usb_buffer_ = "";
   return snapshot;
 }
+
+bool LayerGModel::Apply(const Keypress& keypress) {
+  if (keypress == Keypress::X) {
+    if (prog_) {
+      key_code_++;
+    } else {
+      shortcut_id_++;
+    }
+  } else if (keypress == Keypress::Y) {
+    if (!prog_) {
+      word_mod_code_++;
+    }
+  } else if (keypress == Keypress::Z) {
+    if (prog_) {
+      if (shortcuts_[shortcut_id_].length() < 15) {
+        shortcuts_[shortcut_id_] += CreateAsciiString(key_code_, 0);
+      }
+      // TODO: Should we do something about the ERR led here, or ignore it?
+    } else {
+      usb_buffer_ += shortcuts_[shortcut_id_];
+    }
+  } else if (keypress == Keypress::XY) {
+    prog_ = true;
+  } else if (keypress == Keypress::XZ) {
+    if (prog_) {
+      key_code_ = 0;
+    } else {
+      shortcut_id_ = 0;
+    }
+  } else if (keypress == Keypress::YZ) {
+    if (prog_) {
+      shortcuts_[shortcut_id_].clear();
+    } else {
+      word_mod_code_ = 0;
+    }
+  } else if (keypress == Keypress::XYZ) {
+    if (prog_) {
+      prog_ = false;
+    } else {
+      return true;
+    }
+  }
+  return false;
+}
+
+simulator::DeviceState LayerGModel::GetStateSnapshot() {
+  simulator::DeviceState snapshot;
+  if (prog_) {
+    snapshot.bank_0 = key_code_;
+    snapshot.bank_1 = shortcuts_[shortcut_id_].length() << 4;
+  } else {
+    snapshot.bank_0 = shortcut_id_;
+    snapshot.bank_1 = word_mod_code_ | (shortcuts_[shortcut_id_].length() << 4);
+  }
+  snapshot.led_g = true;
+  snapshot.led_prog = prog_;
+  snapshot.usb_buffer = usb_buffer_;
+  usb_buffer_ = "";
+  return snapshot;
+}
 }  // namespace integration
 }  // namespace threeboard

@@ -32,5 +32,19 @@ class LayerRModel : public LayerModel {
   bool prog_ = false;
   uint8_t shortcuts_[256] = {0};
 };
+
+class LayerGModel : public LayerModel {
+ public:
+  bool Apply(const Keypress& keypress) override;
+  simulator::DeviceState GetStateSnapshot() override;
+
+ private:
+  std::string usb_buffer_;
+  uint8_t shortcut_id_ = 0;
+  uint8_t word_mod_code_ = 0;
+  uint8_t key_code_ = 0;
+  bool prog_ = false;
+  std::string shortcuts_[256];
+};
 }  // namespace integration
 }  // namespace threeboard

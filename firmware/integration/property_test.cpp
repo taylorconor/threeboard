@@ -45,7 +45,15 @@ class PropertyTest : public testing::Test {
     ApplyToSimulator(keypress);
     auto model_state = model_.GetStateSnapshot();
     auto device_state = simulator_->GetDeviceState();
-    return model_state == device_state;
+    bool is_same = (model_state == device_state);
+    if (!is_same) {
+      std::cout << "Device: ";
+      rc::show(device_state, std::cout);
+      std::cout << "\nModel:  ";
+      rc::show(model_state, std::cout);
+      std::cout << std::endl;
+    }
+    return is_same;
   }
 
  protected:
@@ -101,6 +109,25 @@ TEST_F(PropertyTest, LayerRUsbOutput) {
   auto device_state = simulator_->GetDeviceState();
   ASSERT_EQ(model_state, device_state);
   ASSERT_EQ(device_state.usb_buffer, "a");
+}
+
+TEST_F(PropertyTest, LayerGUsbOutput) {
+  // Set Layer = G, PROG, shortcut 0 = {4,5,6}, DFLT.
+  std::vector<Keypress> keypresses = {
+      Keypress::XYZ, Keypress::XYZ, Keypress::XY, Keypress::X, Keypress::X,
+      Keypress::X,   Keypress::X,   Keypress::Z,  Keypress::X, Keypress::Z,
+      Keypress::X,   Keypress::Z,   Keypress::XYZ};
+  for (const Keypress &keypress : keypresses) {
+    ASSERT_TRUE(ApplyAndCompare(keypress));
+  }
+
+  model_.Apply(Keypress::Z);
+  ApplyToSimulator(Keypress::Z);
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  auto model_state = model_.GetStateSnapshot();
+  auto device_state = simulator_->GetDeviceState();
+  ASSERT_EQ(model_state, device_state);
+  ASSERT_EQ(device_state.usb_buffer, "abc");
 }
 
 RC_GTEST_FIXTURE_PROP(PropertyTest, DefaultPropertyTest,
