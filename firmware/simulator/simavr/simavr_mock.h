@@ -15,7 +15,6 @@ class DefaultSimavrMock : public Simavr {
   MOCK_METHOD(void, DeinitGdb, (), (override));
   MOCK_METHOD(void, Reset, (), (override));
   MOCK_METHOD(void, Terminate, (), (override));
-  MOCK_METHOD(void, DisableSleep, (), (override));
 
   MOCK_METHOD(int, InvokeIoctl, (uint32_t, void *), (override));
 

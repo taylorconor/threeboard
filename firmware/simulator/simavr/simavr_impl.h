@@ -29,7 +29,6 @@ class SimavrImpl : public Simavr {
   void DeinitGdb() override;
   void Reset() override;
   void Terminate() override;
-  void DisableSleep() override;
 
   int InvokeIoctl(uint32_t ioctl, void *param) override;
 

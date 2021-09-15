@@ -21,7 +21,6 @@ class Simulator : public SimulatorDelegate {
   virtual ~Simulator();
 
   void RunAsync();
-  void RunFullSpeedAsync();
   void Reset();
 
   DeviceState GetDeviceState();

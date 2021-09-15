@@ -54,11 +54,6 @@ void Simulator::RunAsync() {
   sim_thread_ = std::thread(&Simulator::InternalRunAsync, this);
 }
 
-void Simulator::RunFullSpeedAsync() {
-  simavr_->DisableSleep();
-  RunAsync();
-}
-
 void Simulator::Reset() { should_reset_ = true; }
 
 DeviceState Simulator::GetDeviceState() {
