@@ -46,5 +46,14 @@ class LayerGModel : public LayerModel {
   bool prog_ = false;
   std::string shortcuts_[256];
 };
+
+class LayerBModel : public DefaultLayerModel {
+ public:
+  simulator::DeviceState GetStateSnapshot() override {
+    auto state = DefaultLayerModel::GetStateSnapshot();
+    state.led_b = true;
+    return state;
+  }
+};
 }  // namespace integration
 }  // namespace threeboard

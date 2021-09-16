@@ -134,6 +134,18 @@ TEST_F(PropertyTest, LayerGUsbOutput) {
   ASSERT_EQ(device_state.usb_buffer, "abc");
 }
 
+TEST_F(PropertyTest, SimpleLayerBTest) {
+  // Set Layer = B.
+  std::vector<Keypress> keypresses = {Keypress::XYZ, Keypress::XYZ,
+                                      Keypress::XYZ};
+  for (const Keypress &keypress : keypresses) {
+    ASSERT_TRUE(ApplyAndCompare(keypress));
+  }
+
+  auto device_state = simulator_->GetDeviceState();
+  ASSERT_TRUE(device_state.led_b);
+}
+
 RC_GTEST_FIXTURE_PROP(PropertyTest, DefaultPropertyTest,
                       (const std::vector<Keypress> &keypresses)) {
   for (const Keypress &keypress : keypresses) {
