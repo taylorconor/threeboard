@@ -64,13 +64,17 @@ class PropertyTest : public testing::Test {
 
   void ApplyToSimulator(const Keypress &keypress) {
     auto keycodes = GetKeycodes(keypress);
+    simulator_->Pause();
     for (char keycode : keycodes) {
       simulator_->HandleKeypress(keycode, true);
     }
+    simulator_->Unpause();
     std::this_thread::sleep_for(std::chrono::milliseconds(150));
+    simulator_->Pause();
     for (char keycode : keycodes) {
       simulator_->HandleKeypress(keycode, false);
     }
+    simulator_->Unpause();
     std::this_thread::sleep_for(std::chrono::milliseconds(150));
   }
 };

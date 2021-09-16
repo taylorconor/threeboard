@@ -22,6 +22,8 @@ class Simulator : public SimulatorDelegate {
 
   void RunAsync();
   void Reset();
+  void Pause();
+  void Unpause();
 
   DeviceState GetDeviceState();
   SimulatorState GetSimulatorState();
@@ -43,6 +45,7 @@ class Simulator : public SimulatorDelegate {
   std::thread sim_thread_;
   std::atomic<bool> is_running_;
   std::atomic<bool> should_reset_;
+  bool is_paused_;
   UsbHost usb_host_;
   I2cEeprom eeprom0_;
   DeviceState device_state_;
