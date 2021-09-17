@@ -9,19 +9,18 @@
 namespace threeboard {
 namespace simulator {
 
-// An extension of SimavrImpl that adds runtime instrumentation to the simulated
-// firmware. This class is used for simulator-backed integration tests, using
-// its instrumentation to verify the firmware for integrity. This class should
-// not be used for interactive simulation, as its runtime instrumentation makes
-// it considerably slower than SimavrImpl.
+// An extension of SimavrImpl that adds optional runtime instrumentation to the
+// simulated firmware. This class is used for simulator-backed integration
+// tests, using its instrumentation to verify the firmware for integrity. This
+// class should not be used for interactive simulation while instrumenting, as
+// its runtime instrumentation makes it considerably slower than SimavrImpl.
 class InstrumentingSimavr final : public SimavrImpl {
  public:
   ~InstrumentingSimavr() override = default;
 
   static std::unique_ptr<InstrumentingSimavr> Create(
       std::unique_ptr<elf_firmware_t> firmware,
-      std::array<uint8_t, 1024>* internal_eeprom_data,
-      absl::flat_hash_map<std::string, avr_symbol_t*>* symbol_table);
+      std::array<uint8_t, 1024>* internal_eeprom_data);
 
   absl::Status RunWithTimeout(const std::chrono::milliseconds& timeout);
   absl::Status RunUntilSymbol(const std::string& symbol,
@@ -32,14 +31,14 @@ class InstrumentingSimavr final : public SimavrImpl {
   void PrintCoreDump() const;
 
  private:
-  InstrumentingSimavr(
-      std::unique_ptr<avr_t> avr, std::unique_ptr<elf_firmware_t> elf_firmware,
-      absl::flat_hash_map<std::string, avr_symbol_t*>* symbol_table);
+  InstrumentingSimavr(std::unique_ptr<avr_t> avr,
+                      std::unique_ptr<elf_firmware_t> elf_firmware);
 
   void Run() override;
   void CopyDataSegment(std::vector<uint8_t>*) const;
   bool ShouldRunIntegrityCheckAtCurrentCycle() const;
   absl::Status RunWithIntegrityChecks();
+  static void BuildSymbolTable(elf_firmware_t* firmware);
 
   bool finished_do_copy_data_ = false;
 
@@ -53,7 +52,7 @@ class InstrumentingSimavr final : public SimavrImpl {
   // free and reallocate its memory.
   mutable std::vector<uint8_t> data_before_;
 
-  absl::flat_hash_map<std::string, avr_symbol_t*>* symbol_table_;
+  static absl::flat_hash_map<std::string, avr_symbol_t*> symbol_table_;
 };
 
 }  // namespace simulator

@@ -5,6 +5,7 @@
 
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
+#include "absl/strings/str_split.h"
 #include "util/status_util.h"
 
 namespace threeboard {
@@ -13,23 +14,26 @@ namespace simulator {
 constexpr int kCoreDumpSize = 16;
 constexpr int kRunsBetweenTimeoutCheck = 10000;
 
+absl::flat_hash_map<std::string, avr_symbol_t*>
+    InstrumentingSimavr::symbol_table_;
+
 // static.
 std::unique_ptr<InstrumentingSimavr> InstrumentingSimavr::Create(
     std::unique_ptr<elf_firmware_t> firmware,
-    std::array<uint8_t, 1024>* internal_eeprom_data,
-    absl::flat_hash_map<std::string, avr_symbol_t*>* symbol_table) {
+    std::array<uint8_t, 1024>* internal_eeprom_data) {
   auto avr_ptr = ParseElfFile(firmware.get(), internal_eeprom_data);
-  auto* raw_ptr = new InstrumentingSimavr(std::move(avr_ptr),
-                                          std::move(firmware), symbol_table);
+  auto* raw_ptr =
+      new InstrumentingSimavr(std::move(avr_ptr), std::move(firmware));
   return std::unique_ptr<InstrumentingSimavr>(raw_ptr);
 }
 
 InstrumentingSimavr::InstrumentingSimavr(
-    std::unique_ptr<avr_t> avr, std::unique_ptr<elf_firmware_t> elf_firmware,
-    absl::flat_hash_map<std::string, avr_symbol_t*>* symbol_table)
-    : SimavrImpl(std::move(avr), std::move(elf_firmware)),
-      symbol_table_(symbol_table) {
-  data_start_ = symbol_table_->at("__data_start")->addr;
+    std::unique_ptr<avr_t> avr, std::unique_ptr<elf_firmware_t> elf_firmware)
+    : SimavrImpl(std::move(avr), std::move(elf_firmware)) {
+  if (symbol_table_.empty()) {
+    BuildSymbolTable(firmware_.get());
+  }
+  data_start_ = symbol_table_.at("__data_start")->addr;
 }
 
 absl::Status InstrumentingSimavr::RunWithTimeout(
@@ -46,11 +50,11 @@ absl::Status InstrumentingSimavr::RunWithTimeout(
 absl::Status InstrumentingSimavr::RunUntilSymbol(
     const std::string& symbol,
     const std::chrono::milliseconds& timeout = std::chrono::milliseconds(100)) {
-  if (!symbol_table_->contains(symbol)) {
+  if (!symbol_table_.contains(symbol)) {
     return absl::InternalError(
         absl::StrCat("Symbol '", symbol, "' not found in symbol table"));
   }
-  uint32_t stop_addr = symbol_table_->at(symbol)->addr;
+  uint32_t stop_addr = symbol_table_.at(symbol)->addr;
   auto start = std::chrono::system_clock::now();
   while (timeout > std::chrono::system_clock::now() - start) {
     for (int i = 0; i < kRunsBetweenTimeoutCheck; ++i) {
@@ -113,7 +117,7 @@ void InstrumentingSimavr::Run() {
   prev_pcs_.push_back(avr_->pc);
   prev_sps_.push_back(GetStackPointer());
   SimavrImpl::Run();
-  static auto& symbol = symbol_table_->at("__do_clear_bss");
+  static auto& symbol = symbol_table_.at("__do_clear_bss");
   if (!finished_do_copy_data_ && symbol->addr == avr_->pc) {
     finished_do_copy_data_ = true;
   }
@@ -129,7 +133,7 @@ bool InstrumentingSimavr::ShouldRunIntegrityCheckAtCurrentCycle() const {
     return false;
   }
   static auto& symbol =
-      symbol_table_->at("threeboard::native::NativeImpl::DelayMs");
+      symbol_table_.at("threeboard::native::NativeImpl::DelayMs");
   if (avr_->pc >= symbol->addr && avr_->pc <= symbol->addr + symbol->size) {
     return false;
   }
@@ -172,6 +176,43 @@ absl::Status InstrumentingSimavr::RunWithIntegrityChecks() {
         absl::StrCat("Simulator unexpectedly jumped to 0x0. Core dumped."));
   }
   return absl::OkStatus();
+}
+
+// Static.
+void InstrumentingSimavr::BuildSymbolTable(elf_firmware_t* firmware) {
+  for (int i = 0; i < firmware->symbolcount; ++i) {
+    // Demangle the symbol name.
+    avr_symbol_t* symbol = *(firmware->symbol + i);
+    int status;
+    char* result = abi::__cxa_demangle(symbol->symbol, 0, 0, &status);
+    if (status != 0) {
+      // Skip demangling failures, unless they correspond to segment-related
+      // symbols and functions.
+      if (absl::StartsWith(symbol->symbol, "__")) {
+        symbol_table_[symbol->symbol] = symbol;
+      }
+      continue;
+    }
+
+    // The result from __cxa_demangle will leak if not manually deallocated.
+    // Convert it to a std::string here and then free it.
+    std::string demangled(result);
+    free(result);
+
+    // Ignore non-standard symbol names (i.e. those that don't start with
+    // `threeboard::`), such as vtable definitions or non-virtual thunks. Also
+    // ignore symbols nested within anonymous namespaces.
+    if (!absl::StartsWith(demangled, "threeboard::") ||
+        absl::StrContains(demangled, "(anonymous namespace")) {
+      continue;
+    }
+
+    // Ignore the parameter list portion of the symbol signature, and
+    // everything that comes after it (CV qualifiers, for example). There's no
+    // need to disambiguate between these for now.
+    demangled = demangled.substr(0, demangled.find('('));
+    symbol_table_[demangled] = symbol;
+  }
 }
 
 }  // namespace simulator
