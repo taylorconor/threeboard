@@ -36,17 +36,6 @@ InstrumentingSimavr::InstrumentingSimavr(
   data_start_ = symbol_table_.at("__data_start")->addr;
 }
 
-absl::Status InstrumentingSimavr::RunWithTimeout(
-    const std::chrono::milliseconds& timeout = std::chrono::milliseconds(100)) {
-  auto start = std::chrono::system_clock::now();
-  while (timeout > std::chrono::system_clock::now() - start) {
-    for (int i = 0; i < kRunsBetweenTimeoutCheck; ++i) {
-      RETURN_IF_ERROR(RunWithIntegrityChecks());
-    }
-  }
-  return absl::OkStatus();
-}
-
 absl::Status InstrumentingSimavr::RunUntilSymbol(
     const std::string& symbol,
     const std::chrono::milliseconds& timeout = std::chrono::milliseconds(100)) {
@@ -66,14 +55,6 @@ absl::Status InstrumentingSimavr::RunUntilSymbol(
   }
   return absl::DeadlineExceededError(
       absl::StrCat("RunUntil timed out after ", timeout.count(), "ms"));
-}
-
-std::vector<uint32_t> InstrumentingSimavr::GetPrevProgramCounters() const {
-  return prev_pcs_;
-}
-
-std::vector<uint16_t> InstrumentingSimavr::GetPrevStackPointers() const {
-  return prev_sps_;
 }
 
 void InstrumentingSimavr::PrintCoreDump() const {
@@ -112,14 +93,16 @@ void InstrumentingSimavr::PrintCoreDump() const {
 }
 
 void InstrumentingSimavr::Run() {
-  // TODO: replace these vectors with circular buffers, since their size should
-  // be fixed.
-  prev_pcs_.push_back(avr_->pc);
-  prev_sps_.push_back(GetStackPointer());
+  if (recording_enabled_) {
+    prev_pcs_.push_back(avr_->pc);
+    prev_sps_.push_back(GetStackPointer());
+  }
   SimavrImpl::Run();
-  static auto& symbol = symbol_table_.at("__do_clear_bss");
-  if (!finished_do_copy_data_ && symbol->addr == avr_->pc) {
-    finished_do_copy_data_ = true;
+  if (recording_enabled_) {
+    static auto& symbol = symbol_table_.at("__do_clear_bss");
+    if (!finished_do_copy_data_ && symbol->addr == avr_->pc) {
+      finished_do_copy_data_ = true;
+    }
   }
 }
 
