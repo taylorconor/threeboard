@@ -22,25 +22,25 @@ class InstrumentingSimavr final : public SimavrImpl {
       std::unique_ptr<elf_firmware_t> firmware,
       std::array<uint8_t, 1024>* internal_eeprom_data);
 
-  absl::Status RunWithTimeout(const std::chrono::milliseconds& timeout);
+  void Run() override;
   absl::Status RunUntilSymbol(const std::string& symbol,
                               const std::chrono::milliseconds& timeout);
 
-  std::vector<uint32_t> GetPrevProgramCounters() const;
-  std::vector<uint16_t> GetPrevStackPointers() const;
-  void PrintCoreDump() const;
+  void DisableRecording() { recording_enabled_ = false; }
+  void EnableRecording() { recording_enabled_ = true; }
 
  private:
   InstrumentingSimavr(std::unique_ptr<avr_t> avr,
                       std::unique_ptr<elf_firmware_t> elf_firmware);
 
-  void Run() override;
+  void PrintCoreDump() const;
   void CopyDataSegment(std::vector<uint8_t>*) const;
   bool ShouldRunIntegrityCheckAtCurrentCycle() const;
   absl::Status RunWithIntegrityChecks();
   static void BuildSymbolTable(elf_firmware_t* firmware);
 
   bool finished_do_copy_data_ = false;
+  bool recording_enabled_ = true;
 
   uint16_t data_start_;
   std::vector<uint32_t> prev_pcs_;
