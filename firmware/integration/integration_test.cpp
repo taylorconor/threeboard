@@ -6,7 +6,6 @@
 #include "absl/status/status.h"
 #include "gtest/gtest.h"
 #include "integration/util/instrumenting_simavr.h"
-#include "simavr/sim_elf.h"
 #include "simulator/components/usb_host.h"
 #include "simulator/simulator_delegate_mock.h"
 #include "util/gtest_util.h"
@@ -18,16 +17,7 @@ namespace {
 class IntegrationTest : public testing::Test {
  public:
   IntegrationTest() {
-    std::unique_ptr<elf_firmware_t> firmware =
-        std::make_unique<elf_firmware_t>();
-    if (elf_read_firmware("simulator/native/threeboard_sim_binary.elf",
-                          firmware.get())) {
-      std::cout << "Failed to parse threeboard ELF file for simulated testing"
-                << std::endl;
-      exit(0);
-    }
-    simavr_ = simulator::InstrumentingSimavr::Create(std::move(firmware),
-                                                     &internal_eeprom_data_);
+    simavr_ = simulator::InstrumentingSimavr::Create(&internal_eeprom_data_);
     usb_host_ = std::make_unique<simulator::UsbHost>(simavr_.get(),
                                                      &simulator_delegate_mock_);
   }
@@ -43,9 +33,25 @@ TEST_F(IntegrationTest, BootToEventLoop) {
   // Run until the threeboard has successfully started up and is running the
   // event loop. There are potentially millions of cycles here so we need to
   // set a generous timeout, InstrumentingSimavr is very slow.
-  EXPECT_OK(
+  ASSERT_OK(
       simavr_->RunUntilSymbol("threeboard::Threeboard::RunEventLoopIteration",
                               std::chrono::milliseconds(3000)));
+}
+
+TEST_F(IntegrationTest, TimerInterruptsFireAfterBooting) {
+  // Verify that after beginning event loop iteration, the timer interrupts
+  // continue to fire.
+  ASSERT_OK(
+      simavr_->RunUntilSymbol("threeboard::Threeboard::RunEventLoopIteration",
+                              std::chrono::milliseconds(3000)));
+  for (int i = 0; i < 10; ++i) {
+    ASSERT_OK(
+        simavr_->RunUntilSymbol("threeboard::Threeboard::HandleTimer1Interrupt",
+                                std::chrono::milliseconds(3000)));
+    ASSERT_OK(
+        simavr_->RunUntilSymbol("threeboard::Threeboard::HandleTimer3Interrupt",
+                                std::chrono::milliseconds(3000)));
+  }
 }
 }  // namespace
 }  // namespace integration
