@@ -91,32 +91,31 @@ void Threeboard::WaitForUsbConfiguration() {
 
 void Threeboard::DisplayBootIndicator() {
   boot_indicator_state_.status = 1;
-  boot_indicator_state_.counter = 0;
+  boot_indicator_state_.counter = 31;
   native_->DelayMs(255);
 }
 
 void Threeboard::PollBootIndicator() {
-  boot_indicator_state_.counter += 1;
-
-  // This method is polled every 5ms. Each LED is lit for 80ms in sequence.
-  if (boot_indicator_state_.counter > 16) {
+  // This method is polled every 5ms. Each LED is lit for 60ms in sequence.
+  if (boot_indicator_state_.counter > 12) {
     boot_indicator_state_.counter = 0;
     boot_indicator_state_.status += 1;
-    if (boot_indicator_state_.status > 4) {
+    if (boot_indicator_state_.status > 3) {
       boot_indicator_state_.status = 0;
       led_controller_->GetLedState()->SetB(LedState::OFF);
     } else {
-      if (boot_indicator_state_.status == 2) {
+      if (boot_indicator_state_.status == 1) {
         led_controller_->GetLedState()->SetR(LedState::ON);
-      } else if (boot_indicator_state_.status == 3) {
+      } else if (boot_indicator_state_.status == 2) {
         led_controller_->GetLedState()->SetR(LedState::OFF);
         led_controller_->GetLedState()->SetG(LedState::ON);
-      } else if (boot_indicator_state_.status == 4) {
+      } else if (boot_indicator_state_.status == 3) {
         led_controller_->GetLedState()->SetG(LedState::OFF);
         led_controller_->GetLedState()->SetB(LedState::ON);
       }
     }
   }
+  boot_indicator_state_.counter += 1;
 }
 
 void Threeboard::RunEventLoopIteration() {
