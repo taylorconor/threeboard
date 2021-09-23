@@ -45,7 +45,9 @@ Simulator::Simulator(Simavr *simavr, StateStorage *state_storage)
 
 Simulator::~Simulator() {
   is_running_ = false;
-  sim_thread_.join();
+  if (sim_thread_.joinable()) {
+    sim_thread_.join();
+  }
 }
 
 void Simulator::RunAsync() {
