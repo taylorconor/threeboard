@@ -24,7 +24,9 @@ UsbHost::UsbHost(Simavr *simavr, SimulatorDelegate *simulator_delegate)
 UsbHost::~UsbHost() {
   if (is_running_) {
     is_running_ = false;
-    device_control_thread_->join();
+    if (device_control_thread_->joinable()) {
+      device_control_thread_->join();
+    }
   }
 }
 
