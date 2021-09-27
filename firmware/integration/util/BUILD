@@ -1,10 +1,10 @@
 package(default_visibility = [
     "//integration:__subpackages__",
+    "//simulator:__subpackages__",
 ])
 
 cc_library(
     name = "instrumenting_simavr",
-    testonly = 1,
     srcs = ["instrumenting_simavr.cpp"],
     hdrs = ["instrumenting_simavr.h"],
     deps = [

@@ -19,7 +19,6 @@ class InstrumentingSimavr final : public SimavrImpl {
   ~InstrumentingSimavr() override = default;
 
   static std::unique_ptr<InstrumentingSimavr> Create(
-      std::unique_ptr<elf_firmware_t> firmware,
       std::array<uint8_t, 1024>* internal_eeprom_data);
 
   void Run() override;
@@ -53,6 +52,7 @@ class InstrumentingSimavr final : public SimavrImpl {
   mutable std::vector<uint8_t> data_before_;
 
   static absl::flat_hash_map<std::string, avr_symbol_t*> symbol_table_;
+  static absl::flat_hash_map<uint32_t, std::string> inverted_symbol_table_;
 };
 
 }  // namespace simulator
