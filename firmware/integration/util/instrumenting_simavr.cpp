@@ -16,11 +16,13 @@ constexpr int kRunsBetweenTimeoutCheck = 10000;
 
 absl::flat_hash_map<std::string, avr_symbol_t*>
     InstrumentingSimavr::symbol_table_;
+absl::flat_hash_map<uint32_t, std::string>
+    InstrumentingSimavr::inverted_symbol_table_;
 
 // static.
 std::unique_ptr<InstrumentingSimavr> InstrumentingSimavr::Create(
-    std::unique_ptr<elf_firmware_t> firmware,
     std::array<uint8_t, 1024>* internal_eeprom_data) {
+  auto firmware = std::make_unique<elf_firmware_t>();
   auto avr_ptr = ParseElfFile(firmware.get(), internal_eeprom_data);
   auto* raw_ptr =
       new InstrumentingSimavr(std::move(avr_ptr), std::move(firmware));
@@ -37,8 +39,7 @@ InstrumentingSimavr::InstrumentingSimavr(
 }
 
 absl::Status InstrumentingSimavr::RunUntilSymbol(
-    const std::string& symbol,
-    const std::chrono::milliseconds& timeout = std::chrono::milliseconds(100)) {
+    const std::string& symbol, const std::chrono::milliseconds& timeout) {
   if (!symbol_table_.contains(symbol)) {
     return absl::InternalError(
         absl::StrCat("Symbol '", symbol, "' not found in symbol table"));
@@ -47,14 +48,15 @@ absl::Status InstrumentingSimavr::RunUntilSymbol(
   auto start = std::chrono::system_clock::now();
   while (timeout > std::chrono::system_clock::now() - start) {
     for (int i = 0; i < kRunsBetweenTimeoutCheck; ++i) {
+      RETURN_IF_ERROR(RunWithIntegrityChecks());
       if (avr_->pc == stop_addr) {
         return absl::OkStatus();
       }
-      RETURN_IF_ERROR(RunWithIntegrityChecks());
     }
   }
   return absl::DeadlineExceededError(
-      absl::StrCat("RunUntil timed out after ", timeout.count(), "ms"));
+      absl::StrCat("RunUntil timed out after ", timeout.count(),
+                   "ms for symbol '", symbol, "'"));
 }
 
 void InstrumentingSimavr::PrintCoreDump() const {
@@ -112,7 +114,7 @@ void InstrumentingSimavr::CopyDataSegment(std::vector<uint8_t>* v) const {
 }
 
 bool InstrumentingSimavr::ShouldRunIntegrityCheckAtCurrentCycle() const {
-  if (!finished_do_copy_data_) {
+  if (!recording_enabled_ || !finished_do_copy_data_) {
     return false;
   }
   static auto& symbol =
@@ -184,9 +186,12 @@ void InstrumentingSimavr::BuildSymbolTable(elf_firmware_t* firmware) {
 
     // Ignore non-standard symbol names (i.e. those that don't start with
     // `threeboard::`), such as vtable definitions or non-virtual thunks. Also
-    // ignore symbols nested within anonymous namespaces.
+    // ignore symbols nested within anonymous namespaces, and symbols
+    // identifying static variables. This is clearly not an exact science but it
+    // will do unless we start experiencing problems with symbol parsing.
     if (!absl::StartsWith(demangled, "threeboard::") ||
-        absl::StrContains(demangled, "(anonymous namespace")) {
+        absl::StrContains(demangled, "(anonymous namespace") ||
+        absl::StrContains(demangled, ")::")) {
       continue;
     }
 
@@ -195,6 +200,7 @@ void InstrumentingSimavr::BuildSymbolTable(elf_firmware_t* firmware) {
     // need to disambiguate between these for now.
     demangled = demangled.substr(0, demangled.find('('));
     symbol_table_[demangled] = symbol;
+    inverted_symbol_table_[symbol->addr] = demangled;
   }
 }
 
