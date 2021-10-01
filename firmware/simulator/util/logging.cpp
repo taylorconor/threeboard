@@ -2,6 +2,8 @@
 
 #include <stdarg.h>
 
+#include <iostream>
+
 namespace threeboard {
 namespace simulator {
 
@@ -21,6 +23,7 @@ void Logging::Log(const SimulatorSource& source, const char* fmt, va_list va) {
   char buffer[256];
   vsnprintf(buffer, sizeof(buffer), fmt, va);
   std::string str_buffer = std::string(buffer);
+
   if (log_stream_) {
     *log_stream_ << str_buffer << std::endl;
   }

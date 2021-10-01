@@ -1,5 +1,7 @@
 #include "simulator/simulator.h"
 
+#include "simulator/util/logging.h"
+
 namespace threeboard {
 namespace simulator {
 namespace {
@@ -41,6 +43,16 @@ Simulator::Simulator(Simavr *simavr, StateStorage *state_storage)
   portd_write_callback_ = std::make_unique<PortWriteCallback>(
       std::bind(&Simulator::HandlePortWrite, this, PORTD, _1));
   simavr_->RegisterPortDWriteCallback(portd_write_callback_.get());
+
+  char log_file[L_tmpnam];
+  if (std::tmpnam(log_file)) {
+    log_file_path_ = std::string(log_file);
+    log_stream_.open(log_file_path_, std::ios_base::app);
+  } else {
+    std::cout << "Failed to create log file" << std::endl;
+    exit(0);
+  }
+  std::cout << "Using log file '" << log_file_path_ << "'." << std::endl;
 }
 
 Simulator::~Simulator() {
@@ -48,6 +60,7 @@ Simulator::~Simulator() {
   if (sim_thread_.joinable()) {
     sim_thread_.join();
   }
+  log_stream_.close();
 }
 
 void Simulator::RunAsync() {
@@ -68,7 +81,7 @@ DeviceState Simulator::GetDeviceState() {
   return state;
 }
 
-SimulatorState Simulator::GetSimulatorState() {
+SimulatorState Simulator::GetSimulatorState() const {
   SimulatorState state;
   state.cpu_state = simavr_->GetState();
   state.gdb_enabled = (simavr_->GetGdbPort() > 0);
@@ -92,7 +105,7 @@ void Simulator::HandleKeypress(char key, bool state) {
   }
 }
 
-uint64_t Simulator::GetCurrentCpuCycle() { return simavr_->GetCycle(); }
+uint64_t Simulator::GetCurrentCpuCycle() const { return simavr_->GetCycle(); }
 
 void Simulator::ToggleGdb(uint16_t port) const {
   if (simavr_->GetGdbPort() == 0) {
@@ -108,9 +121,14 @@ void Simulator::ToggleGdb(uint16_t port) const {
 
 void Simulator::EnableLogging(UIDelegate *ui_delegate) {
   // If the Uart class is initialized and in scope, it will handle logging
-  // output from the simulator.
-  uart_ = std::make_unique<Uart>(simavr_, ui_delegate);
+  // output from the simulated firmware.
+  uart_ = std::make_unique<Uart>(simavr_, ui_delegate, &log_stream_);
+  // Other log output (from the simulator itself, or from simavr) are handled
+  // using the Logging singleton, which must be initialised separately.
+  Logging::Init(ui_delegate, &log_stream_);
 }
+
+std::string Simulator::GetLogFile() const { return log_file_path_; }
 
 void Simulator::HandleUsbOutput(uint8_t mod_code, uint8_t key_code) {
   bool capitalise = false;

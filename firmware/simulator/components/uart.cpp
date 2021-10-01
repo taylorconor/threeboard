@@ -1,14 +1,12 @@
 #include "uart.h"
 
-#include <iostream>
-
 namespace threeboard {
 namespace simulator {
 
 using namespace std::placeholders;
 
-Uart::Uart(Simavr *simavr, UIDelegate *ui_delegate)
-    : ui_delegate_(ui_delegate) {
+Uart::Uart(Simavr *simavr, UIDelegate *ui_delegate, std::ofstream *log_stream)
+    : ui_delegate_(ui_delegate), log_stream_(log_stream) {
   // Disable the default UART stdio dump in simavr.
   uint32_t flags = 0;
   simavr->InvokeIoctl(UART_GET_FLAGS, &flags);
@@ -22,7 +20,12 @@ Uart::Uart(Simavr *simavr, UIDelegate *ui_delegate)
 
 void Uart::LogCharacterInputCallback(uint8_t value) {
   if (value == '\n') {
-    ui_delegate_->HandleLogLine(log_buffer_);
+    if (ui_delegate_) {
+      ui_delegate_->HandleLogLine(log_buffer_);
+    }
+    if (log_stream_) {
+      *log_stream_ << log_buffer_ << std::endl;
+    }
     log_buffer_ = "";
   } else {
     log_buffer_ += value;

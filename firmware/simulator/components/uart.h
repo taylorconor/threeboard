@@ -1,5 +1,6 @@
 #pragma once
 
+#include <fstream>
 #include <memory>
 #include <string>
 
@@ -13,7 +14,7 @@ namespace simulator {
 // the simulator.
 class Uart {
  public:
-  explicit Uart(Simavr *simavr, UIDelegate *ui_delegate);
+  Uart(Simavr *simavr, UIDelegate *ui_delegate, std::ofstream *log_stream);
 
  private:
   void LogCharacterInputCallback(uint8_t value);
@@ -22,6 +23,7 @@ class Uart {
   std::unique_ptr<UartOutputCallback> input_callback_;
   std::unique_ptr<Lifetime> input_lifetime_;
   std::string log_buffer_;
+  std::ofstream *log_stream_;
 };
 }  // namespace simulator
 }  // namespace threeboard
