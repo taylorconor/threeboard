@@ -139,13 +139,8 @@ std::string GetCpuStateName(int state) {
 UI::UI(Simulator *simulator, Flags *flags)
     : simulator_(simulator),
       flags_(flags),
-      window_(nullptr),
       screen_output_mutex_(std::make_unique<std::recursive_mutex>()),
-      is_running_(false) {}
-
-UI::~UI() { endwin(); }
-
-void UI::Run() {
+      is_running_(false) {
   setlocale(LC_ALL, "en_US.UTF-8");
 
   // Initialise the main curses window.
@@ -163,7 +158,11 @@ void UI::Run() {
                                       kLogBoxY - kOutputBoxY, max_x);
   log_pad_ = std::make_unique<Pad>(screen_output_mutex_.get(),
                                    max_y - kLogBoxY - 1, max_x);
+}
 
+UI::~UI() { endwin(); }
+
+void UI::Run() {
   // Now that the UI is initialised, enable logging callbacks to the UI from the
   // simulator and begin its async runloop.
   simulator_->EnableLogging(this);
@@ -430,8 +429,8 @@ void UI::DrawOutputBox() {
 void UI::DrawLogBox() {
   int window_max_x, window_max_y;
   getmaxyx(window_, window_max_y, window_max_x);
-  log_pad_->Refresh("log file: " + log_file_, kMedGrey, kLogBoxY + 1, 0,
-                    window_max_y - 1, window_max_x - 1);
+  log_pad_->Refresh("log file: " + simulator_->GetLogFile(), kMedGrey,
+                    kLogBoxY + 1, 0, window_max_y - 1, window_max_x - 1);
 }
 
 }  // namespace simulator

@@ -86,7 +86,6 @@ class UI : public UIDelegate {
   std::unordered_set<int> cpu_states_since_last_flush_;
 
   std::atomic<bool> is_running_;
-  std::string log_file_;
   uint64_t current_frame_ = 0;
 
   uint8_t key_a_ = 0;

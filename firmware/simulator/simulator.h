@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <fstream>
 #include <functional>
 #include <thread>
 
@@ -26,12 +27,13 @@ class Simulator : public SimulatorDelegate {
   void Unpause();
 
   DeviceState GetDeviceState();
-  SimulatorState GetSimulatorState();
+  SimulatorState GetSimulatorState() const;
   void HandleKeypress(char key, bool state);
 
-  uint64_t GetCurrentCpuCycle();
+  uint64_t GetCurrentCpuCycle() const;
   void ToggleGdb(uint16_t port) const;
   void EnableLogging(UIDelegate *ui_delegate);
+  std::string GetLogFile() const;
 
  private:
   void HandleUsbOutput(uint8_t mod_code, uint8_t key_code) override;
@@ -49,6 +51,8 @@ class Simulator : public SimulatorDelegate {
   UsbHost usb_host_;
   I2cEeprom eeprom0_;
   DeviceState device_state_;
+  std::string log_file_path_;
+  std::ofstream log_stream_;
 
   std::unique_ptr<PortWriteCallback> portb_write_callback_;
   std::unique_ptr<PortWriteCallback> portd_write_callback_;
