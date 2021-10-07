@@ -22,6 +22,10 @@ class InstrumentingSimavr final : public SimavrImpl {
       std::array<uint8_t, 1024>* internal_eeprom_data);
 
   void Run() override;
+
+  absl::Status RunUntilStartKeypressProcessing();
+  absl::Status RunUntilFullLedRefresh();
+  absl::Status RunUntilNextEventLoopIteration();
   absl::Status RunUntilSymbol(const std::string& symbol,
                               const std::chrono::milliseconds& timeout);
 

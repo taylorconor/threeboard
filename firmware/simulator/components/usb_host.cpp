@@ -1,5 +1,7 @@
 #include "usb_host.h"
 
+#include <iostream>
+
 #include "src/usb/shared/constants.h"
 
 namespace threeboard {

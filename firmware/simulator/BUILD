@@ -30,6 +30,7 @@ cc_library(
         "//simulator/simavr",
         "//simulator/util:flags",
         "//simulator/util:state_storage",
+        "//src:keypress",
     ],
 )
 
@@ -43,6 +44,7 @@ cc_binary(
         "//simulator/util:flags",
         "//simulator/util:logging",
         "//simulator/util:state_storage",
+        "//src:keypress",
     ],
 )
 

@@ -12,6 +12,7 @@
 #include "simulator/simulator_state.h"
 #include "simulator/ui/ui_delegate.h"
 #include "simulator/util/state_storage.h"
+#include "src/keypress.h"
 
 namespace threeboard {
 namespace simulator {
@@ -29,6 +30,7 @@ class Simulator : public SimulatorDelegate {
   DeviceState GetDeviceState();
   SimulatorState GetSimulatorState() const;
   void HandleKeypress(char key, bool state);
+  void HandleKeypress(const Keypress &keypress, bool state);
 
   uint64_t GetCurrentCpuCycle() const;
   void ToggleGdb(uint16_t port) const;
