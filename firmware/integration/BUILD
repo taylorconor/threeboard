@@ -5,8 +5,7 @@ cc_test(
     srcs = ["integration_test.cpp"],
     deps = [
         "//integration/util:instrumenting_simavr",
-        "//simulator:simulator_delegate_mock",
-        "//simulator/components:usb_host",
+        "//simulator:simulator_lib",
         "//util:gtest_util",
         "@abseil//absl/container:flat_hash_map",
         "@abseil//absl/status",
@@ -23,8 +22,9 @@ cc_test(
     deps = [
         "//integration/model:rapidcheck_specializations",
         "//integration/model:threeboard_model",
+        "//integration/util:instrumenting_simavr",
         "//simulator:simulator_lib",
-        "//simulator/simavr:simavr_impl",
+        "//util:gtest_util",
         "@emil-e//:rapidcheck",
         "@gtest",
         "@gtest//:gtest_main",

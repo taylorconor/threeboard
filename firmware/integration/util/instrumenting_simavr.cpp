@@ -38,6 +38,24 @@ InstrumentingSimavr::InstrumentingSimavr(
   data_start_ = symbol_table_.at("__data_start")->addr;
 }
 
+absl::Status InstrumentingSimavr::RunUntilStartKeypressProcessing() {
+  return RunUntilSymbol("threeboard::KeyController::PollKeyState",
+                        std::chrono::milliseconds(3000));
+}
+
+absl::Status InstrumentingSimavr::RunUntilFullLedRefresh() {
+  for (int i = 0; i < 5; ++i) {
+    RETURN_IF_ERROR(RunUntilSymbol("threeboard::LedController::ScanNextLine",
+                                   std::chrono::milliseconds(3000)));
+  }
+  return absl::OkStatus();
+}
+
+absl::Status InstrumentingSimavr::RunUntilNextEventLoopIteration() {
+  return RunUntilSymbol("threeboard::Threeboard::RunEventLoopIteration",
+                        std::chrono::milliseconds(3000));
+}
+
 absl::Status InstrumentingSimavr::RunUntilSymbol(
     const std::string& symbol, const std::chrono::milliseconds& timeout) {
   if (!symbol_table_.contains(symbol)) {
@@ -79,10 +97,10 @@ void InstrumentingSimavr::PrintCoreDump() const {
   std::vector<std::string> combined;
   for (int i = 0; i < kCoreDumpSize; ++i) {
     combined.push_back(absl::StrCat(
-        (i == 0 ? "┃>" : "┃ "), pcs[i], " │ ", sps[i], " │ r", i,
-        (i > 9 ? ": " : ":  "), "0x", absl::Hex(GetData(i), absl::kZeroPad2),
-        " | r", i + 16, ": 0x", absl::Hex(GetData(i + 16), absl::kZeroPad2),
-        " ┃"));
+        (i == 0 ? "┃>" : "┃ "), (pcs[i].empty() ? "      " : pcs[i]), " │ ",
+        (sps[i].empty() ? "      " : sps[i]), " │ r", i, (i > 9 ? ": " : ":  "),
+        "0x", absl::Hex(GetData(i), absl::kZeroPad2), " | r", i + 16, ": 0x",
+        absl::Hex(GetData(i + 16), absl::kZeroPad2), " ┃"));
   }
 
   std::cout << "Dumping core from cycle " << GetCycle() << ":" << std::endl;
@@ -136,8 +154,10 @@ absl::Status InstrumentingSimavr::RunWithIntegrityChecks() {
       for (int i = 0; i < data_before_.size(); ++i) {
         if (data_before_[i] != data_after[i]) {
           std::cout << absl::StrCat(".data 0x", absl::Hex(data_start_ + i),
-                                    " modified: 0x", absl::Hex(data_before_[i]),
-                                    " -> 0x", absl::Hex(data_after[i]), ".")
+                                    " modified at PC 0x: 0x",
+                                    absl::Hex(avr_->pc), ": ",
+                                    absl::Hex(data_before_[i]), " -> 0x",
+                                    absl::Hex(data_after[i]), ".")
                     << std::endl;
         }
       }

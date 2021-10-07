@@ -3,9 +3,32 @@
 #include "simulator/ui/ui.h"
 #include "simulator/util/flags.h"
 #include "simulator/util/state_storage.h"
+#include "src/keypress.h"
 #include "util/status_util.h"
 
 using namespace threeboard::simulator;
+using threeboard::Keypress;
+
+std::vector<char> GetKeycodes(const Keypress &keypress) {
+  switch (keypress) {
+    case Keypress::X:
+      return {'a'};
+    case Keypress::Y:
+      return {'s'};
+    case Keypress::Z:
+      return {'d'};
+    case Keypress::XY:
+      return {'a', 's'};
+    case Keypress::XZ:
+      return {'a', 'd'};
+    case Keypress::YZ:
+      return {'s', 'd'};
+    case Keypress::XYZ:
+      return {'a', 's', 'd'};
+    default:
+      return {};
+  }
+}
 
 absl::Status RunSimulator(int argc, char *argv[]) {
   auto flags = Flags::ParseFromArgs(argc, argv);
@@ -15,6 +38,9 @@ absl::Status RunSimulator(int argc, char *argv[]) {
 
   Simulator simulator(simavr.get(), state_storage.get());
   UI ui(&simulator, &flags);
+  simulator.EnableLogging(&ui);
+
+  simulator.RunAsync();
   ui.Run();
   return absl::OkStatus();
 }

@@ -29,6 +29,27 @@ inline void SetPinB(Simavr *simavr, uint8_t pin, bool enabled) {
     simavr->SetData(PINB, (simavr->GetData(PINB) | (1 << pin)));
   }
 }
+
+std::vector<char> GetKeycodes(const Keypress &keypress) {
+  switch (keypress) {
+    case Keypress::X:
+      return {'a'};
+    case Keypress::Y:
+      return {'s'};
+    case Keypress::Z:
+      return {'d'};
+    case Keypress::XY:
+      return {'a', 's'};
+    case Keypress::XZ:
+      return {'a', 'd'};
+    case Keypress::YZ:
+      return {'s', 'd'};
+    case Keypress::XYZ:
+      return {'a', 's', 'd'};
+    default:
+      return {};
+  }
+}
 }  // namespace
 
 Simulator::Simulator(Simavr *simavr, StateStorage *state_storage)
@@ -102,6 +123,12 @@ void Simulator::HandleKeypress(char key, bool state) {
   } else if (key == 'd') {
     // Switch 3 - maps to PB1.
     SetPinB(simavr_, 1, !state);
+  }
+}
+
+void Simulator::HandleKeypress(const Keypress &keypress, bool state) {
+  for (char key : GetKeycodes(keypress)) {
+    HandleKeypress(key, state);
   }
 }
 
