@@ -9,16 +9,25 @@ using namespace threeboard::simulator;
 
 absl::Status RunSimulator(int argc, char *argv[]) {
   auto flags = Flags::ParseFromArgs(argc, argv);
-  auto state_storage =
+  auto state_storage_or =
       StateStorage::CreateFromFile(flags.GetShortcutFilename());
-  if (!state_storage.ok()) {
-    return state_storage.status();
+  StateStorage *state_storage = nullptr;
+  if (state_storage_or.ok()) {
+    state_storage = state_storage_or->get();
+    std::cout << "Populating EEPROM data from storage file: "
+              << flags.GetShortcutFilename() << std::endl;
+  } else {
+    std::cout
+        << "No shortcut storage file specified, not populating EEPROM data"
+        << std::endl;
   }
   std::array<uint8_t, 1024> internal_eeprom_data{};
-  (*state_storage)->ConfigureInternalEeprom(&internal_eeprom_data);
+  if (state_storage) {
+    state_storage->ConfigureInternalEeprom(&internal_eeprom_data);
+  }
   auto simavr = SimavrImpl::Create(&internal_eeprom_data);
 
-  Simulator simulator(simavr.get(), state_storage->get());
+  Simulator simulator(simavr.get(), state_storage);
   UI ui(&simulator, &flags);
   ui.Run();
   return absl::OkStatus();
