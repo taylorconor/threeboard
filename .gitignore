@@ -5,3 +5,4 @@ bazel-*
 *.db
 .clwb
 fp-info-cache
+.idea
