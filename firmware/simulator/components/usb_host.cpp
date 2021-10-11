@@ -56,7 +56,6 @@ void UsbHost::DeviceControlLoop() {
                                          RequestType::Recipient::ENDPOINT);
       packet.bRequest = usb::Request::SET_CONFIGURATION;
       packet.wValue = usb::descriptor::kConfigurationValue;
-      // TODO: handle error
       UsbPacketBuffer packet_buffer = {.endpoint = 0,
                                        .size = sizeof(usb::SetupPacket),
                                        .buffer = (uint8_t *)&packet};

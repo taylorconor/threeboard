@@ -35,19 +35,6 @@ bool FindMatchingContainer(native::Native *native, const SetupPacket &packet,
       return true;
     }
   }
-  // TODO: is this necessary? remove if not.
-  /*
-  // Now find the descriptor in the list with a matching wIndex.
-  for (; i < GetDescriptorListSize(); i++, ptr++) {
-    *descriptor = DescriptorContainer::ParseFromProgmem((uint8_t *)ptr);
-    // Currently we have no use for the descriptor index, since we only support
-    // one language, so it's safe to return if we see a descriptor index 0 (e.g.
-    // the first string descriptor). This may become necessary to implement
-    // properly in the future though.
-    if (descriptor->index == 0 || descriptor->index == packet.wIndex) {
-      return true;
-    }
-    }*/
   return false;
 }
 }  // namespace

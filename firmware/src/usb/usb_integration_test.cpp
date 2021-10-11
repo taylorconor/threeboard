@@ -33,10 +33,10 @@ class UsbImplTest : public ::testing::Test {
   ErrorHandlerDelegateMock error_handler_delegate_mock_;
 };
 
-/*TEST_F(UsbImplTest, EnumeratesCorrectly) {
+TEST_F(UsbImplTest, EnumeratesCorrectly) {
   VerifyEnumeration();
   EXPECT_TRUE(usb_controller_->HasConfigured());
-  }*/
+}
 }  // namespace
 }  // namespace usb
 }  // namespace threeboard

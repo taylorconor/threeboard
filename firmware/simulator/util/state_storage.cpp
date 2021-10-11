@@ -68,6 +68,7 @@ absl::Status Validate(const nlohmann::json &json) {
 // static.
 absl::StatusOr<std::unique_ptr<StateStorage>> StateStorage::CreateFromFile(
     const std::string &file_path) {
+  // TODO: if this file doesn't exist, create it!
   std::ifstream input_stream(file_path);
   nlohmann::json json;
   try {
@@ -82,37 +83,45 @@ absl::StatusOr<std::unique_ptr<StateStorage>> StateStorage::CreateFromFile(
 
 StateStorage::StateStorage(const std::string &file_path,
                            const nlohmann::json &json)
-    : file_path_(file_path), json_(json) {}
+    : file_path_(file_path), json_(json) {
+  ConfigureInternalEeprom();
+  ConfigureEeprom0();
+  ConfigureEeprom1();
+}
 
-void StateStorage::ConfigureInternalEeprom(
-    std::array<uint8_t, 1024> *internal_eeprom) {
-  internal_eeprom->fill(0xFF);
+StateStorage::~StateStorage() {
+  // TODO: Write internal EEPROM data back to disk.
+}
+
+void StateStorage::ConfigureInternalEeprom() {
+  internal_eeprom_.fill(0xFF);
   for (const auto &[idx, value] : json_["character_shortcuts"].items()) {
     // TODO: remove this hack and implement proper USB keycode conversion.
     char c = value.get<std::string>()[0] - 'a' + 4 - 1;
-    internal_eeprom->at(std::stoi(idx)) = c;
+    internal_eeprom_.at(std::stoi(idx)) = c;
   }
   for (const auto &[idx, value] : json_["word_shortcuts"].items()) {
-    internal_eeprom->at(256 + std::stoi(idx)) =
+    internal_eeprom_.at(256 + std::stoi(idx)) =
         value.get<std::string>().length() - 1;
   }
 }
 
-void StateStorage::ConfigureEeprom0(std::array<uint8_t, 65535> *eeprom0) {
-  eeprom0->fill(0xFF);
+void StateStorage::ConfigureEeprom0() {
+  eeprom0_.fill(0xFF);
   for (const auto &[idx, raw_value] : json_["word_shortcuts"].items()) {
     auto value = raw_value.get<std::string>();
     for (int i = 0; i < value.length(); ++i) {
       // TODO: remove this hack and implement proper USB keycode conversion.
       char c = value[i] - 'a' + 4 - 1;
-      eeprom0->at((std::stoi(idx) * 16) + i) = c;
+      eeprom0_.at((std::stoi(idx) * 16) + i) = c;
     }
   }
 }
 
-void StateStorage::ConfigureEeprom1(std::array<uint8_t, 65535> *eeprom1) {
-  eeprom1->fill(0xFF);
+void StateStorage::ConfigureEeprom1() {
+  eeprom1_.fill(0xFF);
   for (const auto &[idx, value] : json_["blob_shortcuts"].items()) {
+    // TODO: implement once blob shortcuts are implemented.
   }
 }
 
