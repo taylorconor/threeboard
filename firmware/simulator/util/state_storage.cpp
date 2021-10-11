@@ -74,7 +74,9 @@ absl::StatusOr<std::unique_ptr<StateStorage>> StateStorage::CreateFromFile(
   try {
     json = nlohmann::json::parse(input_stream);
   } catch (const std::exception &e) {
-    return absl::InternalError(e.what());
+    nlohmann::json empty_json;
+    auto *raw_ptr = new StateStorage(file_path, empty_json);
+    return std::unique_ptr<StateStorage>(raw_ptr);
   }
   RETURN_IF_ERROR(Validate(json));
   auto *raw_ptr = new StateStorage(file_path, json);
