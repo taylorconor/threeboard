@@ -37,8 +37,8 @@ class I2cEeprom {
   // The hardware address of this EEPROM.
   const uint8_t address_;
 
-  // Storage for the data in this EEPROM.
-  std::array<uint8_t, 65535> buffer_;
+  // Reference to storage for the data in this EEPROM, owned by StateStorage.
+  std::array<uint8_t, 65535> *buffer_;
 
   // The current state of the EEPROM. Since device addressing for the 22LC512
   // takes three bytes (and therefore three messages), we need to keep track of

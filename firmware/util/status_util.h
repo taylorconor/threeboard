@@ -27,24 +27,18 @@
 #define STATUS_MACROS_CONCAT_NAME_INNER(x, y) x##y
 #define STATUS_MACROS_CONCAT_NAME(x, y) STATUS_MACROS_CONCAT_NAME_INNER(x, y)
 
-template <typename T>
-absl::Status DoAssignOrReturn(T& lhs, absl::StatusOr<T> result) {
-  if (result.ok()) {
-    lhs = result.value();
-  }
-  return result.status();
-}
-
-#define ASSIGN_OR_RETURN_IMPL(status, lhs, rexpr)       \
-  absl::Status status = DoAssignOrReturn(lhs, (rexpr)); \
-  if (!status.ok()) return status;
+#define ASSIGN_OR_RETURN_IMPL(status_or, lhs, rexpr) \
+  auto status_or = (rexpr);                          \
+  if (!status_or.ok()) {                             \
+    return status_or.status();                       \
+  }                                                  \
+  lhs = std::move(status_or).value();
 
 // Executes an expression that returns a util::StatusOr, extracting its value
 // into the variable defined by lhs (or returning on error).
 //
-// Example: Assigning to an existing value
-//   ValueType value;
-//   ASSIGN_OR_RETURN(value, MaybeGetValue(arg));
+// Example: Assigning to a value
+//   ASSIGN_OR_RETURN(ValueType value, MaybeGetValue(arg));
 //
 // WARNING: ASSIGN_OR_RETURN expands into multiple statements; it cannot be used
 //  in a single statement (e.g. as the body of an if statement without {})!

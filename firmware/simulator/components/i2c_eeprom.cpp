@@ -54,9 +54,9 @@ I2cEeprom::I2cEeprom(Simavr *simavr, StateStorage *state_storage,
 
   if (state_storage) {
     if (instance == Instance::EEPROM_0) {
-      state_storage->ConfigureEeprom0(&buffer_);
+      buffer_ = state_storage->GetEeprom0Data();
     } else if (instance == Instance::EEPROM_1) {
-      state_storage->ConfigureEeprom1(&buffer_);
+      buffer_ = state_storage->GetEeprom1Data();
     }
   }
 
@@ -127,7 +127,8 @@ void I2cEeprom::HandleI2cMessage(uint32_t value) {
       operation_address_ |= message.data;
       state_ = STARTED;
     } else if (state_ == STARTED) {
-      buffer_[operation_address_ + operation_address_counter_] = message.data;
+      (*buffer_)[operation_address_ + operation_address_counter_] =
+          message.data;
       operation_address_counter_++;
     }
 
@@ -139,7 +140,7 @@ void I2cEeprom::HandleI2cMessage(uint32_t value) {
   if (message.msg & TWI_COND_READ) {
     // Simple return of selected byte.
     uint8_t current_byte =
-        buffer_[operation_address_ + operation_address_counter_];
+        (*buffer_)[operation_address_ + operation_address_counter_];
     LOG("SIM::HandleI2cMessage: Responding to read at addr %d with byte %d",
         operation_address_ + operation_address_counter_, current_byte);
     operation_address_counter_++;
