@@ -95,10 +95,6 @@ void Simulator::RunAsync() {
 
 void Simulator::Reset() { should_reset_ = true; }
 
-void Simulator::Pause() { is_paused_ = true; }
-
-void Simulator::Unpause() { is_paused_ = false; };
-
 DeviceState Simulator::GetDeviceState() {
   auto state = device_state_;
   device_state_.usb_buffer.clear();
@@ -254,9 +250,7 @@ void Simulator::InternalRunAsync() {
     // frequency. It's a difficult problem so it's not perfect (and simavr
     // doesn't attempt to make it perfect), but in my experience you can
     // expect 17.5±1.5MHz.
-    if (!is_paused_) {
-      simavr_->Run();
-    }
+    simavr_->Run();
   }
   is_running_ = false;
   if (simavr_->GetState() == DONE || simavr_->GetState() == CRASHED) {
