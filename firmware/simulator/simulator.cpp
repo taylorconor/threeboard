@@ -67,16 +67,6 @@ Simulator::Simulator(Simavr *simavr, StateStorage *state_storage)
   portd_write_callback_ = std::make_unique<PortWriteCallback>(
       std::bind(&Simulator::HandlePortWrite, this, PORTD, _1));
   simavr_->RegisterPortDWriteCallback(portd_write_callback_.get());
-
-  char log_file[L_tmpnam];
-  if (std::tmpnam(log_file)) {
-    log_file_path_ = std::string(log_file);
-    log_stream_.open(log_file_path_, std::ios_base::app);
-  } else {
-    std::cout << "Failed to create log file" << std::endl;
-    exit(0);
-  }
-  std::cout << "Using log file '" << log_file_path_ << "'." << std::endl;
 }
 
 Simulator::~Simulator() {
@@ -84,7 +74,9 @@ Simulator::~Simulator() {
   if (sim_thread_.joinable()) {
     sim_thread_.join();
   }
-  log_stream_.close();
+  if (log_stream_.is_open()) {
+    log_stream_.close();
+  }
 }
 
 void Simulator::RunAsync() {
@@ -146,6 +138,16 @@ void Simulator::ToggleGdb(uint16_t port) const {
 }
 
 void Simulator::EnableLogging(UIDelegate *ui_delegate) {
+  char log_file[L_tmpnam];
+  if (std::tmpnam(log_file)) {
+    log_file_path_ = std::string(log_file);
+    log_stream_.open(log_file_path_, std::ios_base::app);
+  } else {
+    std::cout << "Failed to create log file" << std::endl;
+    exit(0);
+  }
+  std::cout << "Using log file '" << log_file_path_ << "'." << std::endl;
+
   // If the Uart class is initialized and in scope, it will handle logging
   // output from the simulated firmware.
   uart_ = std::make_unique<Uart>(simavr_, ui_delegate, &log_stream_);

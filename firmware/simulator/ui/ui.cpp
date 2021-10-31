@@ -165,8 +165,8 @@ UI::~UI() { endwin(); }
 void UI::Run() {
   // Now that the UI is initialised, enable logging callbacks to the UI from the
   // simulator and begin its async runloop.
-  // simulator_->EnableLogging(this);
-  // simulator_->RunAsync();
+  simulator_->EnableLogging(this);
+  simulator_->RunAsync();
 
   is_running_ = true;
   RenderLoop();

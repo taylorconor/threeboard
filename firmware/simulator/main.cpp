@@ -38,9 +38,6 @@ absl::Status RunSimulator(int argc, char *argv[]) {
 
   Simulator simulator(simavr.get(), state_storage.get());
   UI ui(&simulator, &flags);
-  simulator.EnableLogging(&ui);
-
-  simulator.RunAsync();
   ui.Run();
   return absl::OkStatus();
 }
