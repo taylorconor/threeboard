@@ -2,7 +2,7 @@
 #include "simulator/simulator.h"
 #include "simulator/ui/ui.h"
 #include "simulator/util/flags.h"
-#include "simulator/util/state_storage.h"
+#include "simulator/util/state_storage_impl.h"
 #include "src/keypress.h"
 #include "util/status_util.h"
 
@@ -32,8 +32,8 @@ std::vector<char> GetKeycodes(const Keypress &keypress) {
 
 absl::Status RunSimulator(int argc, char *argv[]) {
   auto flags = Flags::ParseFromArgs(argc, argv);
-  ASSIGN_OR_RETURN(auto state_storage,
-                   StateStorage::CreateFromFile(flags.GetShortcutFilename()));
+  ASSIGN_OR_RETURN(auto state_storage, StateStorageImpl::CreateFromFile(
+                                           flags.GetShortcutFilename()));
   auto simavr = SimavrImpl::Create(state_storage->GetInternalEepromData());
 
   Simulator simulator(simavr.get(), state_storage.get());

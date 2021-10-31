@@ -5,6 +5,7 @@
 
 #include "absl/status/status.h"
 #include "gtest/gtest.h"
+#include "integration/util/fake_state_storage.h"
 #include "integration/util/instrumenting_simavr.h"
 #include "simulator/simulator.h"
 #include "util/gtest_util.h"
@@ -18,7 +19,8 @@ class IntegrationTest : public testing::Test {
   IntegrationTest() {
     internal_eeprom_data_.fill(0xFF);
     simavr_ = simulator::InstrumentingSimavr::Create(&internal_eeprom_data_);
-    simulator_ = std::make_unique<simulator::Simulator>(simavr_.get(), nullptr);
+    simulator_ = std::make_unique<simulator::Simulator>(simavr_.get(),
+                                                        &fake_state_storage_);
   }
 
   void ApplyKeypress(const Keypress &keypress) {
@@ -36,6 +38,7 @@ class IntegrationTest : public testing::Test {
  protected:
   std::array<uint8_t, 1024> internal_eeprom_data_{};
   std::unique_ptr<simulator::InstrumentingSimavr> simavr_;
+  simulator::FakeStateStorage fake_state_storage_;
   std::unique_ptr<simulator::Simulator> simulator_;
 };
 

@@ -37,13 +37,23 @@ cc_library(
 cc_binary(
     name = "simulator",
     srcs = ["main.cpp"],
+    linkopts = select({
+        "@bazel_tools//src/conditions:darwin": [
+            # macOS experiences strange runtime crashes without linking
+            # Foundation. Seems to be related to Bazel's complex compiler
+            # toolchain setup (external/local_config_cc/cc_wrapper.sh), but I
+            # haven't spent too much time looking into it.
+            "-framework Foundation",
+        ],
+        "//conditions:default": [],
+    }),
     deps = [
         ":simulator_lib",
         "//simulator/simavr:simavr_impl",
         "//simulator/ui",
         "//simulator/util:flags",
         "//simulator/util:logging",
-        "//simulator/util:state_storage",
+        "//simulator/util:state_storage_impl",
         "//src:keypress",
     ],
 )

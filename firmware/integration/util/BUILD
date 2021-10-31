@@ -15,3 +15,9 @@ cc_library(
         "@abseil//absl/strings",
     ],
 )
+
+cc_library(
+    name = "fake_state_storage",
+    hdrs = ["fake_state_storage.h"],
+    deps = ["//simulator/util:state_storage"],
+)

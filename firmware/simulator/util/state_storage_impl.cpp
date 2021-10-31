@@ -1,4 +1,4 @@
-#include "state_storage.h"
+#include "state_storage_impl.h"
 
 #include <fstream>
 
@@ -66,7 +66,7 @@ absl::Status Validate(const nlohmann::json &json) {
 }  // namespace
 
 // static.
-absl::StatusOr<std::unique_ptr<StateStorage>> StateStorage::CreateFromFile(
+absl::StatusOr<std::unique_ptr<StateStorage>> StateStorageImpl::CreateFromFile(
     const std::string &file_path) {
   // TODO: if this file doesn't exist, create it!
   std::ifstream input_stream(file_path);
@@ -75,27 +75,27 @@ absl::StatusOr<std::unique_ptr<StateStorage>> StateStorage::CreateFromFile(
     json = nlohmann::json::parse(input_stream);
   } catch (const std::exception &e) {
     nlohmann::json empty_json;
-    auto *raw_ptr = new StateStorage(file_path, empty_json);
-    return std::unique_ptr<StateStorage>(raw_ptr);
+    auto *raw_ptr = new StateStorageImpl(file_path, empty_json);
+    return std::unique_ptr<StateStorageImpl>(raw_ptr);
   }
   RETURN_IF_ERROR(Validate(json));
-  auto *raw_ptr = new StateStorage(file_path, json);
-  return std::unique_ptr<StateStorage>(raw_ptr);
+  auto *raw_ptr = new StateStorageImpl(file_path, json);
+  return std::unique_ptr<StateStorageImpl>(raw_ptr);
 }
 
-StateStorage::StateStorage(const std::string &file_path,
-                           const nlohmann::json &json)
+StateStorageImpl::StateStorageImpl(const std::string &file_path,
+                                   const nlohmann::json &json)
     : file_path_(file_path), json_(json) {
   ConfigureInternalEeprom();
   ConfigureEeprom0();
   ConfigureEeprom1();
 }
 
-StateStorage::~StateStorage() {
+StateStorageImpl::~StateStorageImpl() {
   // TODO: Write internal EEPROM data back to disk.
 }
 
-void StateStorage::ConfigureInternalEeprom() {
+void StateStorageImpl::ConfigureInternalEeprom() {
   internal_eeprom_.fill(0xFF);
   for (const auto &[idx, value] : json_["character_shortcuts"].items()) {
     // TODO: remove this hack and implement proper USB keycode conversion.
@@ -108,7 +108,7 @@ void StateStorage::ConfigureInternalEeprom() {
   }
 }
 
-void StateStorage::ConfigureEeprom0() {
+void StateStorageImpl::ConfigureEeprom0() {
   eeprom0_.fill(0xFF);
   for (const auto &[idx, raw_value] : json_["word_shortcuts"].items()) {
     auto value = raw_value.get<std::string>();
@@ -120,7 +120,7 @@ void StateStorage::ConfigureEeprom0() {
   }
 }
 
-void StateStorage::ConfigureEeprom1() {
+void StateStorageImpl::ConfigureEeprom1() {
   eeprom1_.fill(0xFF);
   for (const auto &[idx, value] : json_["blob_shortcuts"].items()) {
     // TODO: implement once blob shortcuts are implemented.

@@ -1,5 +1,8 @@
 #include "simulator/simulator.h"
 
+#include <iostream>
+#include <vector>
+
 #include "simulator/util/logging.h"
 
 namespace threeboard {

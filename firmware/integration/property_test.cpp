@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include "integration/model/rapidcheck_specializations.h"
 #include "integration/model/threeboard_model.h"
+#include "integration/util/fake_state_storage.h"
 #include "integration/util/instrumenting_simavr.h"
 #include "rapidcheck/gtest.h"
 #include "simulator/simulator.h"
@@ -15,7 +16,8 @@ class PropertyTest : public testing::Test {
   PropertyTest() {
     internal_eeprom_data_.fill(0xFF);
     simavr_ = simulator::InstrumentingSimavr::Create(&internal_eeprom_data_);
-    simulator_ = std::make_unique<simulator::Simulator>(simavr_.get(), nullptr);
+    simulator_ = std::make_unique<simulator::Simulator>(simavr_.get(),
+                                                        &fake_state_storage_);
   }
 
   bool ApplyAndCompare(const Keypress &keypress) {
@@ -50,6 +52,7 @@ class PropertyTest : public testing::Test {
   ThreeboardModel model_;
   std::array<uint8_t, 1024> internal_eeprom_data_;
   std::unique_ptr<simulator::InstrumentingSimavr> simavr_;
+  simulator::FakeStateStorage fake_state_storage_;
   std::unique_ptr<simulator::Simulator> simulator_;
 };
 

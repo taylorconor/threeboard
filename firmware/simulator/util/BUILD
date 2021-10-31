@@ -26,9 +26,15 @@ cc_library(
 
 cc_library(
     name = "state_storage",
-    srcs = ["state_storage.cpp"],
     hdrs = ["state_storage.h"],
+)
+
+cc_library(
+    name = "state_storage_impl",
+    srcs = ["state_storage_impl.cpp"],
+    hdrs = ["state_storage_impl.h"],
     deps = [
+        ":state_storage",
         "//util:status_util",
         "@abseil//absl/status",
         "@nlohmann//:json",

@@ -20,7 +20,7 @@ class UartTest : public ::testing::Test {
     // TODO: capture the callback in the argument.
     EXPECT_CALL(simavr_mock_, RegisterUartOutputCallback(_)).Times(1);
 
-    uart_ = std::make_unique<Uart>(&simavr_mock_, &ui_delegate_mock_);
+    uart_ = std::make_unique<Uart>(&simavr_mock_, &ui_delegate_mock_, nullptr);
   }
 
   SimavrMock simavr_mock_;
