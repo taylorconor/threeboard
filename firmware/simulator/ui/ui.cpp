@@ -344,8 +344,8 @@ void UI::DrawLeds() {
   DrawLed(current_device_state_.led_g, S(4, ' '));
   DrawLed(current_device_state_.led_b, S(14, ' '));
   DrawLed(current_device_state_.led_prog, S(4, ' '));
-  DrawLed(current_device_state_.led_err, S(4, ' '));
-  DrawLed(current_device_state_.led_status, "");
+  DrawLed(current_device_state_.led_status, S(4, ' '));
+  DrawLed(current_device_state_.led_err, "");
 
   // First 8-bit LED bank.
   move(kRootY + 4, kRootX + 3);

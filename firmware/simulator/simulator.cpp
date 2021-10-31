@@ -219,13 +219,13 @@ void Simulator::UpdateLedState(uint8_t row) {
   if (row == 0) {
     device_state_.bank_0 &= 0x0F;
     device_state_.bank_0 |= cols << 4;
-    device_state_.led_err = IsEnabled(simavr_->GetData(PORTB), 6) &&
-                            !IsEnabled(simavr_->GetData(PORTC), 6);
+    device_state_.led_status = IsEnabled(simavr_->GetData(PORTB), 6) &&
+                               !IsEnabled(simavr_->GetData(PORTC), 6);
   } else if (row == 1) {
     device_state_.bank_0 &= 0xF0;
     device_state_.bank_0 |= cols;
-    device_state_.led_status = IsEnabled(simavr_->GetData(PORTC), 6) &&
-                               !IsEnabled(simavr_->GetData(PORTB), 6);
+    device_state_.led_err = IsEnabled(simavr_->GetData(PORTC), 6) &&
+                            !IsEnabled(simavr_->GetData(PORTB), 6);
   } else if (row == 2) {
     device_state_.bank_1 &= 0x0F;
     device_state_.bank_1 |= cols << 4;

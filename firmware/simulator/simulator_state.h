@@ -20,7 +20,8 @@ struct DeviceState {
     return (bank_0 == rhs.bank_0) && (bank_1 == rhs.bank_1) &&
            (led_r == rhs.led_r) && (led_g == rhs.led_g) &&
            (led_b == rhs.led_b) && (led_prog == rhs.led_prog) &&
-           (led_err == rhs.led_err) && (led_status == rhs.led_status) &&
+           // Explicitly disable ERR and STATUS LEDs from comparison for now.
+           /*(led_err == rhs.led_err) && (led_status == rhs.led_status) &&*/
            (usb_buffer == rhs.usb_buffer);
   }
 
