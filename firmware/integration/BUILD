@@ -24,7 +24,7 @@ cc_test(
         "//integration/model:rapidcheck_specializations",
         "//integration/model:threeboard_model",
         "//integration/util:fake_state_storage",
-        "//integration/util:instrumenting_simavr",
+        "//integration/util:testable_simavr",
         "//simulator:simulator_lib",
         "//util:gtest_util",
         "@emil-e//:rapidcheck",

@@ -3,9 +3,9 @@
 #include "simulator/util/state_storage.h"
 
 namespace threeboard {
-namespace simulator {
+namespace integration {
 
-class FakeStateStorage : public StateStorage {
+class FakeStateStorage : public simulator::StateStorage {
  public:
   FakeStateStorage() {
     internal_data_.fill(0xFF);
@@ -13,15 +13,17 @@ class FakeStateStorage : public StateStorage {
     eeprom1_data_.fill(0xFF);
   }
 
-  InternalEepromData* GetInternalEepromData() { return &internal_data_; }
-  Eeprom0Data* GetEeprom0Data() { return &eeprom0_data_; }
-  Eeprom1Data* GetEeprom1Data() { return &eeprom1_data_; }
+  simulator::InternalEepromData* GetInternalEepromData() {
+    return &internal_data_;
+  }
+  simulator::Eeprom0Data* GetEeprom0Data() { return &eeprom0_data_; }
+  simulator::Eeprom1Data* GetEeprom1Data() { return &eeprom1_data_; }
 
  private:
-  InternalEepromData internal_data_;
-  Eeprom0Data eeprom0_data_;
-  Eeprom1Data eeprom1_data_;
+  simulator::InternalEepromData internal_data_;
+  simulator::Eeprom0Data eeprom0_data_;
+  simulator::Eeprom1Data eeprom1_data_;
 };
 
-}  // namespace simulator
+}  // namespace integration
 }  // namespace threeboard

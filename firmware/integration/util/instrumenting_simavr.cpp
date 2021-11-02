@@ -9,18 +9,14 @@
 #include "util/status_util.h"
 
 namespace threeboard {
-namespace simulator {
+namespace integration {
+namespace {
 
 constexpr int kCoreDumpSize = 16;
-constexpr int kRunsBetweenTimeoutCheck = 10000;
 
 const std::string kFirmwareFile =
     "simulator/native/threeboard_sim_fast_binary.elf";
-
-absl::flat_hash_map<std::string, avr_symbol_t*>
-    InstrumentingSimavr::symbol_table_;
-absl::flat_hash_map<uint32_t, std::string>
-    InstrumentingSimavr::inverted_symbol_table_;
+}  // namespace
 
 // static.
 std::unique_ptr<InstrumentingSimavr> InstrumentingSimavr::Create(
@@ -33,52 +29,60 @@ std::unique_ptr<InstrumentingSimavr> InstrumentingSimavr::Create(
   return std::unique_ptr<InstrumentingSimavr>(raw_ptr);
 }
 
-InstrumentingSimavr::InstrumentingSimavr(
-    std::unique_ptr<avr_t> avr, std::unique_ptr<elf_firmware_t> elf_firmware)
-    : SimavrImpl(std::move(avr), std::move(elf_firmware)) {
-  if (symbol_table_.empty()) {
-    BuildSymbolTable(firmware_.get());
+absl::Status InstrumentingSimavr::RunWithChecks() {
+  bool should_check = ShouldRunIntegrityCheckAtCurrentCycle();
+  if (should_check) {
+    CopyDataSegment(&data_before_);
   }
-  data_start_ = symbol_table_.at("__data_start")->addr;
-}
+  prev_pcs_.push_back(avr_->pc);
+  prev_sps_.push_back(GetStackPointer());
+  Run();
+  static auto& symbol = symbol_table_.at("__do_clear_bss");
+  if (!finished_do_copy_data_ && symbol->addr == avr_->pc) {
+    finished_do_copy_data_ = true;
+  }
+  if (should_check) {
+    // Compare the .data segment before and after run. Note that std::equal is
+    // an order of magnitude slower than manually invoking memcmp here.
+    auto* data_after = avr_->data + data_start_;
+    if (memcmp(data_before_.data(), data_after, firmware_->datasize) != 0) {
+      for (int i = 0; i < data_before_.size(); ++i) {
+        if (data_before_[i] != data_after[i]) {
+          std::cout << absl::StrCat(".data 0x", absl::Hex(data_start_ + i),
+                                    " modified at PC 0x: 0x",
+                                    absl::Hex(avr_->pc), ": ",
+                                    absl::Hex(data_before_[i]), " -> 0x",
+                                    absl::Hex(data_after[i]), ".")
+                    << std::endl;
+        }
+      }
+      PrintCoreDump();
+      return absl::InternalError(
+          absl::StrCat("Data segment modified. Core dumped."));
+    }
+  }
 
-absl::Status InstrumentingSimavr::RunUntilStartKeypressProcessing() {
-  return RunUntilSymbol("threeboard::KeyController::PollKeyState",
-                        std::chrono::milliseconds(3000));
-}
-
-absl::Status InstrumentingSimavr::RunUntilFullLedRefresh() {
-  for (int i = 0; i < 5; ++i) {
-    RETURN_IF_ERROR(RunUntilSymbol("threeboard::LedController::ScanNextLine",
-                                   std::chrono::milliseconds(3000)));
+  uint8_t state = avr_->state;
+  if (state == simulator::CRASHED || state == simulator::DONE) {
+    PrintCoreDump();
+    return absl::InternalError(absl::StrCat(
+        "Simulator entered error state: ", state, ". Core dumped."));
+  }
+  if (avr_->pc == 0 && prev_pcs_.back() != 0) {
+    PrintCoreDump();
+    return absl::InternalError(
+        absl::StrCat("Simulator unexpectedly jumped to 0x0. Core dumped."));
   }
   return absl::OkStatus();
 }
 
-absl::Status InstrumentingSimavr::RunUntilNextEventLoopIteration() {
-  return RunUntilSymbol("threeboard::Threeboard::RunEventLoopIteration",
-                        std::chrono::milliseconds(3000));
-}
-
-absl::Status InstrumentingSimavr::RunUntilSymbol(
-    const std::string& symbol, const std::chrono::milliseconds& timeout) {
-  if (!symbol_table_.contains(symbol)) {
-    return absl::InternalError(
-        absl::StrCat("Symbol '", symbol, "' not found in symbol table"));
+InstrumentingSimavr::InstrumentingSimavr(
+    std::unique_ptr<avr_t> avr, std::unique_ptr<elf_firmware_t> elf_firmware)
+    : TestableSimavr(std::move(avr), std::move(elf_firmware)) {
+  if (symbol_table_.empty()) {
+    BuildSymbolTable(firmware_.get());
   }
-  uint32_t stop_addr = symbol_table_.at(symbol)->addr;
-  auto start = std::chrono::system_clock::now();
-  while (timeout > std::chrono::system_clock::now() - start) {
-    for (int i = 0; i < kRunsBetweenTimeoutCheck; ++i) {
-      RETURN_IF_ERROR(RunWithIntegrityChecks());
-      if (avr_->pc == stop_addr) {
-        return absl::OkStatus();
-      }
-    }
-  }
-  return absl::DeadlineExceededError(
-      absl::StrCat("RunUntil timed out after ", timeout.count(),
-                   "ms for symbol '", symbol, "'"));
+  data_start_ = symbol_table_.at("__data_start")->addr;
 }
 
 void InstrumentingSimavr::PrintCoreDump() const {
@@ -116,27 +120,13 @@ void InstrumentingSimavr::PrintCoreDump() const {
             << std::endl;
 }
 
-void InstrumentingSimavr::Run() {
-  if (recording_enabled_) {
-    prev_pcs_.push_back(avr_->pc);
-    prev_sps_.push_back(GetStackPointer());
-  }
-  SimavrImpl::Run();
-  if (recording_enabled_) {
-    static auto& symbol = symbol_table_.at("__do_clear_bss");
-    if (!finished_do_copy_data_ && symbol->addr == avr_->pc) {
-      finished_do_copy_data_ = true;
-    }
-  }
-}
-
 void InstrumentingSimavr::CopyDataSegment(std::vector<uint8_t>* v) const {
   v->assign(avr_->data + data_start_,
             avr_->data + data_start_ + firmware_->datasize);
 }
 
 bool InstrumentingSimavr::ShouldRunIntegrityCheckAtCurrentCycle() const {
-  if (!recording_enabled_ || !finished_do_copy_data_) {
+  if (!finished_do_copy_data_) {
     return false;
   }
   static auto& symbol =
@@ -147,86 +137,5 @@ bool InstrumentingSimavr::ShouldRunIntegrityCheckAtCurrentCycle() const {
   return true;
 }
 
-absl::Status InstrumentingSimavr::RunWithIntegrityChecks() {
-  if (ShouldRunIntegrityCheckAtCurrentCycle()) {
-    CopyDataSegment(&data_before_);
-    Run();
-    // Compare the .data segment before and after run. Note that std::equal is
-    // an order of magnitude slower than manually invoking memcmp here.
-    auto* data_after = avr_->data + data_start_;
-    if (memcmp(data_before_.data(), data_after, firmware_->datasize) != 0) {
-      for (int i = 0; i < data_before_.size(); ++i) {
-        if (data_before_[i] != data_after[i]) {
-          std::cout << absl::StrCat(".data 0x", absl::Hex(data_start_ + i),
-                                    " modified at PC 0x: 0x",
-                                    absl::Hex(avr_->pc), ": ",
-                                    absl::Hex(data_before_[i]), " -> 0x",
-                                    absl::Hex(data_after[i]), ".")
-                    << std::endl;
-        }
-      }
-      PrintCoreDump();
-      return absl::InternalError(
-          absl::StrCat("Data segment modified. Core dumped."));
-    }
-  } else {
-    Run();
-  }
-
-  uint8_t state = avr_->state;
-  if (state == simulator::CRASHED || state == simulator::DONE) {
-    PrintCoreDump();
-    return absl::InternalError(absl::StrCat(
-        "Simulator entered error state: ", state, ". Core dumped."));
-  }
-  if (avr_->pc == 0 && prev_pcs_.back() != 0) {
-    PrintCoreDump();
-    return absl::InternalError(
-        absl::StrCat("Simulator unexpectedly jumped to 0x0. Core dumped."));
-  }
-  return absl::OkStatus();
-}
-
-// Static.
-void InstrumentingSimavr::BuildSymbolTable(elf_firmware_t* firmware) {
-  for (int i = 0; i < firmware->symbolcount; ++i) {
-    // Demangle the symbol name.
-    avr_symbol_t* symbol = *(firmware->symbol + i);
-    int status;
-    char* result = abi::__cxa_demangle(symbol->symbol, 0, 0, &status);
-    if (status != 0) {
-      // Skip demangling failures, unless they correspond to segment-related
-      // symbols and functions.
-      if (absl::StartsWith(symbol->symbol, "__")) {
-        symbol_table_[symbol->symbol] = symbol;
-      }
-      continue;
-    }
-
-    // The result from __cxa_demangle will leak if not manually deallocated.
-    // Convert it to a std::string here and then free it.
-    std::string demangled(result);
-    free(result);
-
-    // Ignore non-standard symbol names (i.e. those that don't start with
-    // `threeboard::`), such as vtable definitions or non-virtual thunks. Also
-    // ignore symbols nested within anonymous namespaces, and symbols
-    // identifying static variables. This is clearly not an exact science but it
-    // will do unless we start experiencing problems with symbol parsing.
-    if (!absl::StartsWith(demangled, "threeboard::") ||
-        absl::StrContains(demangled, "(anonymous namespace") ||
-        absl::StrContains(demangled, ")::")) {
-      continue;
-    }
-
-    // Ignore the parameter list portion of the symbol signature, and
-    // everything that comes after it (CV qualifiers, for example). There's no
-    // need to disambiguate between these for now.
-    demangled = demangled.substr(0, demangled.find('('));
-    symbol_table_[demangled] = symbol;
-    inverted_symbol_table_[symbol->addr] = demangled;
-  }
-}
-
-}  // namespace simulator
+}  // namespace integration
 }  // namespace threeboard

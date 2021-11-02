@@ -2,7 +2,7 @@
 #include "integration/model/rapidcheck_specializations.h"
 #include "integration/model/threeboard_model.h"
 #include "integration/util/fake_state_storage.h"
-#include "integration/util/instrumenting_simavr.h"
+#include "integration/util/testable_simavr.h"
 #include "rapidcheck/gtest.h"
 #include "simulator/simulator.h"
 #include "util/gtest_util.h"
@@ -11,11 +11,13 @@ namespace threeboard {
 namespace integration {
 namespace {
 
+// Auto-generated property-based testing of the threeboard firmware using
+// RapidCheck (https://github.com/emil-e/rapidcheck).
 class PropertyTest : public testing::Test {
  public:
   PropertyTest() {
-    simavr_ = simulator::InstrumentingSimavr::Create(
-        fake_state_storage_.GetInternalEepromData());
+    simavr_ =
+        TestableSimavr::Create(fake_state_storage_.GetInternalEepromData());
     simulator_ = std::make_unique<simulator::Simulator>(simavr_.get(),
                                                         &fake_state_storage_);
   }
@@ -50,9 +52,8 @@ class PropertyTest : public testing::Test {
 
  protected:
   ThreeboardModel model_;
-  simulator::FakeStateStorage fake_state_storage_;
-  std::unique_ptr<simulator::InstrumentingSimavr> simavr_;
-  simulator::FakeStateStorage fake_state_storage_;
+  FakeStateStorage fake_state_storage_;
+  std::unique_ptr<TestableSimavr> simavr_;
   std::unique_ptr<simulator::Simulator> simulator_;
 };
 

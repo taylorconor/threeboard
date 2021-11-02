@@ -17,7 +17,7 @@ namespace {
 class IntegrationTest : public testing::Test {
  public:
   IntegrationTest() {
-    simavr_ = simulator::InstrumentingSimavr::Create(
+    simavr_ = InstrumentingSimavr::Create(
         fake_state_storage_.GetInternalEepromData());
     simulator_ = std::make_unique<simulator::Simulator>(simavr_.get(),
                                                         &fake_state_storage_);
@@ -36,8 +36,8 @@ class IntegrationTest : public testing::Test {
   }
 
  protected:
-  simulator::FakeStateStorage fake_state_storage_;
-  std::unique_ptr<simulator::InstrumentingSimavr> simavr_;
+  FakeStateStorage fake_state_storage_;
+  std::unique_ptr<InstrumentingSimavr> simavr_;
   std::unique_ptr<simulator::Simulator> simulator_;
 };
 
