@@ -18,7 +18,8 @@ namespace {
 
 // Firmware file path, relative to threeboard/firmware. Bazel will guarantee
 // this is built since it's listed as a dependency.
-const std::string kFirmwareFile = "simulator/native/threeboard_sim_binary.elf";
+const std::string kFirmwareFile =
+    "simulator/native/threeboard_sim_realtime_binary.elf";
 
 // C-style trampoline functions to bounce the avr_irq_register_notify and
 // avr_register_io_write callbacks to an instance of the provided callback type
@@ -46,16 +47,18 @@ static const char *_ee_irq_names[] = {"twi.miso", "twi.mosi"};
 std::unique_ptr<Simavr> SimavrImpl::Create(
     std::array<uint8_t, 1024> *internal_eeprom_data) {
   auto firmware = std::make_unique<elf_firmware_t>();
-  auto avr_ptr = ParseElfFile(firmware.get(), internal_eeprom_data);
+  auto avr_ptr =
+      ParseElfFile(kFirmwareFile, firmware.get(), internal_eeprom_data);
   auto *raw_ptr = new SimavrImpl(std::move(avr_ptr), std::move(firmware));
   return std::unique_ptr<SimavrImpl>(raw_ptr);
 }
 
 // static.
 std::unique_ptr<avr_t> SimavrImpl::ParseElfFile(
-    elf_firmware_t *firmware, std::array<uint8_t, 1024> *internal_eeprom_data) {
-  if (elf_read_firmware(kFirmwareFile.c_str(), firmware)) {
-    std::cout << "Failed to read ELF firmware '" << kFirmwareFile << "'"
+    const std::string &filename, elf_firmware_t *firmware,
+    std::array<uint8_t, 1024> *internal_eeprom_data) {
+  if (elf_read_firmware(filename.c_str(), firmware)) {
+    std::cout << "Failed to read ELF firmware '" << filename << "'"
               << std::endl;
     exit(1);
   }
@@ -72,7 +75,7 @@ std::unique_ptr<avr_t> SimavrImpl::ParseElfFile(
     exit(1);
   }
 
-  std::cout << "Loaded firmware '" << kFirmwareFile << "'" << std::endl;
+  std::cout << "Loaded firmware '" << filename << "'" << std::endl;
 
   avr_t *avr = avr_make_mcu_by_name(firmware->mmcu);
   if (!avr) {

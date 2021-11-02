@@ -7,6 +7,7 @@ cc_library(
     name = "instrumenting_simavr",
     srcs = ["instrumenting_simavr.cpp"],
     hdrs = ["instrumenting_simavr.h"],
+    data = ["//simulator/native:threeboard_sim_fast_binary"],
     deps = [
         "//simulator/simavr:simavr_impl",
         "//util:status_util",

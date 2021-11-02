@@ -14,6 +14,9 @@ namespace simulator {
 constexpr int kCoreDumpSize = 16;
 constexpr int kRunsBetweenTimeoutCheck = 10000;
 
+const std::string kFirmwareFile =
+    "simulator/native/threeboard_sim_fast_binary.elf";
+
 absl::flat_hash_map<std::string, avr_symbol_t*>
     InstrumentingSimavr::symbol_table_;
 absl::flat_hash_map<uint32_t, std::string>
@@ -23,7 +26,8 @@ absl::flat_hash_map<uint32_t, std::string>
 std::unique_ptr<InstrumentingSimavr> InstrumentingSimavr::Create(
     std::array<uint8_t, 1024>* internal_eeprom_data) {
   auto firmware = std::make_unique<elf_firmware_t>();
-  auto avr_ptr = ParseElfFile(firmware.get(), internal_eeprom_data);
+  auto avr_ptr =
+      ParseElfFile(kFirmwareFile, firmware.get(), internal_eeprom_data);
   auto* raw_ptr =
       new InstrumentingSimavr(std::move(avr_ptr), std::move(firmware));
   return std::unique_ptr<InstrumentingSimavr>(raw_ptr);

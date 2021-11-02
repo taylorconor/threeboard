@@ -60,7 +60,7 @@ class SimavrImpl : public Simavr {
 
  protected:
   static std::unique_ptr<avr_t> ParseElfFile(
-      elf_firmware_t *firmware,
+      const std::string &filename, elf_firmware_t *firmware,
       std::array<uint8_t, 1024> *internal_eeprom_data);
 
   SimavrImpl(std::unique_ptr<avr_t> avr,

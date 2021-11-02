@@ -10,7 +10,11 @@
 // now it's like this because of limitations in simavr_avr_hdrs which I don't
 // have the time / the will to fix at the moment.
 #include "external/third_party/local/include/simavr/avr/avr_mcu_section.h"
+#ifdef F_CPU_OVERRIDE
+AVR_MCU(F_CPU_OVERRIDE, MCU_NAME);
+#else
 AVR_MCU(F_CPU, MCU_NAME);
+#endif
 #endif
 
 // This main function is just a C wrapper around the C++ `bootstrap.cpp`. The

@@ -26,7 +26,7 @@ cc_library(
     name = "simavr_impl",
     srcs = ["simavr_impl.cpp"],
     hdrs = ["simavr_impl.h"],
-    data = ["//simulator/native:threeboard_sim_binary"],
+    data = ["//simulator/native:threeboard_sim_realtime_binary"],
     deps = [
         ":simavr",
         "//simulator/util:logging",
