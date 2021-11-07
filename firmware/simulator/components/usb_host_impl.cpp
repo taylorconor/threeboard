@@ -1,4 +1,4 @@
-#include "usb_host.h"
+#include "usb_host_impl.h"
 
 #include "src/usb/shared/constants.h"
 
@@ -8,7 +8,7 @@ namespace simulator {
 using namespace std::placeholders;
 using usb::RequestType;
 
-UsbHost::UsbHost(Simavr *simavr, SimulatorDelegate *simulator_delegate)
+UsbHostImpl::UsbHostImpl(Simavr *simavr, SimulatorDelegate *simulator_delegate)
     : simavr_(simavr),
       simulator_delegate_(simulator_delegate),
       is_running_(false),
@@ -16,12 +16,12 @@ UsbHost::UsbHost(Simavr *simavr, SimulatorDelegate *simulator_delegate)
   // Register a callback on USB attach, so we'll know when we try to start the
   // host if the device is ready or not.
   usb_attach_callback_ = std::make_unique<UsbAttachCallback>(
-      std::bind(&UsbHost::InternalUsbAttachCallback, this, _1));
+      std::bind(&UsbHostImpl::InternalUsbAttachCallback, this, _1));
   usb_attach_lifetime_ =
       simavr_->RegisterUsbAttachCallback(usb_attach_callback_.get());
 }
 
-UsbHost::~UsbHost() {
+UsbHostImpl::~UsbHostImpl() {
   if (is_running_) {
     is_running_ = false;
     if (device_control_thread_->joinable()) {
@@ -30,10 +30,10 @@ UsbHost::~UsbHost() {
   }
 }
 
-bool UsbHost::IsAttached() const { return is_attached_; }
+bool UsbHostImpl::IsAttached() const { return is_attached_; }
 
 // This function is run exclusively within the device_control_thread_ thread.
-void UsbHost::DeviceControlLoop() {
+void UsbHostImpl::DeviceControlLoop() {
   is_running_ = true;
 
   // Before properly beginning the device control loop, we need to issue a USB
@@ -83,7 +83,7 @@ void UsbHost::DeviceControlLoop() {
   }
 }
 
-void UsbHost::InternalUsbAttachCallback(uint32_t status) {
+void UsbHostImpl::InternalUsbAttachCallback(uint32_t status) {
   // Verify that attaching was successful.
   if (status == 0) {
     if (is_attached_) {
@@ -100,7 +100,7 @@ void UsbHost::InternalUsbAttachCallback(uint32_t status) {
   if (!is_attached_) {
     is_attached_ = true;
     device_control_thread_ =
-        std::make_unique<std::thread>(&UsbHost::DeviceControlLoop, this);
+        std::make_unique<std::thread>(&UsbHostImpl::DeviceControlLoop, this);
   }
 }
 }  // namespace simulator

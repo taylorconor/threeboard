@@ -7,8 +7,9 @@
 
 #include "simulator/components/i2c_eeprom.h"
 #include "simulator/components/uart.h"
-#include "simulator/components/usb_host.h"
+#include "simulator/components/usb_host_impl.h"
 #include "simulator/simavr/simavr.h"
+#include "simulator/simulator_delegate.h"
 #include "simulator/simulator_state.h"
 #include "simulator/ui/ui_delegate.h"
 #include "simulator/util/state_storage.h"
@@ -47,7 +48,7 @@ class Simulator : public SimulatorDelegate {
   std::thread sim_thread_;
   std::atomic<bool> is_running_;
   std::atomic<bool> should_reset_;
-  UsbHost usb_host_;
+  UsbHostImpl usb_host_;
   I2cEeprom eeprom0_;
   DeviceState device_state_;
   std::string log_file_path_;

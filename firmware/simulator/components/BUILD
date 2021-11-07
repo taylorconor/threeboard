@@ -39,9 +39,15 @@ cc_test(
 
 cc_library(
     name = "usb_host",
-    srcs = ["usb_host.cpp"],
     hdrs = ["usb_host.h"],
+)
+
+cc_library(
+    name = "usb_host_impl",
+    srcs = ["usb_host_impl.cpp"],
+    hdrs = ["usb_host_impl.h"],
     deps = [
+        ":usb_host",
         "//simulator:simulator_delegate",
         "//simulator/simavr",
         "//src/usb/shared:constants",
@@ -50,10 +56,10 @@ cc_library(
 )
 
 cc_test(
-    name = "usb_host_test",
-    srcs = ["usb_host_test.cpp"],
+    name = "usb_host_impl_test",
+    srcs = ["usb_host_impl_test.cpp"],
     deps = [
-        ":usb_host",
+        ":usb_host_impl",
         "//simulator:simulator_delegate_mock",
         "//simulator/simavr:simavr_mock",
         "@gtest",

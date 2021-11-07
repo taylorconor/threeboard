@@ -1,4 +1,4 @@
-#include "usb_host.h"
+#include "usb_host_impl.h"
 
 #include "gtest/gtest.h"
 #include "simulator/simavr/simavr_mock.h"
@@ -18,7 +18,7 @@ class UsbHostTest : public ::testing::Test {
     EXPECT_CALL(simavr_mock_, RegisterUsbAttachCallback(_)).Times(1);
 
     usb_host_ =
-        std::make_unique<UsbHost>(&simavr_mock_, &simulator_delegate_mock_);
+        std::make_unique<UsbHostImpl>(&simavr_mock_, &simulator_delegate_mock_);
   }
 
   SimavrMock simavr_mock_;
