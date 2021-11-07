@@ -45,6 +45,7 @@ class LayerGModel : public LayerModel {
   uint8_t key_code_ = 0;
   bool prog_ = false;
   std::string shortcuts_[256];
+  uint8_t shortcut_lengths_[256] = {0};
 };
 
 class LayerBModel : public DefaultLayerModel {
