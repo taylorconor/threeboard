@@ -1,1 +1,1 @@
-build --cxxopt='-std=c++17' --features=-supports_dynamic_linker
+build --cxxopt='-std=c++17' --linkopt='-framework Foundation' --features=-supports_dynamic_linker
