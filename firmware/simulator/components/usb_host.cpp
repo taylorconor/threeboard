@@ -1,7 +1,5 @@
 #include "usb_host.h"
 
-#include <iostream>
-
 #include "src/usb/shared/constants.h"
 
 namespace threeboard {
@@ -32,7 +30,7 @@ UsbHost::~UsbHost() {
   }
 }
 
-bool UsbHost::IsAttached() { return is_attached_; }
+bool UsbHost::IsAttached() const { return is_attached_; }
 
 // This function is run exclusively within the device_control_thread_ thread.
 void UsbHost::DeviceControlLoop() {

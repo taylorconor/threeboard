@@ -21,7 +21,7 @@ class UsbHost {
   UsbHost(Simavr *simavr, SimulatorDelegate *simulator_delegate);
   ~UsbHost();
 
-  bool IsAttached();
+  bool IsAttached() const;
 
  private:
   void DeviceControlLoop();

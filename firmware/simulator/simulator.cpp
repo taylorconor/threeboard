@@ -97,6 +97,7 @@ SimulatorState Simulator::GetSimulatorState() const {
   SimulatorState state;
   state.cpu_state = simavr_->GetState();
   state.gdb_enabled = (simavr_->GetGdbPort() > 0);
+  state.usb_attached = usb_host_.IsAttached();
   state.sram_usage = GetSramUsage(simavr_);
   state.data_section_size = simavr_->GetDataSectionSize();
   state.bss_section_size = simavr_->GetBssSectionSize();
@@ -186,7 +187,7 @@ void Simulator::HandleUsbOutput(uint8_t mod_code, uint8_t key_code) {
     // TODO: support some special characters!
     return;
   }
-  device_state_.usb_buffer += c;
+  device_state_.usb_buffer.push_back(c);
 }
 
 void Simulator::HandlePortWrite(uint8_t port, uint8_t value) {
@@ -249,7 +250,7 @@ void Simulator::InternalRunAsync() {
     // Since the threeboard is entirely interrupt driven (the main runloop does
     // poll the keyboard state, but sleeps the CPU between interrupts), simavr
     // will attempt to match the simulator frequency to the target 16 MHz
-    // frequency. It's a difficult problem so it's not perfect (and simavr
+    // frequency. It's a difficult problem, so it's not perfect (and simavr
     // doesn't attempt to make it perfect), but in my experience you can
     // expect 17.5±1.5MHz.
     simavr_->Run();
