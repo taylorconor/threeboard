@@ -48,6 +48,9 @@ class PropertyTest : public testing::Test {
     // the opportunity to update.
     EXPECT_OK(simavr_->RunUntilFullLedRefresh());
     EXPECT_OK(simavr_->RunUntilNextEventLoopIteration());
+    if (keypress == Keypress::Z) {
+      simulator_->WaitForUsbOutput(std::chrono::seconds(3));
+    }
   }
 
  protected:

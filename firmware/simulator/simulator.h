@@ -30,6 +30,7 @@ class Simulator : public SimulatorDelegate {
   SimulatorState GetSimulatorState() const;
   void HandleKeypress(char key, bool state);
   void HandleKeypress(const Keypress &keypress, bool state);
+  void WaitForUsbOutput(const std::chrono::milliseconds &timeout);
 
   uint64_t GetCurrentCpuCycle() const;
   void ToggleGdb(uint16_t port) const;
@@ -53,6 +54,7 @@ class Simulator : public SimulatorDelegate {
   DeviceState device_state_;
   std::string log_file_path_;
   std::ofstream log_stream_;
+  std::chrono::system_clock::time_point last_usb_output_;
 
   std::unique_ptr<PortWriteCallback> portb_write_callback_;
   std::unique_ptr<PortWriteCallback> portd_write_callback_;

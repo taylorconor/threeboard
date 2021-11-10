@@ -124,6 +124,18 @@ void Simulator::HandleKeypress(const Keypress &keypress, bool state) {
   }
 }
 
+void Simulator::WaitForUsbOutput(const std::chrono::milliseconds &timeout) {
+  auto start = std::chrono::system_clock::now();
+  while (timeout > std::chrono::system_clock::now() - start) {
+    auto previous_output_time = last_usb_output_;
+    // Sleep for double the USB endpoint polling time.
+    std::this_thread::sleep_for(std::chrono::milliseconds(25));
+    if (previous_output_time == last_usb_output_) {
+      return;
+    }
+  }
+}
+
 uint64_t Simulator::GetCurrentCpuCycle() const { return simavr_->GetCycle(); }
 
 void Simulator::ToggleGdb(uint16_t port) const {
@@ -160,12 +172,13 @@ void Simulator::EnableLogging(UIDelegate *ui_delegate) {
 std::string Simulator::GetLogFile() const { return log_file_path_; }
 
 void Simulator::HandleUsbOutput(uint8_t mod_code, uint8_t key_code) {
+  last_usb_output_ = std::chrono::system_clock::now();
   bool capitalise = false;
   // Check for L_SHIFT and R_SHIFT.
   if ((mod_code & 0x22) > 0 && (mod_code & ~0x22) == 0) {
     capitalise = true;
   } else if (mod_code != 0) {
-    // Ignore and reject any non-shift modcodes.
+    // Ignore and reject any non-shift mod codes.
     return;
   }
   char c;
@@ -184,7 +197,6 @@ void Simulator::HandleUsbOutput(uint8_t mod_code, uint8_t key_code) {
     c = '.';
   } else {
     // Ignore unsupported characters.
-    // TODO: support some special characters!
     return;
   }
   device_state_.usb_buffer.push_back(c);

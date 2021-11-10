@@ -18,6 +18,7 @@ cc_library(
         "//simulator:simulator_state",
         "//src:keypress",
         "//src:led_state",
+        "//src/storage:storage_controller",
     ],
 )
 

@@ -1,8 +1,12 @@
 #include "integration/model/layer_model.h"
 
+#include "src/storage/storage_controller.h"
+
 namespace threeboard {
 namespace integration {
 namespace {
+
+using storage::WordModCode;
 
 void AppendToString(uint8_t mod_code, uint8_t key_code, std::string* str) {
   bool capitalise = false;
@@ -10,7 +14,7 @@ void AppendToString(uint8_t mod_code, uint8_t key_code, std::string* str) {
   if ((mod_code & 0x22) > 0 && (mod_code & ~0x22) == 0) {
     capitalise = true;
   } else if (mod_code != 0) {
-    // Ignore and reject any non-shift modcodes.
+    // Ignore and reject any non-shift mod codes.
     return;
   }
   char c;
@@ -134,9 +138,8 @@ bool LayerGModel::Apply(const Keypress& keypress) {
         AppendToString(0, key_code_, &shortcuts_[shortcut_id_]);
         shortcut_lengths_[shortcut_id_]++;
       }
-      // TODO: Should we do something about the ERR led here, or ignore it?
     } else {
-      usb_buffer_ += shortcuts_[shortcut_id_];
+      usb_buffer_ += ApplyModCodeToCurrentShortcut();
     }
   } else if (keypress == Keypress::XY) {
     prog_ = true;
@@ -177,6 +180,46 @@ simulator::DeviceState LayerGModel::GetStateSnapshot() {
   snapshot.usb_buffer = usb_buffer_;
   usb_buffer_ = "";
   return snapshot;
+}
+
+std::string LayerGModel::ApplyModCodeToCurrentShortcut() {
+  std::string output;
+  const std::string& shortcut = shortcuts_[shortcut_id_];
+  for (int i = 0; i < shortcut.length(); ++i) {
+    char c = shortcut[i];
+    if (word_mod_code_ == (int)WordModCode::UPPERCASE ||
+        (word_mod_code_ == (int)WordModCode::CAPITALISE && i == 0)) {
+      output += (char)toupper(c);
+    } else {
+      if (i == shortcut.length() - 1) {
+        char append = 0;
+        if (word_mod_code_ == (int)WordModCode::APPEND_PERIOD) {
+          append = '.';
+        } else if (word_mod_code_ == (int)WordModCode::APPEND_COMMA) {
+          append = ',';
+        } else if (word_mod_code_ == (int)WordModCode::APPEND_HYPHEN) {
+          append = '-';
+        }
+        if (append > 0) {
+          output += c;
+          c = append;
+        }
+      }
+      output += c;
+    }
+  }
+  // Special case for when the device has some non-printable characters stored
+  // in the word and also includes an "append" word mod code.
+  if (shortcut.empty() && shortcut_lengths_[shortcut_id_] > 0) {
+    if (word_mod_code_ == (int)WordModCode::APPEND_PERIOD) {
+      output += '.';
+    } else if (word_mod_code_ == (int)WordModCode::APPEND_COMMA) {
+      output += ',';
+    } else if (word_mod_code_ == (int)WordModCode::APPEND_HYPHEN) {
+      output += '-';
+    }
+  }
+  return output;
 }
 }  // namespace integration
 }  // namespace threeboard

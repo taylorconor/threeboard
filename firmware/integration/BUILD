@@ -19,7 +19,7 @@ cc_test(
 cc_test(
     name = "property_test",
     srcs = ["property_test.cpp"],
-    env = {"RC_PARAMS": "max_success=75 max_size=50 noshrink=1"},
+    env = {"RC_PARAMS": "max_success=50 max_size=750 noshrink=1"},
     deps = [
         "//integration/model:rapidcheck_specializations",
         "//integration/model:threeboard_model",

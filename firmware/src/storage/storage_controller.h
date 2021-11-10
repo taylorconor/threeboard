@@ -7,6 +7,15 @@
 namespace threeboard {
 namespace storage {
 
+enum class WordModCode {
+  LOWERCASE = 0,
+  UPPERCASE = 1,
+  CAPITALISE = 2,
+  APPEND_PERIOD = 3,
+  APPEND_COMMA = 4,
+  APPEND_HYPHEN = 5,
+};
+
 class StorageController {
  public:
   StorageController(native::Native *native, usb::UsbController *usb_controller);

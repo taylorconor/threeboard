@@ -46,6 +46,8 @@ class LayerGModel : public LayerModel {
   bool prog_ = false;
   std::string shortcuts_[256];
   uint8_t shortcut_lengths_[256] = {0};
+
+  std::string ApplyModCodeToCurrentShortcut();
 };
 
 class LayerBModel : public DefaultLayerModel {

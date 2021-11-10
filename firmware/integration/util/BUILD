@@ -5,10 +5,10 @@ package(default_visibility = [
 
 cc_library(
     name = "testable_simavr",
-    hdrs = ["testable_simavr.h"],
-    srcs = ["testable_simavr.cpp"],
-    data = ["//simulator/native:threeboard_sim_fast_binary"],
     testonly = 1,
+    srcs = ["testable_simavr.cpp"],
+    hdrs = ["testable_simavr.h"],
+    data = ["//simulator/native:threeboard_sim_fast_binary"],
     deps = [
         "//simulator/simavr:simavr_impl",
         "//util:status_util",
@@ -20,11 +20,11 @@ cc_library(
 
 cc_library(
     name = "instrumenting_simavr",
+    testonly = 1,
     srcs = ["instrumenting_simavr.cpp"],
     hdrs = ["instrumenting_simavr.h"],
-    testonly = 1,
     deps = [
-        ":testable_simavr"
+        ":testable_simavr",
     ],
 )
 

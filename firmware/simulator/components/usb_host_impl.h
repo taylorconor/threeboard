@@ -23,7 +23,8 @@ class UsbHostImpl : public UsbHost {
 
   bool IsAttached() const override;
 
- private:
+ protected:
+  void PollDeviceEndpoints();
   void DeviceControlLoop();
   void InternalUsbAttachCallback(uint32_t status);
 

@@ -28,15 +28,6 @@ constexpr uint16_t kInternalEepromLayerBLengthStart = 0x200;
 constexpr uint8_t kWordModUppercase = 0;
 constexpr uint8_t kWordModCapitalise = 1;
 
-enum class WordModCode {
-  LOWERCASE = 0,
-  UPPERCASE = 1,
-  CAPITALISE = 2,
-  APPEND_PERIOD = 3,
-  APPEND_COMMA = 4,
-  APPEND_HYPHEN = 5,
-};
-
 }  // namespace
 
 StorageController::StorageController(native::Native *native,
