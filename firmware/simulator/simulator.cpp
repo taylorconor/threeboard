@@ -1,6 +1,5 @@
 #include "simulator/simulator.h"
 
-#include <iostream>
 #include <vector>
 
 #include "simulator/util/logging.h"
@@ -177,11 +176,8 @@ void Simulator::HandleUsbOutput(uint8_t mod_code, uint8_t key_code) {
   // Check for L_SHIFT and R_SHIFT.
   if ((mod_code & 0x22) > 0 && (mod_code & ~0x22) == 0) {
     capitalise = true;
-  } else if (mod_code != 0) {
-    // Ignore and reject any non-shift mod codes.
-    return;
   }
-  char c;
+  char c = 0;
   if (key_code >= 0x04 && key_code <= 0x1d) {
     c = key_code + 0x5d;
     if (capitalise) {
@@ -195,11 +191,10 @@ void Simulator::HandleUsbOutput(uint8_t mod_code, uint8_t key_code) {
     c = ',';
   } else if (key_code == 0x37) {
     c = '.';
-  } else {
-    // Ignore unsupported characters.
-    return;
   }
-  device_state_.usb_buffer.push_back(c);
+  if (std::isprint(c)) {
+    device_state_.usb_buffer.push_back(c);
+  }
 }
 
 void Simulator::HandlePortWrite(uint8_t port, uint8_t value) {

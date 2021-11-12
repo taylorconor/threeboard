@@ -8,16 +8,14 @@ namespace {
 
 using storage::WordModCode;
 
-void AppendToString(uint8_t mod_code, uint8_t key_code, std::string* str) {
+template <typename T>
+void AppendTo(uint8_t mod_code, uint8_t key_code, T* vec) {
   bool capitalise = false;
   // Check for L_SHIFT and R_SHIFT.
   if ((mod_code & 0x22) > 0 && (mod_code & ~0x22) == 0) {
     capitalise = true;
-  } else if (mod_code != 0) {
-    // Ignore and reject any non-shift mod codes.
-    return;
   }
-  char c;
+  char c = 0;
   if (key_code >= 0x04 && key_code <= 0x1d) {
     c = key_code + 0x5d;
     if (capitalise) {
@@ -31,11 +29,17 @@ void AppendToString(uint8_t mod_code, uint8_t key_code, std::string* str) {
     c = ',';
   } else if (key_code == 0x37) {
     c = '.';
-  } else {
-    // Ignore unsupported characters.
+  }
+  if (std::is_same<T, std::string>::value && !std::isprint(c)) {
     return;
   }
-  str->push_back(c);
+  vec->push_back(c);
+}
+
+void AppendIfPrintable(std::string* str, char c) {
+  if (std::isprint(c)) {
+    *str += c;
+  }
 }
 
 }  // namespace
@@ -52,8 +56,10 @@ bool DefaultLayerModel::Apply(const Keypress& keypress) {
   } else if (keypress == Keypress::Y) {
     device_state_.bank_1++;
   } else if (keypress == Keypress::Z) {
-    AppendToString(device_state_.bank_1, device_state_.bank_0,
-                   &device_state_.usb_buffer);
+    if (device_state_.bank_0 != 0 || device_state_.bank_1 != 0) {
+      AppendTo(device_state_.bank_1, device_state_.bank_0,
+               &device_state_.usb_buffer);
+    }
   } else if (keypress == Keypress::XZ) {
     device_state_.bank_0 = 0;
   } else if (keypress == Keypress::YZ) {
@@ -79,7 +85,9 @@ bool LayerRModel::Apply(const Keypress& keypress) {
     }
   } else if (keypress == Keypress::Z) {
     if (!prog_) {
-      AppendToString(modcode_, shortcuts_[shortcut_id_], &usb_buffer_);
+      if (modcode_ != 0 || shortcuts_[shortcut_id_] != 0) {
+        AppendTo(modcode_, shortcuts_[shortcut_id_], &usb_buffer_);
+      }
     }
   } else if (keypress == Keypress::XY) {
     prog_ = true;
@@ -133,11 +141,8 @@ bool LayerGModel::Apply(const Keypress& keypress) {
       word_mod_code_++;
     }
   } else if (keypress == Keypress::Z) {
-    if (prog_) {
-      if (shortcut_lengths_[shortcut_id_] < 15) {
-        AppendToString(0, key_code_, &shortcuts_[shortcut_id_]);
-        shortcut_lengths_[shortcut_id_]++;
-      }
+    if (prog_ && shortcuts_[shortcut_id_].size() < 15) {
+      AppendTo(0, key_code_, &shortcuts_[shortcut_id_]);
     } else {
       usb_buffer_ += ApplyModCodeToCurrentShortcut();
     }
@@ -152,7 +157,6 @@ bool LayerGModel::Apply(const Keypress& keypress) {
   } else if (keypress == Keypress::YZ) {
     if (prog_) {
       shortcuts_[shortcut_id_].clear();
-      shortcut_lengths_[shortcut_id_] = 0;
     } else {
       word_mod_code_ = 0;
     }
@@ -170,10 +174,10 @@ simulator::DeviceState LayerGModel::GetStateSnapshot() {
   simulator::DeviceState snapshot;
   if (prog_) {
     snapshot.bank_0 = key_code_;
-    snapshot.bank_1 = shortcut_lengths_[shortcut_id_] << 4;
+    snapshot.bank_1 = shortcuts_[shortcut_id_].size() << 4;
   } else {
     snapshot.bank_0 = shortcut_id_;
-    snapshot.bank_1 = word_mod_code_ | (shortcut_lengths_[shortcut_id_] << 4);
+    snapshot.bank_1 = word_mod_code_ | (shortcuts_[shortcut_id_].size() << 4);
   }
   snapshot.led_g = true;
   snapshot.led_prog = prog_;
@@ -184,14 +188,13 @@ simulator::DeviceState LayerGModel::GetStateSnapshot() {
 
 std::string LayerGModel::ApplyModCodeToCurrentShortcut() {
   std::string output;
-  const std::string& shortcut = shortcuts_[shortcut_id_];
-  for (int i = 0; i < shortcut.length(); ++i) {
-    char c = shortcut[i];
+  for (int i = 0; i < shortcuts_[shortcut_id_].size(); ++i) {
+    char c = shortcuts_[shortcut_id_].at(i);
     if (word_mod_code_ == (int)WordModCode::UPPERCASE ||
         (word_mod_code_ == (int)WordModCode::CAPITALISE && i == 0)) {
-      output += (char)toupper(c);
+      AppendIfPrintable(&output, (char)toupper(c));
     } else {
-      if (i == shortcut.length() - 1) {
+      if (i == shortcuts_[shortcut_id_].size() - 1) {
         char append = 0;
         if (word_mod_code_ == (int)WordModCode::APPEND_PERIOD) {
           append = '.';
@@ -201,22 +204,11 @@ std::string LayerGModel::ApplyModCodeToCurrentShortcut() {
           append = '-';
         }
         if (append > 0) {
-          output += c;
+          AppendIfPrintable(&output, c);
           c = append;
         }
       }
-      output += c;
-    }
-  }
-  // Special case for when the device has some non-printable characters stored
-  // in the word and also includes an "append" word mod code.
-  if (shortcut.empty() && shortcut_lengths_[shortcut_id_] > 0) {
-    if (word_mod_code_ == (int)WordModCode::APPEND_PERIOD) {
-      output += '.';
-    } else if (word_mod_code_ == (int)WordModCode::APPEND_COMMA) {
-      output += ',';
-    } else if (word_mod_code_ == (int)WordModCode::APPEND_HYPHEN) {
-      output += '-';
+      AppendIfPrintable(&output, c);
     }
   }
   return output;

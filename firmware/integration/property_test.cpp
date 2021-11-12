@@ -31,9 +31,11 @@ class PropertyTest : public testing::Test {
     if (!is_same) {
       std::cout << "Device: ";
       rc::show(device_state, std::cout);
-      std::cout << "\nModel:  ";
+      std::cout << " (strlen=" << device_state.usb_buffer.length()
+                << ")\nModel:  ";
       rc::show(model_state, std::cout);
-      std::cout << std::endl;
+      std::cout << " (strlen=" << model_state.usb_buffer.length() << ")"
+                << std::endl;
     }
     return is_same;
   }

@@ -1,3 +1,6 @@
+#include <array>
+#include <vector>
+
 #include "simulator/simulator_state.h"
 #include "src/keypress.h"
 #include "src/led_state.h"
@@ -44,8 +47,7 @@ class LayerGModel : public LayerModel {
   uint8_t word_mod_code_ = 0;
   uint8_t key_code_ = 0;
   bool prog_ = false;
-  std::string shortcuts_[256];
-  uint8_t shortcut_lengths_[256] = {0};
+  std::array<std::vector<char>, 256> shortcuts_;
 
   std::string ApplyModCodeToCurrentShortcut();
 };
