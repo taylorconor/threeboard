@@ -37,6 +37,9 @@ void AppendTo(uint8_t mod_code, uint8_t key_code, T* vec) {
 }
 
 void AppendIfPrintable(std::string* str, char c) {
+  // We don't want to append a character to the output string if it's not
+  // printable because it messes up the comparison between the model and the
+  // simulator.
   if (std::isprint(c)) {
     *str += c;
   }
