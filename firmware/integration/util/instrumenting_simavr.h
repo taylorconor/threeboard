@@ -28,7 +28,6 @@ class InstrumentingSimavr final : public TestableSimavr {
   void PrintCoreDump() const;
   void CopyDataSegment(std::vector<uint8_t>*) const;
   bool ShouldRunIntegrityCheckAtCurrentCycle() const;
-  static void BuildSymbolTable(elf_firmware_t* firmware);
 
   bool finished_do_copy_data_ = false;
 
