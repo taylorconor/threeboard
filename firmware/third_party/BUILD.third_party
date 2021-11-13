@@ -42,22 +42,3 @@ cc_library(
     hdrs = ["single_include/nlohmann/json.hpp"],
     strip_include_prefix = "single_include/",
 )
-
-cc_library(
-    name = "rapidcheck",
-    srcs = glob([
-        "src/**/*.cpp",
-        "src/**/*.h",
-        "src/**/*.hpp",
-    ]),
-    hdrs = glob([
-        "include/**/*.h",
-        "include/**/*.hpp",
-        "extras/gtest/include/**/*.h",
-    ]),
-    include_prefix = "rapidcheck",
-    includes = [
-        "extras/gtest/include",
-        "include",
-    ],
-)

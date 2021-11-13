@@ -5,12 +5,6 @@ package(default_visibility = [
 ])
 
 cc_library(
-    name = "rapidcheck_specializations",
-    hdrs = ["rapidcheck_specializations.h"],
-    deps = ["//src:keypress"],
-)
-
-cc_library(
     name = "layer_model",
     srcs = ["layer_model.cpp"],
     hdrs = ["layer_model.h"],

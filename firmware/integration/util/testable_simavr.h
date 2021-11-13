@@ -1,5 +1,7 @@
 #pragma once
 
+#include <mutex>
+
 #include "absl/container/flat_hash_map.h"
 #include "absl/status/status.h"
 #include "simulator/simavr/simavr_impl.h"
@@ -33,6 +35,7 @@ class TestableSimavr : public simulator::SimavrImpl {
 
   static void BuildSymbolTable(elf_firmware_t* firmware);
 
+  static std::mutex symbol_table_mutex_;
   static absl::flat_hash_map<std::string, avr_symbol_t*> symbol_table_;
 };
 

@@ -15,6 +15,7 @@ const std::string kFirmwareFile =
 
 }  // namespace
 
+std::mutex TestableSimavr::symbol_table_mutex_;
 absl::flat_hash_map<std::string, avr_symbol_t*> TestableSimavr::symbol_table_;
 
 // static.
@@ -30,6 +31,7 @@ std::unique_ptr<TestableSimavr> TestableSimavr::Create(
 TestableSimavr::TestableSimavr(std::unique_ptr<avr_t> avr,
                                std::unique_ptr<elf_firmware_t> elf_firmware)
     : SimavrImpl(std::move(avr), std::move(elf_firmware)) {
+  std::lock_guard<std::mutex> lock(symbol_table_mutex_);
   if (symbol_table_.empty()) {
     BuildSymbolTable(firmware_.get());
   }
