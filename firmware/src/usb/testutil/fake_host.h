@@ -18,9 +18,6 @@ class FakeHost {
   native::NativeMock *native_mock_;
   UsbControllerImpl *usb_controller_impl_;
 
-  void SendBytes(const std::vector<uint8_t> &data);
-  std::vector<uint8_t> ReceiveBytes(int size);
-
   void AddFakeEndpointExpectations(Request request);
 };
 }  // namespace testutil

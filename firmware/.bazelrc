@@ -1,2 +1,4 @@
-build --cxxopt='-std=c++17' --features=-supports_dynamic_linker
+build --cxxopt='-std=c++17' --cxxopt='-O3' --copt=-w --features=-supports_dynamic_linker
 build:macos --linkopt='-framework Foundation'
+
+test --test_output=all

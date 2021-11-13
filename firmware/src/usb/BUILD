@@ -48,17 +48,3 @@ cc_test(
         "@gtest//:gtest_main",
     ],
 )
-
-cc_test(
-    name = "usb_integration_test",
-    srcs = ["usb_integration_test.cpp"],
-    deps = [
-        ":usb_controller_impl",
-        "//src/delegates:error_handler_delegate_mock",
-        "//src/delegates:usb_interrupt_handler_delegate",
-        "//src/native:native_mock",
-        "//src/usb/testutil:fake_host",
-        "@gtest",
-        "@gtest//:gtest_main",
-    ],
-)

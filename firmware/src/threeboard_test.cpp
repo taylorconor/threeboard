@@ -155,16 +155,13 @@ TEST_F(ThreeboardTest, DisplayBootIndicator) {
     EXPECT_CALL(native_mock_, DelayMs(255)).Times(1);
     EnableBootIndicator();
   }
-  for (int i = 0; i < 16; ++i) {
-    RunTimer3Invocation();
-  }
   {
     EXPECT_CALL(led_controller_mock_, GetLedState())
         .WillOnce(Return(&led_state_));
     RunTimer3Invocation();
     EXPECT_EQ(led_state_.GetR()->state, LedState::ON);
   }
-  for (int i = 0; i < 16; ++i) {
+  for (int i = 0; i < 12; ++i) {
     RunTimer3Invocation();
   }
   {
@@ -175,7 +172,7 @@ TEST_F(ThreeboardTest, DisplayBootIndicator) {
     EXPECT_EQ(led_state_.GetR()->state, LedState::OFF);
     EXPECT_EQ(led_state_.GetG()->state, LedState::ON);
   }
-  for (int i = 0; i < 16; ++i) {
+  for (int i = 0; i < 12; ++i) {
     RunTimer3Invocation();
   }
   {
@@ -186,7 +183,7 @@ TEST_F(ThreeboardTest, DisplayBootIndicator) {
     EXPECT_EQ(led_state_.GetG()->state, LedState::OFF);
     EXPECT_EQ(led_state_.GetB()->state, LedState::ON);
   }
-  for (int i = 0; i < 16; ++i) {
+  for (int i = 0; i < 12; ++i) {
     RunTimer3Invocation();
   }
   {
@@ -197,7 +194,7 @@ TEST_F(ThreeboardTest, DisplayBootIndicator) {
   }
   // There should be no more LedState invocations once the boot indicator
   // sequence has finished.
-  for (int i = 0; i < 32; ++i) {
+  for (int i = 0; i < 24; ++i) {
     RunTimer3Invocation();
   }
 }

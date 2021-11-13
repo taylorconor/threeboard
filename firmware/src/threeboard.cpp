@@ -91,15 +91,13 @@ void Threeboard::WaitForUsbConfiguration() {
 
 void Threeboard::DisplayBootIndicator() {
   boot_indicator_state_.status = 1;
-  boot_indicator_state_.counter = 31;
+  boot_indicator_state_.counter = 13;
   native_->DelayMs(255);
 }
 
 void Threeboard::PollBootIndicator() {
   // This method is polled every 5ms. Each LED is lit for 60ms in sequence.
   if (boot_indicator_state_.counter > 12) {
-    boot_indicator_state_.counter = 0;
-    boot_indicator_state_.status += 1;
     if (boot_indicator_state_.status > 3) {
       boot_indicator_state_.status = 0;
       led_controller_->GetLedState()->SetB(LedState::OFF);
@@ -113,6 +111,8 @@ void Threeboard::PollBootIndicator() {
         led_controller_->GetLedState()->SetG(LedState::OFF);
         led_controller_->GetLedState()->SetB(LedState::ON);
       }
+      boot_indicator_state_.counter = 0;
+      boot_indicator_state_.status += 1;
     }
   }
   boot_indicator_state_.counter += 1;
