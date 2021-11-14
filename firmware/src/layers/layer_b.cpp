@@ -6,25 +6,62 @@ namespace threeboard {
 
 bool LayerB::HandleEvent(const Keypress &keypress) {
   if (keypress == Keypress::X) {
-    bank0_++;
+    if (prog_) {
+      key_code_++;
+    } else {
+      shortcut_id_++;
+    }
   } else if (keypress == Keypress::Y) {
-    bank1_++;
+    if (prog_) {
+      modcode_++;
+    }
   } else if (keypress == Keypress::Z) {
-    SendToHost(bank0_, bank1_);
+    if (prog_) {
+      storage_controller_->AppendToBlobShortcut(shortcut_id_, key_code_,
+                                                modcode_);
+    } else {
+      storage_controller_->SendBlobShortcut(shortcut_id_);
+    }
+  } else if (keypress == Keypress::XY) {
+    if (prog_) {
+      storage_controller_->ClearBlobShortcut(shortcut_id_);
+    } else {
+      prog_ = true;
+    }
   } else if (keypress == Keypress::XZ) {
-    bank0_ = 0;
+    if (prog_) {
+      key_code_ = 0;
+    } else {
+      shortcut_id_ = 0;
+    }
   } else if (keypress == Keypress::YZ) {
-    bank1_ = 0;
+    if (prog_) {
+      modcode_ = 0;
+    }
   } else if (keypress == Keypress::XYZ) {
-    return layer_controller_delegate_->SwitchToLayer(LayerId::DFLT);
+    if (prog_) {
+      prog_ = false;
+    } else {
+      return layer_controller_delegate_->SwitchToLayer(LayerId::DFLT);
+    }
   }
-  UpdateLedState(LayerId::B, bank0_, bank1_);
+  if (prog_) {
+    UpdateLedState(LayerId::B, key_code_, modcode_);
+  } else {
+    uint8_t length;
+    RETURN_IF_ERROR(
+        storage_controller_->GetBlobShortcutLength(shortcut_id_, &length));
+    UpdateLedState(LayerId::B, shortcut_id_, length);
+  }
   return true;
 }
 
 bool LayerB::TransitionedToLayer() {
   LOG("Switched to layer B");
-  UpdateLedState(LayerId::B, bank0_, bank1_);
+  uint8_t length;
+  RETURN_IF_ERROR(
+      storage_controller_->GetBlobShortcutLength(shortcut_id_, &length));
+  UpdateLedState(LayerId::B, shortcut_id_, length);
   return true;
 }
 

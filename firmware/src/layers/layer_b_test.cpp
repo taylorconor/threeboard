@@ -48,10 +48,153 @@ class LayerBTest : public ::testing::Test {
 };
 
 TEST_F(LayerBTest, ShortcutIdIncrement) {
+  EXPECT_CALL(storage_controller_mock_, GetBlobShortcutLength(1, _))
+      .WillOnce(Return(true));
   EXPECT_TRUE(layer_b_.HandleEvent(Keypress::X));
   VerifyLayerLedExpectation();
   EXPECT_EQ(led_state_.GetBank0(), 1);
   EXPECT_EQ(led_state_.GetBank1(), 0);
+}
+
+TEST_F(LayerBTest, ShortcutIdClear) {
+  {
+    EXPECT_CALL(storage_controller_mock_, GetBlobShortcutLength(1, _))
+        .WillOnce(Return(true));
+    EXPECT_TRUE(layer_b_.HandleEvent(Keypress::X));
+    VerifyLayerLedExpectation();
+    EXPECT_EQ(led_state_.GetBank0(), 1);
+  }
+  {
+    EXPECT_CALL(storage_controller_mock_, GetBlobShortcutLength(0, _))
+        .WillOnce(Return(true));
+    EXPECT_TRUE(layer_b_.HandleEvent(Keypress::XZ));
+    VerifyLayerLedExpectation();
+    EXPECT_EQ(led_state_.GetBank0(), 0);
+  }
+}
+
+TEST_F(LayerBTest, ProgKeycodeIncrement) {
+  EXPECT_EQ(led_state_.GetBank1(), 0);
+  EnterProgMode();
+  EXPECT_EQ(led_state_.GetBank1(), 0);
+  EXPECT_CALL(storage_controller_mock_, GetBlobShortcutLength(_, _)).Times(0);
+  EXPECT_TRUE(layer_b_.HandleEvent(Keypress::X));
+  VerifyLayerLedExpectation(true);
+  EXPECT_EQ(led_state_.GetBank0(), 1);
+  EXPECT_EQ(led_state_.GetBank1(), 0);
+}
+
+TEST_F(LayerBTest, ProgKeycodeClear) {
+  EnterProgMode();
+  {
+    EXPECT_TRUE(layer_b_.HandleEvent(Keypress::X));
+    VerifyLayerLedExpectation(true);
+    EXPECT_EQ(led_state_.GetBank0(), 1);
+  }
+  {
+    EXPECT_TRUE(layer_b_.HandleEvent(Keypress::XZ));
+    VerifyLayerLedExpectation(true);
+    EXPECT_EQ(led_state_.GetBank0(), 0);
+  }
+}
+
+TEST_F(LayerBTest, ProgModcodeIncrement) {
+  EXPECT_EQ(led_state_.GetBank1(), 0);
+  EnterProgMode();
+  EXPECT_EQ(led_state_.GetBank1(), 0);
+  EXPECT_CALL(storage_controller_mock_, GetBlobShortcutLength(_, _)).Times(0);
+  EXPECT_TRUE(layer_b_.HandleEvent(Keypress::Y));
+  VerifyLayerLedExpectation(true);
+  EXPECT_EQ(led_state_.GetBank0(), 0);
+  EXPECT_EQ(led_state_.GetBank1(), 1);
+}
+
+TEST_F(LayerBTest, ProgModcodeClear) {
+  EnterProgMode();
+  {
+    EXPECT_TRUE(layer_b_.HandleEvent(Keypress::Y));
+    VerifyLayerLedExpectation(true);
+    EXPECT_EQ(led_state_.GetBank1(), 1);
+  }
+  {
+    EXPECT_TRUE(layer_b_.HandleEvent(Keypress::YZ));
+    VerifyLayerLedExpectation(true);
+    EXPECT_EQ(led_state_.GetBank1(), 0);
+  }
+}
+
+TEST_F(LayerBTest, ProgClearBlobShortcut) {
+  EnterProgMode();
+  EXPECT_CALL(storage_controller_mock_, ClearBlobShortcut(0))
+      .WillOnce(Return(true));
+  EXPECT_TRUE(layer_b_.HandleEvent(Keypress::XY));
+  VerifyLayerLedExpectation(true);
+  EXPECT_EQ(led_state_.GetErr()->state, LedState::OFF);
+}
+
+TEST_F(LayerBTest, FlushToUsb) {
+  EXPECT_CALL(storage_controller_mock_, GetBlobShortcutLength(0, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(storage_controller_mock_, SendBlobShortcut(0))
+      .WillOnce(Return(true));
+  EXPECT_TRUE(layer_b_.HandleEvent(Keypress::Z));
+  VerifyLayerLedExpectation();
+  EXPECT_EQ(led_state_.GetErr()->state, LedState::OFF);
+}
+
+TEST_F(LayerBTest, AppendCharacterToBlobShortcut) {
+  EnterProgMode();
+  EXPECT_CALL(storage_controller_mock_, AppendToBlobShortcut(0, 1, 1))
+      .WillOnce(Return(true));
+  EXPECT_TRUE(layer_b_.HandleEvent(Keypress::X));
+  EXPECT_TRUE(layer_b_.HandleEvent(Keypress::Y));
+  EXPECT_TRUE(layer_b_.HandleEvent(Keypress::Z));
+  VerifyLayerLedExpectation(true);
+  EXPECT_EQ(led_state_.GetErr()->state, LedState::OFF);
+}
+
+TEST_F(LayerBTest, DisplayShortcutLength) {
+  EXPECT_CALL(storage_controller_mock_, GetBlobShortcutLength(0, _))
+      .WillOnce(DoAll(SetArgPointee<1>(123), Return(true)));
+  EXPECT_TRUE(layer_b_.HandleEvent(Keypress::Y));
+  VerifyLayerLedExpectation();
+  EXPECT_EQ(led_state_.GetBank0(), 0);
+  EXPECT_EQ(led_state_.GetBank1(), 123);
+}
+
+TEST_F(LayerBTest, ExitProgMode) {
+  EnterProgMode();
+  EXPECT_CALL(storage_controller_mock_, GetBlobShortcutLength(0, _))
+      .WillOnce(Return(true));
+  EXPECT_TRUE(layer_b_.HandleEvent(Keypress::XYZ));
+  VerifyLayerLedExpectation();
+  EXPECT_EQ(led_state_.GetProg()->state, LedState::OFF);
+}
+
+TEST_F(LayerBTest, LayerSwitch) {
+  EXPECT_CALL(layer_controller_delegate_mock_, SwitchToLayer(LayerId::DFLT))
+      .WillOnce(Return(true));
+  EXPECT_TRUE(layer_b_.HandleEvent(Keypress::XYZ));
+}
+
+TEST_F(LayerBTest, LayerSwitchFailure) {
+  EXPECT_CALL(layer_controller_delegate_mock_, SwitchToLayer(LayerId::DFLT))
+      .WillOnce(Return(false));
+  EXPECT_FALSE(layer_b_.HandleEvent(Keypress::XYZ));
+}
+
+TEST_F(LayerBTest, TransitionToLayer) {
+  EXPECT_CALL(storage_controller_mock_, GetBlobShortcutLength(0, _))
+      .WillOnce(Return(true));
+  EXPECT_TRUE(layer_b_.TransitionedToLayer());
+  VerifyLayerLedExpectation();
+}
+
+TEST_F(LayerBTest, TransitionToFailure) {
+  EXPECT_CALL(storage_controller_mock_, GetBlobShortcutLength(0, _))
+      .WillOnce(Return(false));
+  EXPECT_FALSE(layer_b_.TransitionedToLayer());
+  EXPECT_EQ(led_state_.GetB()->state, LedState::OFF);
 }
 
 }  // namespace
