@@ -24,7 +24,6 @@ avr_library(
     deps = [
         ":usb_controller",
         "//src:logging",
-        "//src/delegates:error_handler_delegate",
         "//src/delegates:usb_interrupt_handler_delegate",
         "//src/native",
         "//src/usb/internal:descriptors",
@@ -40,7 +39,6 @@ cc_test(
     deps = [
         ":usb_controller_impl",
         "//src:logging_fake",
-        "//src/delegates:error_handler_delegate_mock",
         "//src/native:native_mock",
         "//src/usb/internal:request_handler_mock",
         "//src/usb/testutil",

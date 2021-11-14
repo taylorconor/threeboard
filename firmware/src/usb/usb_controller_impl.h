@@ -1,6 +1,5 @@
 #pragma once
 
-#include "src/delegates/error_handler_delegate.h"
 #include "src/delegates/usb_interrupt_handler_delegate.h"
 #include "src/native/native.h"
 #include "src/usb/internal/hid_state.h"
@@ -18,7 +17,7 @@ namespace usb {
 class UsbControllerImpl final : public UsbController,
                                 public UsbInterruptHandlerDelegate {
  public:
-  UsbControllerImpl(native::Native *, ErrorHandlerDelegate *);
+  UsbControllerImpl(native::Native *);
 
   bool Setup() override;
   bool HasConfigured() override;
@@ -34,7 +33,6 @@ class UsbControllerImpl final : public UsbController,
   void SendHidState();
 
   native::Native *native_;
-  ErrorHandlerDelegate *error_handler_;
   HidState hid_state_;
   RequestHandler *request_handler_;
 };

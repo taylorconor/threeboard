@@ -8,9 +8,7 @@ namespace usb {
 
 constexpr uint8_t kFrameTimeout = 50;
 
-UsbControllerImpl::UsbControllerImpl(native::Native *native,
-                                     ErrorHandlerDelegate *error_handler)
-    : native_(native), error_handler_(error_handler) {
+UsbControllerImpl::UsbControllerImpl(native::Native *native) : native_(native) {
   native_->SetUsbInterruptHandlerDelegate(this);
   // There's no reason to expose RequestHandler outside usb/internal, but we
   // also need to be able to inject a mock. Instead of exposing it, we compose

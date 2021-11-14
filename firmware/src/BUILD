@@ -127,7 +127,6 @@ avr_library(
         ":event_buffer",
         ":key_controller",
         ":led_controller",
-        "//src/delegates:error_handler_delegate",
         "//src/layers:layer_controller",
         "//src/native",
         "//src/storage:storage_controller",
@@ -161,7 +160,6 @@ avr_pure_library(
         ":threeboard",
         "//src/native:native_impl",
         "//src/usb:usb_controller_impl",
-        "//src/util:error_handler_proxy",
     ],
 )
 

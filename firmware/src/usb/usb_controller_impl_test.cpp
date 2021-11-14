@@ -1,6 +1,5 @@
 #include "usb_controller_impl.h"
 
-#include "src/delegates/error_handler_delegate_mock.h"
 #include "src/logging_fake.h"
 #include "src/native/native_mock.h"
 #include "src/usb/internal/request_handler_mock.h"
@@ -17,8 +16,7 @@ class UsbImplTest : public ::testing::Test {
  public:
   UsbImplTest() : handler_mock_(&native_mock_) {
     EXPECT_CALL(native_mock_, SetUsbInterruptHandlerDelegate(_)).Times(1);
-    usb_controller_ = std::make_unique<UsbControllerImpl>(
-        &native_mock_, &error_handler_delegate_mock_);
+    usb_controller_ = std::make_unique<UsbControllerImpl>(&native_mock_);
     usb_controller_->request_handler_ = &handler_mock_;
   }
 
@@ -58,7 +56,6 @@ class UsbImplTest : public ::testing::Test {
 
   native::NativeMock native_mock_;
   RequestHandlerMock handler_mock_;
-  ErrorHandlerDelegateMock error_handler_delegate_mock_;
   LoggingFake logging_fake_;
   std::unique_ptr<UsbControllerImpl> usb_controller_;
 };

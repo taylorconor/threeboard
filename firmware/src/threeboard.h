@@ -1,6 +1,5 @@
 #pragma once
 
-#include "src/delegates/error_handler_delegate.h"
 #include "src/event_buffer.h"
 #include "src/key_controller.h"
 #include "src/layers/layer_controller.h"
@@ -12,9 +11,8 @@
 namespace threeboard {
 
 // Manages the state of the keyboard and acts as a delegate to coordinate all of
-// the various timer interrupt driven and error-driven handlers.
-class Threeboard final : public TimerInterruptHandlerDelegate,
-                         public ErrorHandlerDelegate {
+// the various timer interrupt driven handlers.
+class Threeboard final : public TimerInterruptHandlerDelegate {
  public:
   Threeboard(native::Native *native, EventBuffer *event_buffer,
              usb::UsbController *usb_controller,
