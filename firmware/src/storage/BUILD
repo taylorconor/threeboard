@@ -24,3 +24,13 @@ cc_library(
         "@gtest",
     ],
 )
+
+cc_test(
+    name = "storage_controller_test",
+    srcs = ["storage_controller_test.cpp"],
+    deps = [
+        ":storage_controller",
+        "@gtest",
+        "@gtest//:gtest_main",
+    ],
+)
