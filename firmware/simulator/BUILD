@@ -27,6 +27,7 @@ cc_library(
         "//simulator/components:i2c_eeprom",
         "//simulator/components:uart",
         "//simulator/components:usb_host_impl",
+        "//simulator/components:usb_keycodes",
         "//simulator/simavr",
         "//simulator/util:flags",
         "//simulator/util:state_storage",

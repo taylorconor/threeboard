@@ -2,6 +2,7 @@
 
 #include <fstream>
 
+#include "simulator/components/usb_keycodes.h"
 #include "util/status_util.h"
 
 namespace threeboard {
@@ -20,7 +21,7 @@ struct JsonProperty {
 const std::vector<JsonProperty> json_properties = {
     {"character_shortcuts", 255, 1},
     {"word_shortcuts", 255, 15},
-    {"blob_shortcuts", 240, 255}};
+    {"blob_shortcuts", 248, 255}};
 
 // Ensure that the provided json (parsed from the state file) is valid, and if
 // not provide verbose error messages, as they will be user-facing.
@@ -62,7 +63,6 @@ absl::Status Validate(const nlohmann::json &json) {
   }
   return absl::OkStatus();
 }
-
 }  // namespace
 
 // static.
@@ -74,6 +74,8 @@ absl::StatusOr<std::unique_ptr<StateStorage>> StateStorageImpl::CreateFromFile(
   try {
     json = nlohmann::json::parse(input_stream);
   } catch (const std::exception &e) {
+    std::cout << "Failed to parse simulator file at '" << file_path
+              << "': " << e.what() << std::endl;
     nlohmann::json empty_json;
     auto *raw_ptr = new StateStorageImpl(file_path, empty_json);
     return std::unique_ptr<StateStorageImpl>(raw_ptr);
@@ -99,11 +101,15 @@ void StateStorageImpl::ConfigureInternalEeprom() {
   internal_eeprom_.fill(0xFF);
   for (const auto &[idx, value] : json_["character_shortcuts"].items()) {
     // TODO: remove this hack and implement proper USB keycode conversion.
-    char c = value.get<std::string>()[0] - 'a' + 4 - 1;
-    internal_eeprom_.at(std::stoi(idx)) = c;
+    char c = ToUsbKeycodes(value.get<std::string>()[0]).first;
+    internal_eeprom_.at(std::stoi(idx)) = c - 1;
   }
   for (const auto &[idx, value] : json_["word_shortcuts"].items()) {
     internal_eeprom_.at(256 + std::stoi(idx)) =
+        value.get<std::string>().length() - 1;
+  }
+  for (const auto &[idx, value] : json_["blob_shortcuts"].items()) {
+    internal_eeprom_.at(512 + std::stoi(idx)) =
         value.get<std::string>().length() - 1;
   }
 }
@@ -114,16 +120,37 @@ void StateStorageImpl::ConfigureEeprom0() {
     auto value = raw_value.get<std::string>();
     for (int i = 0; i < value.length(); ++i) {
       // TODO: remove this hack and implement proper USB keycode conversion.
-      char c = value[i] - 'a' + 4 - 1;
-      eeprom0_.at((std::stoi(idx) * 16) + i) = c;
+      char c = ToUsbKeycodes(value[i]).first;
+      eeprom0_.at((std::stoi(idx) * 16) + i) = c - 1;
+    }
+  }
+  for (const auto &[idx, raw_value] : json_["blob_shortcuts"].items()) {
+    auto value = raw_value.get<std::string>();
+    auto index = std::stoi(idx);
+    for (int i = 0; i < value.length(); ++i) {
+      const auto &[keycode, modcode] = ToUsbKeycodes(value[i]);
+      if (index < 120) {
+        auto eeprom_idx = 0x1000 + (index * 512) + (i * 2);
+        eeprom0_.at(eeprom_idx) = keycode - 1;
+        eeprom0_.at(eeprom_idx + 1) = modcode - 1;
+      }
     }
   }
 }
 
 void StateStorageImpl::ConfigureEeprom1() {
   eeprom1_.fill(0xFF);
-  for (const auto &[idx, value] : json_["blob_shortcuts"].items()) {
-    // TODO: implement once blob shortcuts are implemented.
+  for (const auto &[idx, raw_value] : json_["blob_shortcuts"].items()) {
+    auto value = raw_value.get<std::string>();
+    auto index = std::stoi(idx);
+    for (int i = 0; i < value.length(); ++i) {
+      const auto &[keycode, modcode] = ToUsbKeycodes(value[i]);
+      if (index >= 120) {
+        auto eeprom_idx = ((index - 120) * 512) + (i * 2);
+        eeprom1_.at(eeprom_idx) = keycode - 1;
+        eeprom1_.at(eeprom_idx + 1) = modcode - 1;
+      }
+    }
   }
 }
 
