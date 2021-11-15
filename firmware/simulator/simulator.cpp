@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "simulator/components/usb_keycodes.h"
 #include "simulator/util/logging.h"
 
 namespace threeboard {
@@ -172,29 +173,7 @@ std::string Simulator::GetLogFile() const { return log_file_path_; }
 
 void Simulator::HandleUsbOutput(uint8_t mod_code, uint8_t key_code) {
   last_usb_output_ = std::chrono::system_clock::now();
-  bool capitalise = false;
-  // Check for L_SHIFT and R_SHIFT.
-  if ((mod_code & 0x22) > 0 && (mod_code & ~0x22) == 0) {
-    capitalise = true;
-  }
-  char c = 0;
-  if (key_code >= 0x04 && key_code <= 0x1d) {
-    c = key_code + 0x5d;
-    if (capitalise) {
-      c -= 0x20;
-    }
-  } else if (key_code == 0x2a) {
-    c = ' ';
-  } else if (key_code == 0x2d) {
-    c = '-';
-  } else if (key_code == 0x36) {
-    c = ',';
-  } else if (key_code == 0x37) {
-    c = '.';
-  }
-  if (std::isprint(c)) {
-    device_state_.usb_buffer.push_back(c);
-  }
+  device_state_.usb_buffer.push_back(FromUsbKeycodes(key_code, mod_code));
 }
 
 void Simulator::HandlePortWrite(uint8_t port, uint8_t value) {

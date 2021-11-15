@@ -10,20 +10,33 @@ namespace threeboard {
 namespace storage {
 namespace {
 
-// Definitions of some constants used for indexing into the StorageController's
-// underlying EEPROM storage devices.
-//
 // The internal EEPROM contains the character shortcut storage, as well as
 // metadata storage for the other layers (specifically, the length of each word
 // or blob shortcut for layers G and B). It is laid out as follows:
+// |--------------------- internal EEPROM size = 1024 B -----------------------|
 // |- char shortcuts -| |- layer G lengths -| |- layer B lengths -| |- unused -|
-// |------ 256 B -----| |------ 256 B ------| |------ ??? B ------| |-- ??? B -|
+// |------ 256 B -----| |------ 256 B ------| |------ 248 B ------| |-- 264 B -|
 //                      ^                     ^
 //                    0x100                 0x200
-// |--------------------- internal EEPROM size = 1024 B -----------------------|
+//
+// External EEPROMs (EEPROM_0 and EEPROM_1) are two identical external 512 Kbit
+// (65,536 byte) i2c storage devices. EEPROM_0 stores all the layer G shortcuts,
+// and the first 120 layer B shortcuts. EEPROM_1 stores the remainder of the
+// layer B shortcuts. They're arranged as follows:
+// |------------------------- EEPROM_0 size = 65,536 B ------------------------|
+// |- layer G shortcuts -| |------------ layer B shortcuts [0-119] ------------|
+// |------ 4,096 B ------| |--------------------- 61,440 B --------------------|
+//                         ^
+//                      0x1000
+//
+// |------------------------- EEPROM_1 size = 65,536 B ------------------------|
+// |----------------------- layer B shortcuts [120 - 247] ---------------------|
 
 constexpr uint16_t kInternalEepromLayerGLengthStart = 0x100;
 constexpr uint16_t kInternalEepromLayerBLengthStart = 0x200;
+constexpr uint16_t kEeprom0LayerBStart = 0x1000;
+constexpr uint8_t kLayerBSize = 247;
+constexpr uint8_t kEeprom1LayerBIndexStart = 120;
 
 constexpr uint8_t kWordModUppercase = 0;
 constexpr uint8_t kWordModCapitalise = 1;
@@ -131,16 +144,61 @@ bool StorageController::SendWordShortcut(uint8_t index, uint8_t raw_mod_code) {
 
 bool StorageController::AppendToBlobShortcut(uint8_t index, uint8_t character,
                                              uint8_t modcode) {
-  return true;
+  uint8_t length;
+  RETURN_IF_ERROR(GetBlobShortcutLength(index, &length));
+  if (length == 255 || index > kLayerBSize) {
+    return false;
+  }
+  if (index >= kEeprom1LayerBIndexStart) {
+    uint16_t eeprom_idx =
+        ((index - kEeprom1LayerBIndexStart) * 512) + (length * 2);
+    RETURN_IF_ERROR(external_eeprom_1_->WriteByte(eeprom_idx, character));
+    RETURN_IF_ERROR(external_eeprom_1_->WriteByte(eeprom_idx + 1, modcode));
+  } else {
+    uint16_t eeprom_idx = kEeprom0LayerBStart + (index * 512) + (length * 2);
+    RETURN_IF_ERROR(external_eeprom_0_->WriteByte(eeprom_idx, character));
+    RETURN_IF_ERROR(external_eeprom_0_->WriteByte(eeprom_idx + 1, modcode));
+  }
+  return internal_eeprom_->WriteByte(kInternalEepromLayerBLengthStart + index,
+                                     length + 1);
 }
 
-bool StorageController::ClearBlobShortcut(uint8_t index) { return true; }
+bool StorageController::ClearBlobShortcut(uint8_t index) {
+  return internal_eeprom_->WriteByte(kInternalEepromLayerBLengthStart + index,
+                                     0);
+}
 
 bool StorageController::GetBlobShortcutLength(uint8_t index, uint8_t *output) {
-  return true;
+  if (index > kLayerBSize) {
+    return false;
+  }
+  return internal_eeprom_->ReadByte(kInternalEepromLayerBLengthStart + index,
+                                    output);
 }
 
-bool StorageController::SendBlobShortcut(uint8_t index) { return true; }
+bool StorageController::SendBlobShortcut(uint8_t index) {
+  uint8_t length;
+  RETURN_IF_ERROR(GetBlobShortcutLength(index, &length));
+  if (length == 0) {
+    return false;
+  }
+  for (int i = 0; i < length; ++i) {
+    uint8_t character;
+    uint8_t modcode;
+    if (index >= kEeprom1LayerBIndexStart) {
+      uint16_t eeprom_idx =
+          ((index - kEeprom1LayerBIndexStart) * 512) + (i * 2);
+      RETURN_IF_ERROR(external_eeprom_1_->ReadByte(eeprom_idx, &character));
+      RETURN_IF_ERROR(external_eeprom_1_->ReadByte(eeprom_idx + 1, &modcode));
+    } else {
+      uint16_t eeprom_idx = kEeprom0LayerBStart + (index * 512) + (i * 2);
+      RETURN_IF_ERROR(external_eeprom_0_->ReadByte(eeprom_idx, &character));
+      RETURN_IF_ERROR(external_eeprom_0_->ReadByte(eeprom_idx + 1, &modcode));
+    }
+    RETURN_IF_ERROR(usb_controller_->SendKeypress(character, modcode));
+  }
+  return true;
+}
 
 }  // namespace storage
 }  // namespace threeboard

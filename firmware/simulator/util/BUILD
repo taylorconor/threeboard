@@ -35,6 +35,7 @@ cc_library(
     hdrs = ["state_storage_impl.h"],
     deps = [
         ":state_storage",
+        "//simulator/components:usb_keycodes",
         "//util:status_util",
         "@abseil//absl/status",
         "@nlohmann//:json",
