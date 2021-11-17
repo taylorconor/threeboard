@@ -91,8 +91,8 @@ TEST_F(IntegrationTest, LayerSwitch) {
 
 TEST_F(IntegrationTest, DefaultLayerUsbOutput) {
   // Set B0 = 4, B1 = 2.
-  std::vector<Keypress> keypresses = {Keypress::X, Keypress::X, Keypress::X,
-                                      Keypress::X, Keypress::Y, Keypress::Y};
+  auto keypresses = {Keypress::X, Keypress::X, Keypress::X,
+                     Keypress::X, Keypress::Y, Keypress::Y};
   for (const Keypress &keypress : keypresses) {
     ApplyKeypress(keypress);
   }
@@ -106,9 +106,8 @@ TEST_F(IntegrationTest, DefaultLayerUsbOutput) {
 
 TEST_F(IntegrationTest, LayerRUsbOutput) {
   // Set Layer = R, PROG, shortcut 0 = 4, DFLT.
-  std::vector<Keypress> keypresses = {Keypress::XYZ, Keypress::XY, Keypress::X,
-                                      Keypress::X,   Keypress::X,  Keypress::X,
-                                      Keypress::XYZ};
+  auto keypresses = {Keypress::XYZ, Keypress::XY, Keypress::X,  Keypress::X,
+                     Keypress::X,   Keypress::X,  Keypress::XYZ};
   for (const Keypress &keypress : keypresses) {
     ApplyKeypress(keypress);
   }
@@ -122,10 +121,10 @@ TEST_F(IntegrationTest, LayerRUsbOutput) {
 
 TEST_F(IntegrationTest, LayerGUsbOutput) {
   // Set Layer = G, PROG, shortcut 0 = {4,5,6}, DFLT.
-  std::vector<Keypress> keypresses = {
-      Keypress::XYZ, Keypress::XYZ, Keypress::XY, Keypress::X, Keypress::X,
-      Keypress::X,   Keypress::X,   Keypress::Z,  Keypress::X, Keypress::Z,
-      Keypress::X,   Keypress::Z,   Keypress::XYZ};
+  auto keypresses = {Keypress::XYZ, Keypress::XYZ, Keypress::XY, Keypress::X,
+                     Keypress::X,   Keypress::X,   Keypress::X,  Keypress::Z,
+                     Keypress::X,   Keypress::Z,   Keypress::X,  Keypress::Z,
+                     Keypress::XYZ};
   for (const Keypress &keypress : keypresses) {
     ApplyKeypress(keypress);
   }
@@ -137,7 +136,25 @@ TEST_F(IntegrationTest, LayerGUsbOutput) {
 }
 
 TEST_F(IntegrationTest, LayerBUsbOutput) {
-  // TODO: Implement once Layer B is finished.
+  // Set Layer = B, PROG, shortcut 0 = {{11,2},{12,0},{30,2}}, DFLT.
+  auto keypresses = {
+      Keypress::XYZ, Keypress::XYZ, Keypress::XYZ, Keypress::XY, Keypress::X,
+      Keypress::X,   Keypress::X,   Keypress::X,   Keypress::X,  Keypress::X,
+      Keypress::X,   Keypress::X,   Keypress::X,   Keypress::X,  Keypress::X,
+      Keypress::Y,   Keypress::Y,   Keypress::Z,   Keypress::X,  Keypress::YZ,
+      Keypress::Z,   Keypress::X,   Keypress::X,   Keypress::X,  Keypress::X,
+      Keypress::X,   Keypress::X,   Keypress::X,   Keypress::X,  Keypress::X,
+      Keypress::X,   Keypress::X,   Keypress::X,   Keypress::X,  Keypress::X,
+      Keypress::X,   Keypress::X,   Keypress::X,   Keypress::X,  Keypress::Y,
+      Keypress::Y,   Keypress::Z,   Keypress::XYZ};
+  for (const Keypress &keypress : keypresses) {
+    ApplyKeypress(keypress);
+  }
+
+  ApplyKeypress(Keypress::Z);
+  auto device_state = simulator_->GetDeviceState();
+  ASSERT_EQ(device_state.led_b, true);
+  ASSERT_EQ(device_state.usb_buffer, "Hi!");
 }
 }  // namespace
 }  // namespace integration
