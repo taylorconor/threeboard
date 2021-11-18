@@ -36,12 +36,22 @@ class StorageController {
   virtual bool SendBlobShortcut(uint8_t index);
 
  protected:
-  // Test-only constructors.
-  StorageController(usb::UsbController *usb_controller, Eeprom *internal_eeprom,
-                    Eeprom *external_eeprom_0, Eeprom *external_eeprom_1);
+  // Allow derived classes (StorageControllerMock) to skip the initialising
+  // constructor.
   StorageController() {}
 
  private:
+  friend class StorageControllerTest;
+
+  // Test-only constructor for injecting mock UsbController and Eeprom
+  // instances.
+  StorageController(usb::UsbController *usb_controller, Eeprom *internal_eeprom,
+                    Eeprom *external_eeprom_0, Eeprom *external_eeprom_1)
+      : usb_controller_(usb_controller),
+        internal_eeprom_(internal_eeprom),
+        external_eeprom_0_(external_eeprom_0),
+        external_eeprom_1_(external_eeprom_1) {}
+
   usb::UsbController *usb_controller_;
   Eeprom *internal_eeprom_;
   Eeprom *external_eeprom_0_;

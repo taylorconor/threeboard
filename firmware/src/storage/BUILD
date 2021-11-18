@@ -30,6 +30,8 @@ cc_test(
     srcs = ["storage_controller_test.cpp"],
     deps = [
         ":storage_controller",
+        "//src/storage/internal:eeprom_mock",
+        "//src/usb:usb_controller_mock",
         "@gtest",
         "@gtest//:gtest_main",
     ],

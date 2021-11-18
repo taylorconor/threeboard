@@ -8,6 +8,15 @@ avr_library(
     hdrs = ["eeprom.h"],
 )
 
+cc_library(
+    name = "eeprom_mock",
+    hdrs = ["eeprom_mock.h"],
+    deps = [
+        ":eeprom",
+        "@gtest",
+    ],
+)
+
 avr_library(
     name = "i2c_eeprom",
     srcs = ["i2c_eeprom.cpp"],
