@@ -52,13 +52,18 @@ class LayerGModel : public LayerModel {
   std::string ApplyModCodeToCurrentShortcut();
 };
 
-class LayerBModel : public DefaultLayerModel {
+class LayerBModel : public LayerModel {
  public:
-  simulator::DeviceState GetStateSnapshot() override {
-    auto state = DefaultLayerModel::GetStateSnapshot();
-    state.led_b = true;
-    return state;
-  }
+  bool Apply(const Keypress& keypress) override;
+  simulator::DeviceState GetStateSnapshot() override;
+
+ private:
+  std::string usb_buffer_;
+  uint8_t shortcut_id_ = 0;
+  uint8_t key_code_ = 0;
+  uint8_t mod_code_ = 0;
+  bool prog_ = false;
+  std::array<std::vector<char>, 248> shortcuts_;
 };
 }  // namespace integration
 }  // namespace threeboard

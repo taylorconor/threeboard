@@ -1,5 +1,6 @@
 #include "integration/model/layer_model.h"
 
+#include "simulator/components/usb_keycodes.h"
 #include "src/storage/storage_controller.h"
 
 namespace threeboard {
@@ -8,34 +9,6 @@ namespace {
 
 using storage::WordModCode;
 
-template <typename T>
-void AppendTo(uint8_t mod_code, uint8_t key_code, T* vec) {
-  bool capitalise = false;
-  // Check for L_SHIFT and R_SHIFT.
-  if ((mod_code & 0x22) > 0 && (mod_code & ~0x22) == 0) {
-    capitalise = true;
-  }
-  char c = 0;
-  if (key_code >= 0x04 && key_code <= 0x1d) {
-    c = key_code + 0x5d;
-    if (capitalise) {
-      c -= 0x20;
-    }
-  } else if (key_code == 0x2a) {
-    c = ' ';
-  } else if (key_code == 0x2d) {
-    c = '-';
-  } else if (key_code == 0x36) {
-    c = ',';
-  } else if (key_code == 0x37) {
-    c = '.';
-  }
-  if (std::is_same<T, std::string>::value && !std::isprint(c)) {
-    return;
-  }
-  vec->push_back(c);
-}
-
 void AppendIfPrintable(std::string* str, char c) {
   // We don't want to append a character to the output string if it's not
   // printable because it messes up the comparison between the model and the
@@ -43,6 +16,15 @@ void AppendIfPrintable(std::string* str, char c) {
   if (std::isprint(c)) {
     *str += c;
   }
+}
+
+void AppendTo(uint8_t mod_code, uint8_t key_code, std::vector<char>* vec) {
+  vec->push_back(simulator::FromUsbKeycodes(key_code, mod_code));
+}
+
+void AppendTo(uint8_t mod_code, uint8_t key_code, std::string* s) {
+  char c = simulator::FromUsbKeycodes(key_code, mod_code);
+  AppendIfPrintable(s, c);
 }
 
 }  // namespace
@@ -215,6 +197,67 @@ std::string LayerGModel::ApplyModCodeToCurrentShortcut() {
     }
   }
   return output;
+}
+
+bool LayerBModel::Apply(const Keypress& keypress) {
+  if (keypress == Keypress::X) {
+    if (prog_) {
+      key_code_++;
+    } else {
+      shortcut_id_++;
+    }
+  } else if (keypress == Keypress::Y) {
+    if (prog_) {
+      mod_code_++;
+    }
+  } else if (keypress == Keypress::Z) {
+    if (prog_) {
+      AppendTo(mod_code_, key_code_, &shortcuts_[shortcut_id_]);
+    } else {
+      for (const char& c : shortcuts_[shortcut_id_]) {
+        AppendIfPrintable(&usb_buffer_, c);
+      }
+    }
+  } else if (keypress == Keypress::XY) {
+    if (prog_) {
+      shortcuts_[shortcut_id_].clear();
+    } else {
+      prog_ = true;
+    }
+  } else if (keypress == Keypress::XZ) {
+    if (prog_) {
+      key_code_ = 0;
+    } else {
+      shortcut_id_ = 0;
+    }
+  } else if (keypress == Keypress::YZ) {
+    if (prog_) {
+      mod_code_ = 0;
+    }
+  } else if (keypress == Keypress::XYZ) {
+    if (prog_) {
+      prog_ = false;
+    } else {
+      return true;
+    }
+  }
+  return false;
+}
+
+simulator::DeviceState LayerBModel::GetStateSnapshot() {
+  simulator::DeviceState snapshot;
+  if (prog_) {
+    snapshot.bank_0 = key_code_;
+    snapshot.bank_1 = mod_code_;
+  } else {
+    snapshot.bank_0 = shortcut_id_;
+    snapshot.bank_1 = shortcuts_[shortcut_id_].size();
+  }
+  snapshot.led_b = true;
+  snapshot.led_prog = prog_;
+  snapshot.usb_buffer = usb_buffer_;
+  usb_buffer_ = "";
+  return snapshot;
 }
 }  // namespace integration
 }  // namespace threeboard

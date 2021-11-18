@@ -173,7 +173,10 @@ std::string Simulator::GetLogFile() const { return log_file_path_; }
 
 void Simulator::HandleUsbOutput(uint8_t mod_code, uint8_t key_code) {
   last_usb_output_ = std::chrono::system_clock::now();
-  device_state_.usb_buffer.push_back(FromUsbKeycodes(key_code, mod_code));
+  char c = FromUsbKeycodes(key_code, mod_code);
+  if (std::isprint(c)) {
+    device_state_.usb_buffer.push_back(c);
+  }
 }
 
 void Simulator::HandlePortWrite(uint8_t port, uint8_t value) {

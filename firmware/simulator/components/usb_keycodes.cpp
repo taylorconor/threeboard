@@ -52,6 +52,10 @@ std::pair<char, uint8_t> ToUsbKeycodes(char c) {
       modcode = 0;
     } else if (c == '+') {
       keycode = 0x2e;
+    } else if (c == ',') {
+      keycode = 0x36;
+    } else if (c == '.') {
+      keycode = 0x37;
     }
   }
   return std::tie(keycode, modcode);
@@ -95,6 +99,10 @@ char FromUsbKeycodes(char keycode, uint8_t modcode) {
     c = is_shift ? '_' : '-';
   } else if (keycode == 0x2e) {
     c = is_shift ? '+' : '=';
+  } else if (keycode == 0x36) {
+    c = ',';
+  } else if (keycode == 0x37) {
+    c = '.';
   }
   return c;
 }

@@ -10,6 +10,7 @@ cc_library(
     hdrs = ["layer_model.h"],
     deps = [
         "//simulator:simulator_state",
+        "//simulator/components:usb_keycodes",
         "//src:keypress",
         "//src:led_state",
         "//src/storage:storage_controller",

@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "simulator/ui/ui_delegate.h"
+#include "src/keypress.h"
 
 #define LOG(fmt, ...)                                                      \
   do {                                                                     \
@@ -26,4 +27,26 @@ class Logging {
 };
 
 }  // namespace simulator
+
+inline std::ostream &operator<<(std::ostream &os, Keypress &keypress) {
+  if (keypress == Keypress::INACTIVE) {
+    os << "INACTIVE";
+  } else if (keypress == Keypress::Z) {
+    os << "Z";
+  } else if (keypress == Keypress::Y) {
+    os << "Y";
+  } else if (keypress == Keypress::X) {
+    os << "X";
+  } else if (keypress == Keypress::YZ) {
+    os << "YZ";
+  } else if (keypress == Keypress::XZ) {
+    os << "XZ";
+  } else if (keypress == Keypress::XY) {
+    os << "XY";
+  } else if (keypress == Keypress::XYZ) {
+    os << "XYZ";
+  }
+  return os;
+}
+
 }  // namespace threeboard
