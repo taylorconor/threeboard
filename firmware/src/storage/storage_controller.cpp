@@ -35,11 +35,8 @@ namespace {
 constexpr uint16_t kInternalEepromLayerGLengthStart = 0x100;
 constexpr uint16_t kInternalEepromLayerBLengthStart = 0x200;
 constexpr uint16_t kEeprom0LayerBStart = 0x1000;
-constexpr uint8_t kLayerBSize = 247;
-constexpr uint8_t kEeprom1LayerBIndexStart = 120;
-
-constexpr uint8_t kWordModUppercase = 0;
-constexpr uint8_t kWordModCapitalise = 1;
+constexpr uint8_t kLayerBMaxIndex = 247;
+constexpr uint8_t kEeprom1LayerBStartShortcutId = 120;
 
 }  // namespace
 
@@ -63,17 +60,6 @@ StorageController::StorageController(native::Native *native,
   external_eeprom_1_ = &external_eeprom_1;
 }
 
-// Test-only, protected constructor for injecting mock EEPROM instances during
-// testing.
-StorageController::StorageController(usb::UsbController *usb_controller,
-                                     Eeprom *internal_eeprom,
-                                     Eeprom *external_eeprom_0,
-                                     Eeprom *external_eeprom_1)
-    : usb_controller_(usb_controller),
-      internal_eeprom_(internal_eeprom),
-      external_eeprom_0_(external_eeprom_0),
-      external_eeprom_1_(external_eeprom_1) {}
-
 bool StorageController::SetCharacterShortcut(uint8_t index, uint8_t character) {
   return internal_eeprom_->WriteByte(index, character);
 }
@@ -85,7 +71,7 @@ bool StorageController::GetCharacterShortcut(uint8_t index, uint8_t *output) {
 bool StorageController::AppendToWordShortcut(uint8_t index, uint8_t character) {
   uint8_t length;
   RETURN_IF_ERROR(GetWordShortcutLength(index, &length));
-  // If this shortcut slot is already full (16 characters) then we need to
+  // If this shortcut slot is already full (15 characters) then we need to
   // propagate an error.
   if (length == 15) {
     return false;
@@ -144,14 +130,17 @@ bool StorageController::SendWordShortcut(uint8_t index, uint8_t raw_mod_code) {
 
 bool StorageController::AppendToBlobShortcut(uint8_t index, uint8_t character,
                                              uint8_t modcode) {
-  uint8_t length;
-  RETURN_IF_ERROR(GetBlobShortcutLength(index, &length));
-  if (length == 255 || index > kLayerBSize) {
+  if (index > kLayerBMaxIndex) {
     return false;
   }
-  if (index >= kEeprom1LayerBIndexStart) {
+  uint8_t length;
+  RETURN_IF_ERROR(GetBlobShortcutLength(index, &length));
+  if (length == 255) {
+    return false;
+  }
+  if (index >= kEeprom1LayerBStartShortcutId) {
     uint16_t eeprom_idx =
-        ((index - kEeprom1LayerBIndexStart) * 512) + (length * 2);
+        ((index - kEeprom1LayerBStartShortcutId) * 512) + (length * 2);
     RETURN_IF_ERROR(external_eeprom_1_->WriteByte(eeprom_idx, character));
     RETURN_IF_ERROR(external_eeprom_1_->WriteByte(eeprom_idx + 1, modcode));
   } else {
@@ -164,12 +153,15 @@ bool StorageController::AppendToBlobShortcut(uint8_t index, uint8_t character,
 }
 
 bool StorageController::ClearBlobShortcut(uint8_t index) {
+  if (index > kLayerBMaxIndex) {
+    return false;
+  }
   return internal_eeprom_->WriteByte(kInternalEepromLayerBLengthStart + index,
                                      0);
 }
 
 bool StorageController::GetBlobShortcutLength(uint8_t index, uint8_t *output) {
-  if (index > kLayerBSize) {
+  if (index > kLayerBMaxIndex) {
     return false;
   }
   return internal_eeprom_->ReadByte(kInternalEepromLayerBLengthStart + index,
@@ -177,6 +169,9 @@ bool StorageController::GetBlobShortcutLength(uint8_t index, uint8_t *output) {
 }
 
 bool StorageController::SendBlobShortcut(uint8_t index) {
+  if (index > kLayerBMaxIndex) {
+    return false;
+  }
   uint8_t length;
   RETURN_IF_ERROR(GetBlobShortcutLength(index, &length));
   if (length == 0) {
@@ -185,9 +180,9 @@ bool StorageController::SendBlobShortcut(uint8_t index) {
   for (int i = 0; i < length; ++i) {
     uint8_t character;
     uint8_t modcode;
-    if (index >= kEeprom1LayerBIndexStart) {
+    if (index >= kEeprom1LayerBStartShortcutId) {
       uint16_t eeprom_idx =
-          ((index - kEeprom1LayerBIndexStart) * 512) + (i * 2);
+          ((index - kEeprom1LayerBStartShortcutId) * 512) + (i * 2);
       RETURN_IF_ERROR(external_eeprom_1_->ReadByte(eeprom_idx, &character));
       RETURN_IF_ERROR(external_eeprom_1_->ReadByte(eeprom_idx + 1, &modcode));
     } else {
