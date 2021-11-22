@@ -1,1 +1,0 @@
-# threeboard firmware design overview

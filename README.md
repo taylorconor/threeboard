@@ -28,7 +28,7 @@ Building your own physical threeboard requires a physical threeboard PCB, solder
 [How do USB keyboards work?](documentation/threeboard/how_usb_keyboards_work.md) 
 
 ### Firmware
-[Firmware design overview](documentation/threeboard/firmware_design_overview.md)  
+[Firmware design](documentation/threeboard/firmware_design.md)  
 [Firmware build instructions](documentation/threeboard/firmware_build_instructions.md)  
 [Simulator user manual](documentation/threeboard/simulator_user_manual.md)  
 [Simulator build instructions](documentation/threeboard/simulator_build_instructions.md)  
