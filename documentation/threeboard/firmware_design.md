@@ -130,7 +130,7 @@ The LED indicators on the threeboard are vital to understanding the current stat
 5. 1 ERR LED to indicate an error.
 6. 1 STATUS LED to provide context-specific status information.
 
-The hardware-specific details of these LEDs, such as their wiring and tolerance, is described in the [hardware design overview](hardware_design_overview.md) document.
+The hardware-specific details of these LEDs, such as their wiring and tolerance, is described in the [hardware design](hardware_design.md) document.
 
 The LED indicator lights are all controlled by the `LedController`. This class is responsible for maintaining the state of the raster scan and outputting the `LedState` (a simple class for storing the state of each LED) to hardware. Its interface is very simple:
 

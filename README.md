@@ -1,6 +1,5 @@
 # threeboard [![Build Status](https://travis-ci.com/taylorconor/threeboard.svg?token=2Am1JHeqFB3E9FdETW4w&branch=master)](https://travis-ci.com/taylorconor/threeboard)
 
-<!-- TODO: update this image to an animation when it's ready. -->
 <img src="documentation/images/top.png" align="right"/>
 
 threeboard is a fully-functional mechanical USB keyboard with only three keys! However it can do just as much as the keyboard you currently have on your desk.
@@ -30,7 +29,7 @@ Building your own physical threeboard requires a physical threeboard PCB, solder
 ### Firmware
 [Firmware design](documentation/threeboard/firmware_design.md)  
 [Firmware build instructions](documentation/threeboard/firmware_build_instructions.md)  
-[Simulator user manual](documentation/threeboard/simulator_user_manual.md)  
+[Simulator design](documentation/threeboard/simulator_design.md)  
 [Simulator build instructions](documentation/threeboard/simulator_build_instructions.md)  
 
 ### Hardware
