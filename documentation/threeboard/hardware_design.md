@@ -21,6 +21,7 @@ This section is split into subsections that explain the design of each major har
 <img src="../images/hardware/usb/bottom.png" align="left" width=35%/>
 <img src="../images/hardware/usb/sch.png" align="right" width=55%/>
 <br clear="right"/>
+<br clear="left"/>
 
 The threeboard’s USB hardware is very simple because the atmega32u4 has dedicated USB pins that map directly to the USB connector (pictured in red). The only additional hardware required is specified by the atmega32u4 datasheet, sections 2.2.8 and 2.2.9, which states that the D+ and D- USB data upstream ports should be connected to the USB data connector pins via serial 22Ω resistors (pictured in blue and green).
 
@@ -30,6 +31,7 @@ The complexity of the USB integration lies in the firmware. It’s responsible f
 <img src="../images/hardware/led/bottom1.png" align="left" width=60%/>
 <img src="../images/hardware/led/sch1.png" align="right" width=35%/>
 <br clear="right"/>
+<br clear="left"/>
 
 In order to be able to drive 22 LEDs using only 11 MCU pins, the majority of the threeboard’s LEDs are wired in a [multiplexed matrix](https://en.wikipedia.org/wiki/Multiplexed_display), where each individual LED in the matrix is addressable by a row and column value. In this configuration, all of the LEDs can’t be lit at the same time. Instead, each row of LEDs is scanned over in a [raster scanning](https://en.wikipedia.org/wiki/Raster_scan) fashion, and individual LEDs that should be lit are turned on until the next raster scan turns them off.
 
@@ -40,6 +42,7 @@ Only one LED from a column is lit at any one time, since only one LED from each 
 <img src="../images/hardware/led/bottom2.png" align="left" width=40%/>
 <img src="../images/hardware/led/sch2.png" align="right" width=55%/>
 <br clear="right"/>
+<br clear="left"/>
 
 There are two LEDs on the threeboard that are not included in the multiplexed LED matrix. These are the STATUS (shown in green) and ERR (shown in red) LEDs. They’re configured in parallel with their polarities inverted so that only one can be lit at any given time, and so that only one resistor and two MCU pins are required to drive them. These LEDs are configured in this way for two reasons:
 
@@ -50,6 +53,7 @@ There are two LEDs on the threeboard that are not included in the multiplexed LE
 <img src="../images/hardware/keyswitch/bottom.png" align="left" width=60%/>
 <img src="../images/hardware/keyswitch/sch.png" align="right" width=35%/>
 <br clear="right"/>
+<br clear="left"/>
 
 The threeboard uses [Cherry MX](https://deskthority.net/wiki/Cherry_MX) SPST-NO ([single pole, single throw, normally open](https://en.wikipedia.org/wiki/Switch#Contact_terminology)) mechanical switches for its physical key switches. The [bounce time](https://en.wikipedia.org/wiki/Switch#Contact_bounce) of these switches differs depending on the type of switch and the date of manufacture, but it’s safe to assume that it will be below 5ms. Most modern Cherry MX key switches have a 1ms bounce time.
 
@@ -61,6 +65,7 @@ The MCU pins used for the key switches were chosen carefully to correspond to th
 <img src="../images/hardware/eeprom/bottom.png" align="left" width=35%/>
 <img src="../images/hardware/eeprom/sch.png" align="right" width=60%/>
 <br clear="right"/>
+<br clear="left"/>
 
 The threeboard contains two external 512 kbit EEPROM devices. These devices communicate with the MCU using the using its 2-wire serial interface (the [I2C protocol](https://en.wikipedia.org/wiki/I%C2%B2C)). The atmega32u4 MCU has built-in hardware support for this interface, with a dedicated data pin (SDA) and clock pin (SCL), which collectively form the TWI (two-wire interface) bus. This interface is described in detail in the atmega32u4 datasheet, section 20.
 
@@ -70,6 +75,7 @@ The EEPROM devices can both be connected in parallel to these pins, as the I2C p
 <img src="../images/hardware/xtal/bottom.png" align="left" width=35%/>
 <img src="../images/hardware/xtal/sch.png" align="right" width=60%/>
 <br clear="right"/>
+<br clear="left"/>
 
 The threeboard includes a 16MHz quartz crystal oscillator (shown above in blue) as a clock source to the MCU. The MCU contains dedicated hardware pins for use with the external clock (XTAL1 and XTAL2), and the atmega32u4 datasheet, section 6.3, recommends the crystal to be wired as shown in the diagram above, with external capacitors within a 12pF - 22pF range (shown in red and green).
 
@@ -77,6 +83,7 @@ The threeboard includes a 16MHz quartz crystal oscillator (shown above in blue) 
 <img src="../images/hardware/caps/bottom.png" align="left" width=25%/>
 <img src="../images/hardware/caps/sch.png" align="right" width=70%/>
 <br clear="right"/>
+<br clear="left"/>
 
 [Decoupling capacitors](https://en.wikipedia.org/wiki/Decoupling_capacitor) are positioned close to each VCC-connected pin on the MCU, to reduce the effect of voltage spikes and drops from the USB power supply. They are also necessary to facilitate instantaneous current increases that may be required by the MCU, as various actions performed by the MCU may have different current requirements.
 
@@ -84,6 +91,7 @@ The threeboard includes a 16MHz quartz crystal oscillator (shown above in blue) 
 <img src="../images/hardware/mcu/bottom.png" align="left" width=35%/>
 <img src="../images/hardware/mcu/sch.png" align="right" width=60%/>
 <br clear="right"/>
+<br clear="left"/>
 
 The threeboard includes a reset push button to help flash firmware to the MCU during development. The reset switch (shown above in blue) is connected to the RESET pin in the MCU, pulled up to VCC with a 10kΩ pull-up resistor (shown in green). Additionally, the HWB pin is forced low to instruct the MCU to execute the USB bootloader on reset, which allows flashing new firmware on reset. To force it low, it’s tied to ground using a 10kΩ pull-down resistor (shown in red) to prevent the pin from floating.
 
