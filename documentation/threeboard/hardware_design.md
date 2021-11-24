@@ -18,8 +18,8 @@ Similar to the design principles of the firmware, the threeboard’s hardware wa
 This section is split into subsections that explain the design of each major hardware component. In many cases, images of the threeboard’s PCB and electrical schematic are used to aid the explanation. In these cases, the image of the relevant piece of the PCB will always be on the left, and the relevant part of the schematic on the right.
 
 ### USB
-<img src="../images/hardware/usb/bottom.png" align="left" width=35%/>
-<img src="../images/hardware/usb/sch.png" align="right" width=55%/>
+<img src="../images/hardware/usb/bottom.png" align="left" width=30%/>
+<img src="../images/hardware/usb/sch.png" align="right" width=50%/>
 <br clear="right"/>
 <br clear="left"/>
 
@@ -28,8 +28,8 @@ The threeboard’s USB hardware is very simple because the atmega32u4 has dedica
 The complexity of the USB integration lies in the firmware. It’s responsible for keeping track of bus timing, issuing interrupts, and parsing and sending messages. This is discussed in detail in the [firmware design document](firmware_design.md).
 
 ### LEDs
-<img src="../images/hardware/led/bottom1.png" align="left" width=60%/>
-<img src="../images/hardware/led/sch1.png" align="right" width=35%/>
+<img src="../images/hardware/led/bottom1.png" align="left" width=50%/>
+<img src="../images/hardware/led/sch1.png" align="right" width=30%/>
 <br clear="right"/>
 <br clear="left"/>
 
@@ -39,8 +39,8 @@ This row scanning happens within the firmware and is triggered every 2ms by time
 
 Only one LED from a column is lit at any one time, since only one LED from each column exists in a given row. Each column of LEDs is protected by one 220Ω current-limiting resistor in series to restrict the current to each LED to 22mA (calculated using [Ohm’s law](https://en.wikipedia.org/wiki/Ohm%27s_law) given the 5V input voltage from USB).
 
-<img src="../images/hardware/led/bottom2.png" align="left" width=40%/>
-<img src="../images/hardware/led/sch2.png" align="right" width=55%/>
+<img src="../images/hardware/led/bottom2.png" align="left" width=35%/>
+<img src="../images/hardware/led/sch2.png" align="right" width=45%/>
 <br clear="right"/>
 <br clear="left"/>
 
@@ -50,8 +50,8 @@ There are two LEDs on the threeboard that are not included in the multiplexed LE
 2. It’s beneficial when reporting errors or debugging issues with the firmware on the physical board (rather than the simulator) to have some LEDs which can be decoupled from the raster scanning loop. This means that if there are firmware issues with the loop logic, or issues with the MCU’s timer configuration, the STATUS or ERR LEDs can be lit independently of the matrix to help with debugging or surfacing errors.
 
 ### Mechanical key switches
-<img src="../images/hardware/keyswitch/bottom.png" align="left" width=60%/>
-<img src="../images/hardware/keyswitch/sch.png" align="right" width=35%/>
+<img src="../images/hardware/keyswitch/bottom.png" align="left" width=55%/>
+<img src="../images/hardware/keyswitch/sch.png" align="right" width=25%/>
 <br clear="right"/>
 <br clear="left"/>
 
@@ -63,7 +63,7 @@ The MCU pins used for the key switches were chosen carefully to correspond to th
 
 ### External EEPROMs
 <img src="../images/hardware/eeprom/bottom.png" align="left" width=35%/>
-<img src="../images/hardware/eeprom/sch.png" align="right" width=60%/>
+<img src="../images/hardware/eeprom/sch.png" align="right" width=55%/>
 <br clear="right"/>
 <br clear="left"/>
 
@@ -72,16 +72,16 @@ The threeboard contains two external 512 kbit EEPROM devices. These devices comm
 The EEPROM devices can both be connected in parallel to these pins, as the I2C protocol uses 7-bit addresses, allowing for up to 128 devices on the same bus. Two 4.7kΩ pull-up resistors are used to pull each bus line high when not driven low by the [open-drain](https://en.wikipedia.org/wiki/Open_collector) interface, as mentioned in the atmega32u4 datasheet, section 20.2: _The only external hardware needed to implement the bus is a single pull-up resistor for each of the TWI bus lines_.
 
 ### External quartz crystal clock
-<img src="../images/hardware/xtal/bottom.png" align="left" width=35%/>
-<img src="../images/hardware/xtal/sch.png" align="right" width=60%/>
+<img src="../images/hardware/xtal/bottom.png" align="left" width=30%/>
+<img src="../images/hardware/xtal/sch.png" align="right" width=55%/>
 <br clear="right"/>
 <br clear="left"/>
 
 The threeboard includes a 16MHz quartz crystal oscillator (shown above in blue) as a clock source to the MCU. The MCU contains dedicated hardware pins for use with the external clock (XTAL1 and XTAL2), and the atmega32u4 datasheet, section 6.3, recommends the crystal to be wired as shown in the diagram above, with external capacitors within a 12pF - 22pF range (shown in red and green).
 
 ### Decoupling capacitors
-<img src="../images/hardware/caps/bottom.png" align="left" width=25%/>
-<img src="../images/hardware/caps/sch.png" align="right" width=70%/>
+<img src="../images/hardware/caps/bottom.png" align="left" width=20%/>
+<img src="../images/hardware/caps/sch.png" align="right" width=65%/>
 <br clear="right"/>
 <br clear="left"/>
 
