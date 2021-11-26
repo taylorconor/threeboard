@@ -1,4 +1,4 @@
-# threeboard simulator design
+# threeboard simulator user manual and design
 
 ## Introduction
 <img src="../images/simulator/simulator_screenshot.png" align="right" width=50%/>
