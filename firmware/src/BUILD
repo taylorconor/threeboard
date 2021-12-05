@@ -81,7 +81,6 @@ avr_library(
 
 avr_library(
     name = "event_buffer",
-    srcs = ["event_buffer.cpp"],
     hdrs = ["event_buffer.h"],
     deps = [
         "//src/delegates:event_handler_delegate",

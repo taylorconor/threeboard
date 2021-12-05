@@ -128,7 +128,7 @@ void RequestHandler::HandleSetConfiguration(const SetupPacket &packet,
 
 // Replies with the state of the keyboard keys and modifier keys. Response
 // protocol defined by HID spec v1.11, section B.1.
-// TODO: this will always return zeroes, since the state is send to the host in
+// TODO: this will always return zeroes, since the state is sent to the host in
 // UsbImpl. Perhaps this will cause a rare race condition where keypresses are
 // missed?
 void RequestHandler::HandleGetReport(const HidState &hid_state) {

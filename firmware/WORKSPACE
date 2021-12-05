@@ -29,14 +29,6 @@ git_repository(
     shallow_since = "1618937714 -0400",
 )
 
-# rapidcheck property-based testing library.
-http_archive(
-    name = "emil-e",
-    build_file = "//third_party:BUILD.third_party",
-    strip_prefix = "rapidcheck-master",
-    urls = ["https://github.com/emil-e/rapidcheck/archive/refs/heads/master.zip"],
-)
-
 http_archive(
     name = "nlohmann",
     build_file = "//third_party:BUILD.third_party",

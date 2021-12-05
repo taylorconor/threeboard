@@ -11,31 +11,26 @@ class EventBuffer final : public EventHandlerDelegate {
  public:
   ~EventBuffer() override = default;
 
-  bool HasEvent() const;
-
-  // This function is NOT interrupt safe; The caller must take responsibility
-  // for this.
-  bool HasKeypressEvent() const;
-  Keypress GetKeypressEvent();
+  // These functions are NOT interrupt safe; The caller must take responsibility
+  // for this, e.g. by disabling interrupts before calling.
+  bool HasKeypressEvent() const { return has_keypress_; }
+  Keypress GetKeypressEvent() {
+    has_keypress_ = false;
+    return event_;
+  };
 
   // Implement the EventHandlerDelegate override. This method is responsible
   // for handling all keypresses and combos. It runs inside an ISR, so to keep
   // ISR executions as short as possible, it offloads the event to a buffer
   // variable (pending_keypress_) which is picked up in the main program's
   // run loop.
-  void HandleKeypress(const Keypress &) override;
+  void HandleKeypress(const Keypress &keypress) override {
+    event_ = keypress;
+    has_keypress_ = true;
+  }
 
  private:
-  union Event {
-    Keypress keypress_;
-  };
-
-  enum class EventType {
-    NO_EVENT = 0,
-    KEYPRESS = 1,
-  };
-
-  Event event_;
-  EventType event_type_ = EventType::NO_EVENT;
+  Keypress event_;
+  bool has_keypress_ = false;
 };
 }  // namespace threeboard

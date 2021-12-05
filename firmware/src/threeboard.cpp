@@ -122,25 +122,24 @@ void Threeboard::RunEventLoopIteration() {
   // Atomically check for new keyboard events, and either handle them or
   // sleep the CPU until the next interrupt.
   native_->DisableInterrupts();
-  if (!event_buffer_->HasEvent()) {
+  if (event_buffer_->HasKeypressEvent()) {
+    // Event success status is propagated up through the relevant Layer to
+    // here. A false return from HandleEvent indicates that an unrecoverable
+    // error occurred during handling of this event.
+    bool status =
+        layer_controller_->HandleEvent(event_buffer_->GetKeypressEvent());
+    if (!status) {
+      led_controller_->GetLedState()->SetErr(LedState::PULSE);
+    }
+
+    // Re-enable interrupts after handling the event.
+    native_->EnableInterrupts();
+  } else {
     // Sleep the CPU until another interrupt fires.
     native_->EnableCpuSleep();
     native_->EnableInterrupts();
     native_->SleepCpu();
     native_->DisableCpuSleep();
-  } else {
-    if (event_buffer_->HasKeypressEvent()) {
-      // Event success status is propagated up through the relevant Layer to
-      // here. A false return from HandleEvent indicates that an unrecoverable
-      // error occurred during handling of this event.
-      bool status =
-          layer_controller_->HandleEvent(event_buffer_->GetKeypressEvent());
-      if (!status) {
-        led_controller_->GetLedState()->SetErr(LedState::PULSE);
-      }
-    }
-    // Re-enable interrupts after handling the event.
-    native_->EnableInterrupts();
   }
 }
 

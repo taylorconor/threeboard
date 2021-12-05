@@ -93,7 +93,7 @@ bool StorageController::GetWordShortcutLength(uint8_t index, uint8_t *output) {
 }
 
 bool StorageController::SendWordShortcut(uint8_t index, uint8_t raw_mod_code) {
-  WordModCode word_mod_code = (WordModCode)raw_mod_code;
+  auto word_mod_code = (WordModCode)raw_mod_code;
   uint8_t length;
   RETURN_IF_ERROR(GetWordShortcutLength(index, &length));
   // If this shortcut slot is empty then we should propagate an error instead of
