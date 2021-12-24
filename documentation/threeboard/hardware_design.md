@@ -2,7 +2,6 @@
 ## Introduction
 <img src="../images/bottom.png" align="right" width=50%/>
 
-
 The threeboard’s hardware is a custom-designed PCB. It includes all electrical components needed to operate the threeboard, as well as test points that can be used to flash new firmware to the MCU. The majority of the components used are surface mounted, with through-holes used for some of the larger components.
 
 This section of the document describes the design goals of the threeboard hardware, the choice of components, and electrical design decisions.

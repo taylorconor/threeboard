@@ -34,5 +34,5 @@ Building your own physical threeboard requires a physical threeboard PCB, solder
 
 ### Hardware
 [Hardware design](documentation/threeboard/hardware_design.md)  
-**TODO** [Hardware build instructions](documentation/threeboard/hardware_build_instructions.md)  
+[Hardware build instructions](documentation/threeboard/hardware_build_instructions.md)  
 [Component list](documentation/threeboard/component_list.md)
