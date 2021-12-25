@@ -72,6 +72,11 @@ char FromUsbKeycodes(char keycode, uint8_t modcode) {
   } else if (keycode >= 0x1e && keycode <= 0x27) {
     if (!is_shift) {
       c = keycode - 0x1e + '1';
+      // Special case for zero. It's the first number to appear in the ASCII
+      // table, but the last number to appear in the USB scancode list.
+      if (keycode == 0x27) {
+        c = '0';
+      }
     } else if (keycode == 0x1e) {
       c = '!';
     } else if (keycode == 0x1f) {
