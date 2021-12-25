@@ -95,9 +95,3 @@ The threeboard includes a 16MHz quartz crystal oscillator (shown above in blue) 
 The threeboard includes a reset push button to help flash firmware to the MCU during development. The reset switch (shown above in blue) is connected to the RESET pin in the MCU, pulled up to VCC with a 10kΩ pull-up resistor (shown in green). Additionally, the HWB pin is forced low to instruct the MCU to execute the USB bootloader on reset, which allows flashing new firmware on reset. To force it low, it’s tied to ground using a 10kΩ pull-down resistor (shown in red) to prevent the pin from floating.
 
 As specified in the atmega32u4 datasheet, section 2.2.12, the UCap pin must be connected to a 1μF capacitor to regulate the USB output supply voltage.
-
-### Manufacturing
-<p align="center">
-  <img src="../images/hardware/pcb/hardware.png" width=85%/>
-</p>
-TODO
