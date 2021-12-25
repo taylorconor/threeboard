@@ -5,11 +5,11 @@
    ```
    sudo apt-get install libelf-dev libncursesw5-dev freeglut3-dev
    ```
-3. Clone the custom simavr fork, which includes additional threeboard compatabiliity functionaliity:
+3. Clone the custom simavr fork, which includes additional threeboard compatibility functionality:
    ```
    git clone git@github.com:taylorconor/simavr.git
    ```
-4. Check out the threeboard compatability branch:
+4. Check out the threeboard compatibility branch:
    ```
    cd simavr && git checkout threeboard_compat
    ```
@@ -18,7 +18,7 @@
    sudo make install RELEASE=1
    ```
 6. Navigate to the `threeboard/firmware` directory of your threeboard project clone.
-7. Run the threbeoard simulator:
+7. Run the threeboard simulator:
    ```
    bazel run //simulator:simulator
    ```
