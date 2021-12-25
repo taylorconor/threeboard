@@ -14,7 +14,7 @@ This repository also contains extensive documentation, both within the firmware 
 
 ## How to try it out
 
-<img src="documentation/images/simulator.mp4" align="right" width="400" />
+<img src="documentation/images/simulator.gif" align="right" width="400" style="border-radius:10px"/>
 
 The threeboard project includes a terminal-based graphical firmware simulator capable of simulating the entire functionality of the threeboard. You can build and run the simulator yourself by reading the [simulator build instructions](documentation/threeboard/simulator_build_instructions.md). The simulator is built on top of the [simavr](https://github.com/buserror/simavr) AVR simulator, and runs the exact same firmware file that gets flashed to physical hardware. The simulator also allows remote debugging with GDB, so you can step through the threeboard firmware as it's being simulated to learn about it or investigate bugs!
 
