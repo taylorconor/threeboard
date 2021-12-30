@@ -6,11 +6,15 @@
 
 The threeboard project repository contains all of the files needed to manufacture a threeboard [PCB](https://en.wikipedia.org/wiki/Printed_circuit_board), in the [hardware subdirectory](https://github.com/taylorconor/threeboard/tree/master/hardware). These files can be opened using [KiCad](https://en.wikipedia.org/wiki/KiCad), a common open-source PCB design tool. The PCBs must be manufactured by a professional PCB manufacturing company. I recommend [PCBWay](https://www.pcbway.com/) as I’ve had great experiences using them to manufacture each iteration of the threeboard development boards. To make manufacturing easier, the threeboard repository contains a prebuilt [`gerber.zip`](https://github.com/taylorconor/threeboard/blob/master/hardware/gerber.zip) package which is all that’s needed to be provided to a PCB manufacturer such as PCBWay to manufacture threeboard PCBs.
 
+<p align="center">
+<img src="../images/soldering/fully_soldered_front.png" width=70%/>
+</p>
+
 ## Soldering
 The components required to assemble the threeboard are all listed in the [component list](component_list.md) document. These all need to be soldered to the threeboard’s PCB, and the microcontroller flashed with the threeboard firmware before it’s usable as a keyboard. All components can be soldered by hand and without a microscope, and although the two external EEPROMs and quartz crystal are much easier to solder using a hot air gun, it’s possible to solder everything using just a soldering iron.
 
 <p align="center">
-<img src="../images/soldering/fully_soldered.png" width=80%/>
+<img src="../images/soldering/fully_soldered.png" width=70%/>
 </p>
 <br />
 
