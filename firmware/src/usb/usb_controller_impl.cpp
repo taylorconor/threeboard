@@ -35,8 +35,9 @@ bool UsbControllerImpl::Setup() {
   // want to interrupt on start of frame (SOFE), and also on end of reset
   // (EORSTE).
   native_->SetUDIEN((1 << native::EORSTE) | (1 << native::SOFE));
-  // Connect internal pull-up attach resistor. This must be the final step in
-  // the setup process because it indicates that the device is now ready.
+  // Unset DETACH, activating the internal pull-up attach resistor on USB D+
+  // (which specifies full-speed mode). This must be the final step in the setup
+  // process because it indicates that the device is now ready.
   native_->SetUDCON(native_->GetUDCON() & ~(1 << native::DETACH));
   return true;
 }
@@ -45,7 +46,7 @@ bool UsbControllerImpl::HasConfigured() { return hid_state_.configuration; }
 
 bool UsbControllerImpl::SendKeypress(const uint8_t key, const uint8_t mod) {
   hid_state_.modifier_keys = mod;
-  // Currently we only support sending a single key at a time, even though this
+  // Currently, we only support sending a single key at a time, even though this
   // USB implementation supports the full 6 keys. Functionality of the
   // threeboard may change in future to send multiple keys.
   hid_state_.keyboard_keys[0] = key;

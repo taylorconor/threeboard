@@ -34,7 +34,7 @@ The threeboard firmware was designed with several core principles in mind. These
   - Reasoning: Untested code should be assumed to have bugs, so full test coverage is essential. Making classes easier to test in isolation makes it easier to write concise test cases.
 
 ## Toolchain
-The atmega32u4 chip manufacturer (Atmel / Microchip) provides a suite of [toolchains](https://en.wikipedia.org/wiki/Toolchain) for use with AVR development, in particular [avr-gcc](https://www.microchip.com/en-us/development-tools-tools-and-software/gcc-compilers-avr-and-arm), a GCC compiler for AVR. This toolchain works out of the box for all stages of firmware development.
+The atmega32u4 chip manufacturer (Atmel / Microchip) provides a [toolchain](https://en.wikipedia.org/wiki/Toolchain) for use with AVR development, in particular [avr-gcc](https://www.microchip.com/en-us/development-tools-tools-and-software/gcc-compilers-avr-and-arm), a GCC compiler for AVR. This toolchain works out of the box for all stages of firmware development.
 
 The threeboard firmware is built with [Bazel](http://bazel.build/). Bazel was chosen over more traditional build systems like CMake because it has the following useful properties:
 
