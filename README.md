@@ -21,10 +21,9 @@ The threeboard project includes a terminal-based graphical firmware simulator ca
 Building your own physical threeboard requires a physical threeboard PCB, soldering tools and components, as well as some knowledge of electronics and soldering. If you're interested in building one, check out the [threeboard hardware build instructions](documentation/threeboard/hardware_build_instructions.md).
 
 ## Full documentation
-<!-- TODO: add links to relevant documentation. -->
 ### Background reading 
 [threeboard user manual](documentation/threeboard/threeboard_user_manual.md)  
-**TODO** [How do USB keyboards work?](documentation/threeboard/how_usb_keyboards_work.md) 
+[How do USB keyboards work?](documentation/threeboard/how_usb_keyboards_work.md) 
 
 ### Firmware
 [Firmware design](documentation/threeboard/firmware_design.md)  
