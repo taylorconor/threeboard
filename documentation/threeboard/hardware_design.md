@@ -66,7 +66,7 @@ The MCU pins used for the key switches were chosen carefully to correspond to th
 <br clear="right"/>
 <br clear="left"/>
 
-The threeboard contains two external 512 kbit EEPROM devices. These devices communicate with the MCU using the using its 2-wire serial interface (the [I2C protocol](https://en.wikipedia.org/wiki/I%C2%B2C)). The atmega32u4 MCU has built-in hardware support for this interface, with a dedicated data pin (SDA) and clock pin (SCL), which collectively form the TWI (two-wire interface) bus. This interface is described in detail in the atmega32u4 datasheet, section 20.
+The threeboard contains two external 512 kbit EEPROM devices. These devices communicate with the MCU using its 2-wire serial interface (the [I2C protocol](https://en.wikipedia.org/wiki/I%C2%B2C)). The atmega32u4 MCU has built-in hardware support for this interface, with a dedicated data pin (SDA) and clock pin (SCL), which collectively form the TWI (two-wire interface) bus. This interface is described in detail in the atmega32u4 datasheet, section 20.
 
 The EEPROM devices can both be connected in parallel to these pins, as the I2C protocol uses 7-bit addresses, allowing for up to 128 devices on the same bus. Two 4.7kΩ pull-up resistors are used to pull each bus line high when not driven low by the [open-drain](https://en.wikipedia.org/wiki/Open_collector) interface, as mentioned in the atmega32u4 datasheet, section 20.2: _The only external hardware needed to implement the bus is a single pull-up resistor for each of the TWI bus lines_.
 
