@@ -2,7 +2,7 @@
 
 <img src="documentation/images/top.png" align="right"/>
 
-threeboard is a fully-functional mechanical USB keyboard with only three keys! However it can do just as much as the keyboard you currently have on your desk.
+threeboard is a fully-functional open source and open hardware mechanical USB keyboard with only three keys! However it can do just as much as the keyboard you currently have on your desk.
 
 Unlike a traditional keyboard, characters don't show up on the screen after each threeboard keypress, because there aren't enough keys. Instead, combinations of the three keys are used to specify key and modifier codes on two built-in 8-bit LED binary indicators. This can then be sent to the host computer as USB keycodes. The threeboard is programmable and supports multiple layers; layers allow programming and storing macros into the threeboards storage for later retrieval. All functionality is documented in the [threeboard user manual](documentation/threeboard/threeboard_user_manual.md).
 
