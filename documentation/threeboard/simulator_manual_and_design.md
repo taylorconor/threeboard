@@ -1,7 +1,7 @@
 # threeboard simulator user manual and design
 
 ## Introduction
-<img src="../images/simulator/simulator_screenshot.png" align="right" width=50%/>
+<img src="../images/simulator/simulator_screenshot_small.png" align="right" />
 
 Debugging embedded firmware is generally difficult and slow, as target hardware limitations usually prevent meaningful logging or the ability to connect a debugger and use real-time software breakpoints. Developing embedded firmware without access to a simulator means all firmware needs to be flashed and run on the target hardware, which becomes cumbersome.
 
@@ -28,7 +28,7 @@ Events are issued and handled in simavr using [IOCTL calls](https://en.wikipedia
 The simulator is comprised of several interoperating modules which emulate the properties of different hardware components on the threeboard. Modules are needed for external components (EEPROMs and UART) and for emulating a USB host machine to send keypress information.
 
 <p align="center">
-  <img src="../images/simulator/simulator_overview.png" width=85%/>
+  <img src="../images/simulator/simulator_overview.png" />
 </p>
 
 The UI module is responsible for translating the state of the simulator into a visualisation of the result of that state on the threeboard’s hardware, in particular its LEDs. It’s a purely [text-based user interface](https://en.wikipedia.org/wiki/Text-based_user_interface) implemented using [ncurses](https://en.wikipedia.org/wiki/Ncurses). The static outlines and frames of the UI are drawn once, and the dynamic components are redrawn at a rate of 200Hz.
