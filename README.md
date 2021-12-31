@@ -2,15 +2,15 @@
 
 <img src="documentation/images/top.png" align="right"/>
 
-threeboard is a fully-functional open source and open hardware mechanical USB computer keyboard with only three keys! However it can do just as much as the keyboard you currently have on your desk.
+threeboard is a fully-functional open source and open hardware mechanical USB computer keyboard with only three keys. It supports multiple programmable layers, and achieves the same functionality as a full-sized keyboard. Its firmware and hardware are built completely from scratch and are extensively documented.
 
-Unlike a traditional keyboard, characters don't show up on the screen after each threeboard keypress, because there aren't enough keys. Instead, combinations of the three keys are used to specify key and modifier codes on two built-in 8-bit LED binary indicators. This can then be sent to the host computer as USB keycodes. The threeboard is programmable and supports multiple layers; layers allow programming and storing macros into the threeboards storage for later retrieval. All functionality is documented in the [threeboard user manual](documentation/threeboard/threeboard_user_manual.md).
+Unlike a traditional keyboard, characters don't show up on the screen after each keypress, because there aren't enough keys. Instead, combinations of the three keys are used to specify key and modifier codes on two built-in 8-bit LED binary indicators. This can then be sent to the host computer as USB keycodes. The multiple layers allow users to program macros into the threeboard’s storage for quick retrieval. All functionality is documented in the [threeboard user manual](documentation/threeboard/threeboard_user_manual.md).
 
-## Overview
+## Motivation
+The main goal of the threeboard project is to build a relatively easy to understand, readable, self-contained and well-documented embedded software and hardware project. The threeboard is built from scratch, with no external dependencies. This means that all components, from the USB stack to the PCB hardware designs, are written from the ground up and are all contained in this repository.
 
-Threeboard is a self-contained hardware and firmware project built from scratch, with no external dependencies. This means that all components, from the USB stack to the PCB hardware designs, are written from the ground and are all contained in this repository.
+The threeboard project is extensively documented: within the firmware itself as comments, in a set of detailed markdown documents, and in this design document. The primary design goal of the C++ firmware code is readability, to enable as many people to read and learn from it as possible, regardless of background. It's well tested, including end-to-end integration tests which execute tests against the firmware in a hardware simulator to emulate the physical hardware.
 
-This repository also contains extensive documentation, both within the firmware and in a set of markdown documentation. The primary design goal of the C++ firmware code is readability. It's extensively tested, including end-to-end integration tests which run the complete firmware in a hardware simulator to emulate the physical hardware.
 
 ## How to try it out
 
