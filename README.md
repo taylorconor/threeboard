@@ -1,4 +1,4 @@
-# threeboard [![Build Status](https://travis-ci.com/taylorconor/threeboard.svg?token=2Am1JHeqFB3E9FdETW4w&branch=master)](https://travis-ci.com/taylorconor/threeboard)
+# threeboard
 
 <img src="documentation/images/top.png" align="right"/>
 
