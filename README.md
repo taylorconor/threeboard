@@ -21,7 +21,7 @@ The threeboard project includes a terminal-based graphical firmware simulator ca
 Building your own physical threeboard requires a physical threeboard PCB, soldering tools and components, as well as some knowledge of electronics and soldering. If you're interested in building one, check out the [threeboard hardware build instructions](documentation/threeboard/hardware_build_instructions.md).
 
 ## Full documentation
-Below are markdown files documenting various aspects of the threeboard project in detail. Full 41-page documentation is available in PDF format in the [threeboard design doc](documentation/threeboard%20design%20doc.pdf) file.
+Below are markdown files documenting various aspects of the threeboard project in detail. Full 41-page documentation is available in PDF format in the [threeboard design doc](documentation/threeboard_design_doc.pdf) file.
 
 ### Background reading 
 [threeboard user manual](documentation/threeboard/threeboard_user_manual.md)  
