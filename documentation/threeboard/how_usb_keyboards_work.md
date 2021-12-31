@@ -24,7 +24,7 @@ USB keyboards spend most of their time transferring data in the interrupt mode b
 The USB protocol identifies the functionality of a device using _device classes_, defined by a class code sent to the host. This allows the host to e.g. load drivers for the device and to support new devices from different manufacturers, making USB universal. The USB standard specifies some standard device classes, but manufacturers can implement their own using the wildcard “vendor-specific” class type. One standard-defined class is the [Human Interface Device (HID)](https://en.wikipedia.org/wiki/USB_human_interface_device_class) class; this class includes devices intended to be used by humans to interact with a computer, such as keyboards and mice. The threeboard implements this USB HID class to identify itself as a keyboard.
 
 ## Connector wiring
-<img src="../images/hardware/usb/connector_type_a.png" align="right" width=25%/>
+<img src="../images/hardware/usb/connector_type_a_small.png" align="right"/>
 
 The wiring of a USB 2.0-only connector (i.e. a connector capable of up to a 480 Mbit/s “high speed” data rate) is quite simple, with only 4 pins needed:
 
@@ -33,7 +33,7 @@ The wiring of a USB 2.0-only connector (i.e. a connector capable of up to a 480 
 - D+: Part of differential pair data line.
 - Ground.
 
-USB 3.0 requires an additional 5 pins for a total of 9, but keeps the same connector types. Sometimes these have blue inserts to indicate USB 3.0 compatibility, but retain backwards compatibility with USB 2.0. Type A connectors are only used on hosts (e.g. computers), and Type B connectors are only used on devices (e.g. phones, keyboards), but they have the same wiring and pin configuration. <img src="../images/hardware/usb/connector_type_c.png" align="left" width=45%/>Newer Type C connectors (often called “USB-C”) are omnidirectional and are the only connector type that supports USB 4.0. These connectors are radically different, with 24 pins, but still maintain backwards compatibility with all previous USB standards. This is possible because USB-C contains the 4-pins USB 2.0 configuration as a subset of its 24 pins.
+USB 3.0 requires an additional 5 pins for a total of 9, but keeps the same connector types. Sometimes these have blue inserts to indicate USB 3.0 compatibility, but retain backwards compatibility with USB 2.0. Type A connectors are only used on hosts (e.g. computers), and Type B connectors are only used on devices (e.g. phones, keyboards), but they have the same wiring and pin configuration. <img src="../images/hardware/usb/connector_type_c_small.png" align="left"/>Newer Type C connectors (often called “USB-C”) are omnidirectional and are the only connector type that supports USB 4.0. These connectors are radically different, with 24 pins, but still maintain backwards compatibility with all previous USB standards. This is possible because USB-C contains the 4-pins USB 2.0 configuration as a subset of its 24 pins.
 
 The _differential pair_ data line is an implementation of [differential signalling](https://en.wikipedia.org/wiki/Differential_signalling). Two wires are used but the data line remains serial.
 
