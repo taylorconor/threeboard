@@ -52,7 +52,7 @@ The architecture of the threeboard firmware can roughly be grouped into three ca
 3. Pure AVR modules: Modules that can only be compiled for the AVR architecture, i.e. those that interact directly with hardware.
 
 <p align="center">
-  <img src="../images/firmware/firmware_architecture_overview.png" width=85%/>
+  <img src="../images/firmware/firmware_architecture_overview.png"/>
 </p>
 
 Everything except pure AVR modules target both AVR and x86 targets, which enables tests to run on x86 development hosts. These modules don’t depend on any avr-libc headers, so all of their interactions with hardware are proxied through the firmware’s `Native` interface, which exposes an API to interact with hardware. The interface itself does not depend on avr-libc, so non-pure modules can depend on it. When the firmware is compiled to be run on an AVR host or simulator, an avr-libc dependent `Native` implementation (`NativeImpl`) is used.
@@ -62,7 +62,7 @@ The core of the threeboard firmware is a simple event loop; a design pattern tha
 
 The responsibilities of the different timers used, and the encapsulation afforded by the event loop is summarised in the diagram below:
 <p align="center">
-  <img src="../images/firmware/firmware_timers.png" width=85%/>
+  <img src="../images/firmware/firmware_timers.png"/>
 </p>
 
 Each event loop iteration is triggered by an [interrupt](https://en.wikipedia.org/wiki/Interrupt). Two timer-based interrupts are used in the threeboard firmware: Timer 1 in CTC mode is configured to produce a software interrupt every 2ms, and is used to refresh the next LED scan line; Timer 3, also in CTC mode, is configured to produce a software interrupt every 5ms, used mainly to poll the key switches and produce events on the event buffer if necessary. Running timer 3 slower and separately from timer 1 allows us to avoid debouncing the [Cherry MX](https://en.wikipedia.org/wiki/Cherry_(company)#Cherry_MX_switches_in_consumer_keyboards) key switches in software.
@@ -105,22 +105,22 @@ The threeboard makes extensive use of [delegation](https://en.wikipedia.org/wiki
 
 In certain situations, two-way function calling between modules is necessary. The first of such situations this document will explain is the `LayerController`. It needs to be able to provide events to individual `Layer`s to be handled. But some of these events may trigger an action that affects the `LayerController` itself, such as a keypress event that triggers the threeboard to switch layers. In this case, the current `Layer` uses the `LayerControllerDelegate` to call `SwitchToLayer()` on the `LayerController`, without having to explicitly depend on the `LayerController`:
 <p align="center">
-  <img src="../images/firmware/layercontrollerdelegate_overview.png" width=85%/>
+  <img src="../images/firmware/layercontrollerdelegate_overview.png"/>
 </p>
 <br>
 <p align="center">
-  <img src="../images/firmware/layercontrollerdelegate_sequence.png" width=85%/>
+  <img src="../images/firmware/layercontrollerdelegate_sequence.png"/>
 </p>
 
 The `Threeboard` class event loop receives timer interrupts in a similar fashion to the `LayerController`. In this case, the `Native` implementation is not owned by the `Threeboard` class, instead it’s passed in as part of the bootstrapping process. This allows `Native`-specific timers to call functions in the `Threeboard` class (via the `TimerInterruptHandlerDelegate`) without introducing a circular dependency:
 <p align="center">
-  <img src="../images/firmware/timerinterrupthandlerdelegate_overview.png" width=85%/>
+  <img src="../images/firmware/timerinterrupthandlerdelegate_overview.png" />
 </p>
 
 ### LED indicators
 The LED indicators on the threeboard are vital to understanding the current state of the threeboard. The hardware is equipped with 22 single-colour LEDs. These are arranged as follows:
 <p align="center">
-  <img src="../images/hardware/led/top.png" width=85%/>
+  <img src="../images/hardware/led/top.png" />
 </p>
 
 1. 8 LEDs to display the binary value of bank_0 (1 byte).
@@ -256,7 +256,7 @@ Because Layer `B` (the blob shortcut layer) allows storage of per-character USB 
 
 The storage layout is visualised below:
 <p align="center">
-  <img src="../images/firmware/storage_layout.png" width=75%/>
+  <img src="../images/firmware/storage_layout.png"/>
 </p>
 
 ## Style guide
