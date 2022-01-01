@@ -7,12 +7,16 @@
 
 namespace threeboard {
 namespace integration {
+
+// An interface defining the properties all layers should provide in their
+// models. All a layer model implementation needs to do is apply keypresses to
+// itself and provide a way to get a snapshot of the current state.
 class LayerModel {
  public:
   virtual ~LayerModel() {}
 
   virtual bool Apply(const Keypress& keypress) = 0;
-  virtual simulator::DeviceState GetStateSnapshot();
+  virtual simulator::DeviceState GetStateSnapshot() = 0;
 
  protected:
   simulator::DeviceState device_state_;
@@ -21,6 +25,7 @@ class LayerModel {
 class DefaultLayerModel : public LayerModel {
  public:
   bool Apply(const Keypress& keypress) override;
+  simulator::DeviceState GetStateSnapshot() override;
 };
 
 class LayerRModel : public LayerModel {

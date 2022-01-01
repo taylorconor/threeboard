@@ -29,12 +29,6 @@ void AppendTo(uint8_t mod_code, uint8_t key_code, std::string* s) {
 
 }  // namespace
 
-simulator::DeviceState LayerModel::GetStateSnapshot() {
-  simulator::DeviceState snapshot = device_state_;
-  device_state_.usb_buffer = "";
-  return snapshot;
-}
-
 bool DefaultLayerModel::Apply(const Keypress& keypress) {
   if (keypress == Keypress::X) {
     device_state_.bank_0++;
@@ -53,6 +47,12 @@ bool DefaultLayerModel::Apply(const Keypress& keypress) {
     return true;
   }
   return false;
+}
+
+simulator::DeviceState DefaultLayerModel::GetStateSnapshot() {
+  simulator::DeviceState snapshot = device_state_;
+  device_state_.usb_buffer = "";
+  return snapshot;
 }
 
 bool LayerRModel::Apply(const Keypress& keypress) {
