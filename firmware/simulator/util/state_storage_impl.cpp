@@ -100,7 +100,6 @@ StateStorageImpl::~StateStorageImpl() {
 void StateStorageImpl::ConfigureInternalEeprom() {
   internal_eeprom_.fill(0xFF);
   for (const auto &[idx, value] : json_["character_shortcuts"].items()) {
-    // TODO: remove this hack and implement proper USB keycode conversion.
     char c = ToUsbKeycodes(value.get<std::string>()[0]).first;
     internal_eeprom_.at(std::stoi(idx)) = c - 1;
   }
@@ -119,7 +118,6 @@ void StateStorageImpl::ConfigureEeprom0() {
   for (const auto &[idx, raw_value] : json_["word_shortcuts"].items()) {
     auto value = raw_value.get<std::string>();
     for (int i = 0; i < value.length(); ++i) {
-      // TODO: remove this hack and implement proper USB keycode conversion.
       char c = ToUsbKeycodes(value[i]).first;
       eeprom0_.at((std::stoi(idx) * 16) + i) = c - 1;
     }

@@ -6,7 +6,6 @@
 namespace threeboard {
 namespace storage {
 
-// TODO: this doesn't work yet!
 class I2cEeprom final : public Eeprom {
  public:
   enum Device {

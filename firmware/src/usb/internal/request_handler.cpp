@@ -60,7 +60,6 @@ void RequestHandler::HandleSetAddress(const SetupPacket &packet) {
   // wValue contains the 7-bit address. The highest-order bit of the request
   // is unspecified.
   native_->SetUDADDR(packet.wValue);
-  // TODO: write a good comment why we need to do this.
   AwaitTransmitterReady(native_);
   // Enable the address by setting the highest-order bit (a feature of the
   // microcontroller, not the USB protocol).

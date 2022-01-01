@@ -7,12 +7,6 @@ namespace threeboard {
 
 // A class to manage keyboard actions and combinations, and offload their
 // handling to a provided delegate.
-//
-// TODO: This is a very basic implementation of a keyboard controller. It lacks:
-// - Debouncing (it assumes Cherry MX switches with 5ms debounce profile).
-// - Key repetition.
-// - Event handling outside the ISR.
-// - More intelligent key combo registration.
 class KeyController {
  public:
   KeyController(native::Native *native, EventHandlerDelegate *keypress_handler);

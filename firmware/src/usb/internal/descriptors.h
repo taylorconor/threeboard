@@ -16,8 +16,6 @@ struct __attribute__((__packed__)) DescriptorContainer {
   const uint8_t *data;
   uint8_t length;
 
-  // TODO: this can probably be made constexpr with some adjustments, if needed.
-  // https://www.avrfreaks.net/forum/better-alternative-pgmreadword-etc.
   static DescriptorContainer ParseFromProgmem(native::Native *native,
                                               const uint8_t *ptr);
 };
