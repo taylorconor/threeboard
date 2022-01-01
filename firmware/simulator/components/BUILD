@@ -24,19 +24,6 @@ cc_library(
     ],
 )
 
-cc_test(
-    name = "uart_test",
-    srcs = ["uart_test.cpp"],
-    deps = [
-        ":uart",
-        "//simulator:simulator_delegate_mock",
-        "//simulator/simavr:simavr_mock",
-        "//simulator/ui:ui_delegate_mock",
-        "@gtest",
-        "@gtest//:gtest_main",
-    ],
-)
-
 cc_library(
     name = "usb_host",
     hdrs = ["usb_host.h"],
@@ -52,18 +39,6 @@ cc_library(
         "//simulator/simavr",
         "//src/usb/shared:constants",
         "//src/usb/shared:protocol",
-    ],
-)
-
-cc_test(
-    name = "usb_host_impl_test",
-    srcs = ["usb_host_impl_test.cpp"],
-    deps = [
-        ":usb_host_impl",
-        "//simulator:simulator_delegate_mock",
-        "//simulator/simavr:simavr_mock",
-        "@gtest",
-        "@gtest//:gtest_main",
     ],
 )
 

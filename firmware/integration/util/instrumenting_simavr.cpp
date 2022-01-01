@@ -85,7 +85,7 @@ InstrumentingSimavr::InstrumentingSimavr(
 }
 
 void InstrumentingSimavr::PrintCoreDump() const {
-  // TODO: replace this nightmare with libfort:
+  // TODO: Consider replacing this with libfort:
   // https://github.com/seleznevae/libfort.
   std::vector<std::string> pcs = {
       absl::StrCat("0x", absl::Hex(avr_->pc, absl::kZeroPad4))};
