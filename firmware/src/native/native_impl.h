@@ -66,11 +66,7 @@ class NativeImpl final : public Native {
   uint8_t GetUEINTX() const override;
   void SetUDINT(uint8_t) override;
   uint8_t GetUDINT() const override;
-  uint8_t GetRXOUTI() const override;
-  uint8_t GetEORSTI() const override;
-  uint8_t GetEPEN() const override;
   void SetUECONX(uint8_t) override;
-  uint8_t GetUECFG0X() const override;
   void SetUECFG1X(uint8_t) override;
   uint8_t GetUDMFN() const override;
   uint8_t GetSREG() const override;
@@ -90,7 +86,6 @@ class NativeImpl final : public Native {
   void SetUDADDR(uint8_t) override;
   void SetUERST(uint8_t) override;
 
-  void SetTWAMR(uint8_t) override;
   uint8_t GetTWSR() const override;
   void SetTWSR(uint8_t) override;
   void SetTWBR(uint8_t) override;
@@ -100,14 +95,9 @@ class NativeImpl final : public Native {
   void SetTWDR(uint8_t) override;
 
   volatile uint8_t &GetUCSR1A() const override;
-  void SetUCSR1A(uint8_t) override;
   volatile uint8_t &GetUCSR1B() const override;
-  void SetUCSR1B(uint8_t) override;
   volatile uint8_t &GetUCSR1C() const override;
-  void SetUCSR1C(uint8_t) override;
   void SetUDR1(uint8_t) override;
-  void SetUBRR1H(uint8_t) override;
-  void SetUBRR1L(uint8_t) override;
 
  private:
   TimerInterruptHandlerDelegate *timer_delegate_;

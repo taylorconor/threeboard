@@ -71,18 +71,13 @@ class Native {
 
   virtual uint8_t GetPINB() const = 0;
 
-  // TODO: order these
   virtual void SetUEDATX(uint8_t) = 0;
   virtual uint8_t GetUEDATX() = 0;
   virtual void SetUEINTX(uint8_t) = 0;
   virtual uint8_t GetUEINTX() const = 0;
   virtual void SetUDINT(uint8_t) = 0;
   virtual uint8_t GetUDINT() const = 0;
-  virtual uint8_t GetRXOUTI() const = 0;
-  virtual uint8_t GetEORSTI() const = 0;
-  virtual uint8_t GetEPEN() const = 0;
   virtual void SetUECONX(uint8_t) = 0;
-  virtual uint8_t GetUECFG0X() const = 0;
   virtual void SetUECFG1X(uint8_t) = 0;
   virtual uint8_t GetUDMFN() const = 0;
   virtual uint8_t GetSREG() const = 0;
@@ -103,7 +98,6 @@ class Native {
   virtual void SetUERST(uint8_t) = 0;
 
   // Two wire registers
-  virtual void SetTWAMR(uint8_t) = 0;
   virtual void SetTWSR(uint8_t) = 0;
   virtual uint8_t GetTWSR() const = 0;
   virtual void SetTWBR(uint8_t) = 0;
@@ -113,14 +107,9 @@ class Native {
   virtual uint8_t GetTWDR() const = 0;
 
   virtual volatile uint8_t &GetUCSR1A() const = 0;
-  virtual void SetUCSR1A(uint8_t) = 0;
   virtual volatile uint8_t &GetUCSR1B() const = 0;
-  virtual void SetUCSR1B(uint8_t) = 0;
   virtual volatile uint8_t &GetUCSR1C() const = 0;
-  virtual void SetUCSR1C(uint8_t) = 0;
   virtual void SetUDR1(uint8_t) = 0;
-  virtual void SetUBRR1H(uint8_t) = 0;
-  virtual void SetUBRR1L(uint8_t) = 0;
 };
 
 typedef void (Native::*PortModFn)(uint8_t);

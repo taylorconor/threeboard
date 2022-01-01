@@ -168,11 +168,7 @@ uint8_t NativeImpl::GetUEINTX() const { return UEINTX; }
 void NativeImpl::SetUDINT(const uint8_t val) { UDINT = val; }
 uint8_t NativeImpl::GetUDINT() const { return UDINT; }
 
-uint8_t NativeImpl::GetRXOUTI() const { return RXOUTI; }
-uint8_t NativeImpl::GetEORSTI() const { return EORSTI; }
-uint8_t NativeImpl::GetEPEN() const { return EPEN; }
 void NativeImpl::SetUECONX(const uint8_t val) { UECONX = val; }
-uint8_t NativeImpl::GetUECFG0X() const { return UECFG0X; }
 void NativeImpl::SetUECFG1X(const uint8_t val) { UECFG1X = val; }
 uint8_t NativeImpl::GetUDMFN() const { return UDMFN; }
 uint8_t NativeImpl::GetSREG() const { return SREG; }
@@ -193,7 +189,6 @@ uint8_t NativeImpl::GetUDADDR() const { return UDADDR; }
 void NativeImpl::SetUDADDR(const uint8_t val) { UDADDR = val; }
 void NativeImpl::SetUERST(const uint8_t val) { UERST = val; }
 
-void NativeImpl::SetTWAMR(const uint8_t val) { TWAMR = val; }
 uint8_t NativeImpl::GetTWSR() const { return TWSR; }
 void NativeImpl::SetTWSR(const uint8_t val) { TWSR = val; }
 void NativeImpl::SetTWBR(const uint8_t val) { TWBR = val; }
@@ -203,14 +198,9 @@ uint8_t NativeImpl::GetTWDR() const { return TWDR; }
 void NativeImpl::SetTWDR(const uint8_t val) { TWDR = val; }
 
 volatile uint8_t &NativeImpl::GetUCSR1A() const { return UCSR1A; }
-void NativeImpl::SetUCSR1A(uint8_t val) { UCSR1A = val; }
 volatile uint8_t &NativeImpl::GetUCSR1B() const { return UCSR1B; }
-void NativeImpl::SetUCSR1B(uint8_t val) { UCSR1B = val; }
 volatile uint8_t &NativeImpl::GetUCSR1C() const { return UCSR1C; }
-void NativeImpl::SetUCSR1C(uint8_t val) { UCSR1C = val; }
 void NativeImpl::SetUDR1(uint8_t val) { UDR1 = val; }
-void NativeImpl::SetUBRR1H(uint8_t val) { UBRR1H = val; }
-void NativeImpl::SetUBRR1L(uint8_t val) { UBRR1L = val; }
 
 }  // namespace native
 }  // namespace threeboard
