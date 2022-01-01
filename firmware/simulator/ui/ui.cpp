@@ -215,7 +215,6 @@ void UI::RenderLoop() {
 
       // Move the cursor to a place where stdio output won't overwrite any of
       // the simulator UI.
-      // TODO: is there a way of disabling or suppressing non-curses io?
       move(kRootY + 20, kRootX);
       refresh();
     }

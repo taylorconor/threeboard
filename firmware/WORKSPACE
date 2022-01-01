@@ -38,7 +38,6 @@ http_archive(
 )
 
 # a local repo representing the third party library locations (e.g. for simavr).
-# TODO: this is platform-specific and needs to be generalised.
 new_local_repository(
     name = "third_party",
     build_file = "third_party/BUILD.third_party",
