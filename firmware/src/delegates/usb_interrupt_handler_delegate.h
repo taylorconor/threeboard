@@ -2,6 +2,8 @@
 
 namespace threeboard {
 
+// An interface that allows the Native code to propagate usb interrupts to a
+// delegate.
 class UsbInterruptHandlerDelegate {
  public:
   virtual void HandleGeneralInterrupt() = 0;

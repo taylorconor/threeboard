@@ -6,6 +6,8 @@
 namespace threeboard {
 namespace simulator {
 
+// A class to collect and allow access to all the command line flag values
+// passed to the simulator at startup.
 class Flags {
  public:
   static Flags ParseFromArgs(int argc, char* argv[]);

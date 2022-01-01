@@ -48,7 +48,7 @@ class Threeboard final : public TimerInterruptHandlerDelegate {
   } boot_indicator_state_{0, 0};
 
   // Because RunEventLoop() is an infinite loop, it's not fully testable.
-  // Instead the main parts of the event loop are broken out into smaller
+  // Instead, the main parts of the event loop are broken out into smaller
   // functions with no infinite loop. These functions are internal to the
   // Threeboard class and shouldn't be exposed publicly, so to test them
   // properly we declare a friend relationship with the ThreeboardTest fixture.

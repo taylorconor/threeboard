@@ -18,6 +18,8 @@
 namespace threeboard {
 namespace simulator {
 
+// This class provides an interface on top of the simavr instance to enable it
+// to be integrated into the simulator binary and in tests.
 class Simulator : public SimulatorDelegate {
  public:
   Simulator(Simavr *simavr, StateStorage *state_storage);

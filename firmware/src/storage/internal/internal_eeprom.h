@@ -6,6 +6,8 @@
 namespace threeboard {
 namespace storage {
 
+// An implementation of the Eeprom interface that interacts with the small
+// internal EEPROM within the atmega32u4 MCU.
 class InternalEeprom final : public Eeprom {
  public:
   explicit InternalEeprom(native::Native *native);

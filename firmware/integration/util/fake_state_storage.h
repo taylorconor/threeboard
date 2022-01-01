@@ -5,6 +5,8 @@
 namespace threeboard {
 namespace integration {
 
+// A test-only StateStorage implementation used for tests where a real
+// StateStorageImpl setup is not needed.
 class FakeStateStorage : public simulator::StateStorage {
  public:
   FakeStateStorage() {

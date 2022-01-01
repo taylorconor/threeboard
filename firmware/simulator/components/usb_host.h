@@ -5,6 +5,7 @@
 namespace threeboard {
 namespace simulator {
 
+//
 class UsbHost {
  public:
   virtual ~UsbHost() = default;

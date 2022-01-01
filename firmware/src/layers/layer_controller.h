@@ -11,6 +11,8 @@
 
 namespace threeboard {
 
+// A class to abstract away interactions with specific layers. This class keeps
+// track of the current layer and passes keypress events to it.
 class LayerController : public LayerControllerDelegate {
  public:
   LayerController(LedState *led_state, usb::UsbController *usb_controller,

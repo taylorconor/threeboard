@@ -8,6 +8,8 @@
 namespace threeboard {
 namespace usb {
 
+// A collection of methods responsible for handling incoming USB protocol
+// messages from the host.
 class RequestHandler {
  public:
   explicit RequestHandler(native::Native *native);

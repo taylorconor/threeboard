@@ -8,6 +8,8 @@ enum class SimulatorSource {
   SIMAVR,
 };
 
+// A delegate used to propagate logs from the simulated firmware to the
+// simulator's UI.
 class UIDelegate {
  public:
   virtual void HandleLogLine(const std::string& log_line) = 0;

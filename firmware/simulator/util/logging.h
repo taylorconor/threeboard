@@ -14,6 +14,9 @@
 namespace threeboard {
 namespace simulator {
 
+// A class to format and propagate logs produced from the simulator (either
+// simavr or the simulator itself). This is not used for collecting logs from
+// the simulated threeboard firmware.
 class Logging {
  public:
   static void Init(UIDelegate *ui_delegate, std::ofstream *log_stream);

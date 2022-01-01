@@ -6,6 +6,8 @@
 namespace threeboard {
 namespace storage {
 
+// An implementation of the Eeprom interface that interacts with external EEPROM
+// devices using the I2C protocol.
 class I2cEeprom final : public Eeprom {
  public:
   enum Device {

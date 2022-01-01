@@ -16,6 +16,10 @@ enum class WordModCode {
   APPEND_HYPHEN = 5,
 };
 
+// Abstracts away interactions with the various storage devices on the
+// threeboard. This class controls the layout of storage, interfaces with the
+// storage devices, and provides a human-readable C++ abstraction on top of
+// them.
 class StorageController {
  public:
   StorageController(native::Native *native, usb::UsbController *usb_controller);

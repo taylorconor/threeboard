@@ -4,6 +4,7 @@
 
 namespace threeboard {
 
+// Defines all valid keypresses and key combinations in the threeboard.
 enum class Keypress : uint8_t {
   // Define an inactive keypress (no keys pressed) to differentiate between
   // active and inactive states in handler delegates. The KeypressHandler will
@@ -20,4 +21,4 @@ enum class Keypress : uint8_t {
   // Three-key combo.
   XYZ = 7,
 };
-}
+}  // namespace threeboard

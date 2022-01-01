@@ -8,9 +8,14 @@
 namespace threeboard {
 namespace integration {
 
+// A model of the state of the threeboard. This class can receive keypresses and
+// produces the correct expected state of the threeboard given those keypresses.
+// It's a simple input/output model, it doesn't include anywhere near the
+// complexity of the real threeboard firmware. It's used to verify that the real
+// simulated threeboard firmware under test is always in the correct state.
 class ThreeboardModel {
  public:
-  ThreeboardModel() { current_layer_ = LayerId::DFLT; }
+  ThreeboardModel() : current_layer_(LayerId::DFLT) {}
 
   void Apply(const Keypress& keypress);
   simulator::DeviceState GetStateSnapshot();
