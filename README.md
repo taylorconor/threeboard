@@ -9,7 +9,7 @@ Unlike a traditional keyboard, characters don't show up on the screen after each
 ## Motivation
 The main goal of the threeboard project is to build a relatively easy to understand, readable, self-contained and well-documented embedded software and hardware project. The threeboard is built from scratch, with no external dependencies. This means that all components, from the USB stack to the PCB hardware designs, are written from the ground up and are all contained in this repository.
 
-The threeboard project is extensively documented: within the firmware itself as comments, in a set of detailed markdown documents, and in this design document. The primary design goal of the C++ firmware code is readability, to enable as many people to read and learn from it as possible, regardless of background. It's well tested, including end-to-end integration tests which execute tests against the firmware in a hardware simulator to emulate the physical hardware.
+The threeboard project is extensively documented: within the firmware itself as comments, in this set of detailed markdown documents, and in a [PDF design document](documentation/threeboard_design_doc.pdf). The primary design goal of the C++ firmware code is readability, to enable as many people to read and learn from it as possible, regardless of background. It's well tested, including end-to-end integration tests which execute tests against the firmware in a hardware simulator to emulate the physical hardware.
 
 
 ## How to try it out
