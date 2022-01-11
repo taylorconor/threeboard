@@ -37,3 +37,5 @@ Below are markdown files documenting various aspects of the threeboard project i
 [Hardware design](documentation/threeboard/hardware_design.md)  
 [Hardware build instructions](documentation/threeboard/hardware_build_instructions.md)  
 [Component list](documentation/threeboard/component_list.md)
+
+Hardware designs are licensed under [CERN-OHL-P](hardware/LICENSE.txt), the firmware is licensed under [GPLv3](firmware/LICENSE.txt), and all documentation under [CC BY-SA 4.0](documentation/threeboard/LICENSE.txt).
